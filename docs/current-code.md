@@ -1,6 +1,6 @@
 # Current code: how the Formcraft website works
 
-> **Living document.** It explains the code in `formcraftwebsite2026/website/` as it is
+> **Living document.** It explains the code in this repo as it is
 > *right now*, so anyone (Claude Code, a developer, the founders) can understand it
 > without reading every file. `CLAUDE.md` loads it into every Claude Code session.
 >
@@ -53,7 +53,8 @@ Scripts: `npm run dev`, `npm run build`, `npm run lint`, `npm run preview`.
 ## File map (today)
 
 ```
-website/
+formcraft-web-27/   (repo root)
+├─ .gitignore                 # deps, builds, all .env files except .env.example, Firebase/service-account keys, logs, editor files
 ├─ index.html                 # <div id="root">, loads src/main.jsx; title "Formcraft"
 ├─ vite.config.js             # react() plugin only
 ├─ .oxlintrc.json
@@ -229,6 +230,7 @@ Newest first. One row per commit or task.
 
 | Date | Task | What changed | Files |
 | --- | --- | --- | --- |
+| 2026-10-09 | — | Moved to the new repo `formcraft/formcraft-web-27` (private). Flattened: the app moved from `formcraftwebsite2026/website/` to the repo root, history kept. One root `.gitignore` covering deps, builds, all `.env*` except `.env.example`, Firebase/service-account keys, emulator data, logs and editor files. | `.gitignore`, all paths, docs |
 | 2026-10-09 | P0.4 | Added `AuthContext` + `useAuth()`. Removed the forced sign-in overlay and the blank screen while auth loads. `auth.jsx` became `auth/SignInDialog.jsx`: native `<dialog>`, closes with ×/Escape/backdrop, shows errors. Header gets a "Sign in" button and uses `useAuth()`. Pages no longer take a `user` prop; Home reads `useAuth()`. | `App.jsx`, `context/AuthContext.jsx`, `components/auth/SignInDialog.*`, `components/Header.*`, `pages/*.jsx` |
 | 2026-10-09 | P0.1 | Deleted unused Vite template files (`App.css`, `assets/react.svg`, `assets/vite.svg`, `assets/hero.png`, `public/icons.svg`, template `README.md`). Page title is now "Formcraft". | `index.html`, deleted files |
 | 2026-10-09 | — | Decided to build on the existing React code. Baseline of this file written from a full read of the code. `build-plan.md` and `CLAUDE.md` moved from plain JS to React; Phase 0 added. No code changed yet. | `docs/build-plan.md`, `docs/current-code.md`, `CLAUDE.md` |

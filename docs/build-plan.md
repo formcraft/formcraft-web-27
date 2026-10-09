@@ -8,7 +8,7 @@
 
 Build formcraft as a fast React single-page app (Vite) on Firebase (Hosting, Auth, Firestore, Storage, Cloud Functions) with a pitch-style home page, four division pages, a shop, a members' community, an investors page and a floating plant-a-tree donate button.
 
-We build on the existing React code (`formcraftwebsite2026/website/` in the `formcraft-web-27` repo) rather than starting again. `docs/current-code.md` describes that code; Phase 0 below brings it in line with this plan.
+We build on the existing React code (at the root of the `formcraft-web-27` repo) rather than starting again. `docs/current-code.md` describes that code; Phase 0 below brings it in line with this plan.
 
 ## Assumptions
 
@@ -191,7 +191,7 @@ Admins get a custom claim (`admin: true`) set with `scripts/set-admin.js`, not a
 Target layout. Moves from today's code are listed in Phase 0 and tracked in `docs/current-code.md`.
 
 ```
-website/   (repo: formcraft-web-27, path formcraftwebsite2026/website)
+formcraft-web-27/   (repo root)
 ├─ CLAUDE.md
 ├─ docs/  build-plan.md (this file)  current-code.md (living)
 ├─ index.html                  # <div id="root">, title "Formcraft"
@@ -232,7 +232,7 @@ website/   (repo: formcraft-web-27, path formcraftwebsite2026/website)
 ├─ storage.rules
 ├─ firebase.json               # hosting: public dist, rewrites ** → /index.html
 ├─ .firebaserc
-└─ ../../.github/workflows/deploy.yml   # at repo root; runs in formcraftwebsite2026/website
+└─ .github/workflows/deploy.yml
 ```
 
 ## Setup instructions
@@ -242,7 +242,6 @@ Needs Node.js 20+, Git and a Google account. The React app already exists, so th
 1. **Firebase project.** The existing code points at project `fromcraft-2026` (see open questions). In console.firebase.google.com, open it (or create the final one), make sure a Web app exists and copy its config. Enable Authentication (Email/Password + Google), Firestore and Storage. Pick the Firestore location nearest Kampala (e.g. `africa-south1` if offered; it can't be changed later) and deploy Functions to the same region. Upgrade to Blaze and set a budget alert. In Google Cloud console → APIs & Services → Credentials, restrict the web API key to your domains (the key is public by design; the restriction stops misuse).
 2. **Install.**
    ```bash
-   cd formcraftwebsite2026/website
    npm install
    npm install firebase@latest
    npm install -g firebase-tools
@@ -252,7 +251,7 @@ Needs Node.js 20+, Git and a Google account. The React app already exists, so th
    firebase login
    firebase init   # Firestore, Functions (JavaScript), Hosting, Storage, Emulators
    ```
-   Hosting public directory: `dist`. Configure as a single-page app (rewrite all URLs to `/index.html`): **yes**. GitHub deploys: **yes**; because the app is in a subfolder, set the workflow's `entryPoint` (and `working-directory` for the build step) to `formcraftwebsite2026/website`.
+   Hosting public directory: `dist`. Configure as a single-page app (rewrite all URLs to `/index.html`): **yes**. GitHub deploys: **yes**.
 4. **Config** in `.env.local` (never commit it; commit `.env.example` with empty values). Move the values that are currently hard-coded in `src/config/firebase.jsx` here:
    ```bash
    VITE_FIREBASE_API_KEY=

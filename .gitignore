@@ -1,6 +1,54 @@
+# Dependencies
 node_modules/
+functions/node_modules/
+
+# Build output
 dist/
-.env.local
-.env.*.local
-*.log
+dist-ssr/
+functions/lib/
+*.local
+
+# Environment and secrets: only .env.example is committed
+.env
+.env.*
+!.env.example
+functions/.env*
+functions/.secret.local
+*.pem
+*.key
+service-account*.json
+*-firebase-adminsdk-*.json
+
+# Firebase
 .firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+database-debug.log*
+pubsub-debug.log*
+emulator-data/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test and tool caches
+coverage/
+.cache/
+.eslintcache
+.vite/
+
+# Editors and OS
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+*.suo
+*.sw?
