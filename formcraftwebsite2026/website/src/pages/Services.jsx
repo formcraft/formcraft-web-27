@@ -1,6 +1,6 @@
 import "./Services.css";
 
-export const Services = ({ user }) => {
+export const Services = () => {
 
     const services = [
         {

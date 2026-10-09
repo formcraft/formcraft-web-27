@@ -8,7 +8,7 @@ import Testimonials from "../components/craft/Testimonials";
 import Cart from "../components/craft/Cart";
 import "./Shop.css";
 
-export function CraftPage({ user }) {
+export function CraftPage() {
   const [cartItems, setCartItems] = useState([]);
 
   const addToCart = (product, options) => {

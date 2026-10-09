@@ -9,7 +9,7 @@
 >   "How to keep this file up to date").
 >
 > Baseline written: 2026-10-09 from a full read of the code · Last updated: 2026-10-09
-> · Phase: **0, in progress** (1 of 10 tasks done)
+> · Phase: **0, in progress** (2 of 10 tasks done)
 
 ---
 
@@ -42,7 +42,7 @@ Write plainly. Name files and components exactly. Don't describe planned feature
 | Firebase project | `fromcraft-2026` (spelling: "fromcraft"), config hard-coded | from `VITE_FIREBASE_*` env vars |
 | Language | JavaScript + JSX, no TypeScript | same |
 | Styling | ~2,000 lines of plain CSS, one file per component; global rules leak from `Shop.css` | tokens + shared styles in `src/styles/`, component CSS scoped by class prefix |
-| State | `user` passed as a prop; cart state inside `CraftPage` | `AuthContext`, `CartContext` |
+| State | `AuthContext` (`useAuth()`) for the signed-in user; cart state inside `CraftPage` | `AuthContext`, `CartContext` |
 | Data | hard-coded in `src/components/data/products.jsx`, prices in dollars | `src/data/products.js` (UGX) in Phase 0, Firestore `products` in Phase 3 |
 | Tests | none | rules tests from Phase 3 |
 
@@ -60,12 +60,13 @@ website/
 ├─ public/favicon.svg         # still the Vite logo; replaced in P0.6
 └─ src/
    ├─ main.jsx                # mounts <App/> in StrictMode
-   ├─ App.jsx                 # auth state, router, header, sign-in popup
+   ├─ App.jsx                 # <AuthProvider> + router + header + routes
+   ├─ context/AuthContext.jsx # AuthProvider, useAuth(): user, isAdmin, loading, signIn, signOut, openSignIn
    ├─ config/firebase.jsx     # initializeApp + exports auth; starts Analytics
    ├─ components/
    │  ├─ Header.jsx/.css      # logo + nav + account dropdown
    │  ├─ Footer.jsx           # EMPTY file
-   │  ├─ auth.jsx/.css        # full-screen "Sign in with Google" overlay
+   │  ├─ auth/SignInDialog.jsx/.css  # closable Google sign-in dialog (was components/auth.jsx)
    │  ├─ data/products.jsx    # hard-coded products, collections, companies, testimonials
    │  └─ craft/               # the shop page's sections
    │     ├─ Hero.jsx/.css
@@ -92,7 +93,7 @@ website/
 | ~~`src/App.css`, `src/assets/*` (react.svg, vite.svg, hero.png), `public/icons.svg`, template `README.md`~~ | deleted (none were referenced) | P0.1 ✓ |
 | `src/config/firebase.jsx` | `src/config/firebase.js` | P0.2 |
 | global rules in `Shop.css`, `FeaturedProducts.css` | `src/styles/base.css`, `components.css` | P0.3 |
-| `src/components/auth.jsx/.css` | `src/components/auth/SignInDialog.jsx/.css` | P0.4 |
+| ~~`src/components/auth.jsx/.css`~~ | `src/components/auth/SignInDialog.jsx/.css` | P0.4 ✓ |
 | `src/pages/Construction.jsx/.css` | `src/pages/ComingSoon.jsx/.css` | P0.5 |
 | `src/components/Header.*`, `Footer.jsx` | `src/components/layout/` | P0.6 |
 | `src/components/craft/*` | `src/components/shop/*` (`FeaturedProducts` → `ProductGrid` + `ProductModal`, `FeaturedCollections` → `Collections`, `CommunitySection` → `CommunityBand`, `Cart` → `CartButton` + `CartDrawer`) | P0.7, P0.8 |
@@ -109,7 +110,9 @@ website/
 
 ### Start-up and app shell (`main.jsx`, `App.jsx`)
 
-`main.jsx` mounts `<App/>` inside `StrictMode`. `App.jsx` subscribes to Firebase's `onAuthStateChanged` and keeps the result in a `user` state. It **renders nothing** until Firebase reports the auth state, so the first paint waits on a network call. Then it renders `<Header>`, the matching route, and, if the visitor is **not** signed in, opens the sign-in overlay after 2 seconds. The `user` object is passed as a prop to every page. Routes are written inline in `App.jsx`: `/`, `/services`, `/portfolio`, `/shop`, `/blog`, `/about`. There is no 404 route.
+`main.jsx` mounts `<App/>` inside `StrictMode`. `App.jsx` wraps everything in `<AuthProvider>` and renders `<Header>` and the matching route **straight away**; it doesn't wait for Firebase. Pages no longer receive a `user` prop; anything that needs the user calls `useAuth()`.
+
+`AuthProvider` (`context/AuthContext.jsx`) subscribes to `onAuthStateChanged` and exposes `user`, `isAdmin` (from the `admin` custom claim on the ID token), `loading` (true until Firebase first answers), `signIn()` (Google popup; returns `null` on success or when the visitor closes the popup, otherwise a message to show), `signOut()` and `openSignIn()`. It renders `SignInDialog` when `openSignIn()` has been called, and closes it automatically once someone is signed in. Routes are written inline in `App.jsx`: `/`, `/services`, `/portfolio`, `/shop`, `/blog`, `/about`. There is no 404 route.
 
 ### Firebase (`config/firebase.jsx`)
 
@@ -117,11 +120,11 @@ Calls `initializeApp` with the config for project `fromcraft-2026` written direc
 
 ### Sign-in (`components/auth.jsx`)
 
-A full-screen overlay: "Welcome to FormCraft, please sign in to continue" and one "Sign in with Google" button using `signInWithPopup`. There is **no close button**, so a signed-out visitor can't use the site after 2 seconds without a Google account. Errors go to the console only; the visitor sees nothing.
+Only opens when asked (the header's "Sign in" button calls `openSignIn()`); nothing pops up on its own. It's a native `<dialog>` opened with `showModal()`, so keyboard focus stays inside it. It closes with the × button, the Escape key, or a click on the dimmed backdrop. One "Sign in with Google" button; while the popup is open it reads "Signing in…". Errors (popup blocked, network down, anything else) are shown in the dialog in plain words; closing the Google popup isn't treated as an error. Styles still use the old hard-coded colours until P0.3.
 
 ### Header (`components/Header.jsx`)
 
-Text logo "📝 FormCraft". Nav links: Home, Services, Portfolio, Shop, Blog, About Us. The link for the current page is **removed** from the menu. Links are `<a>` tags with `onClick` and no `href`, so they can't be focused with the keyboard, opened in a new tab, or followed by search engines. When signed in, a 👤 button opens a dropdown with the email, "Settings" (does nothing) and "Logout" (`signOut`, then navigate to `/`). No mobile menu; the nav just shrinks.
+Text logo "📝 FormCraft". Nav links: Home, Services, Portfolio, Shop, Blog, About Us. The link for the current page is **removed** from the menu. Links are `<a>` tags with `onClick` and no `href`, so they can't be focused with the keyboard, opened in a new tab, or followed by search engines. Reads the user from `useAuth()`. When signed out (and auth has finished loading), a "Sign in" button at the end of the nav opens the sign-in dialog. When signed in, a 👤 button opens a dropdown with the email, "Settings" (does nothing) and "Logout" (`signOut()`, then navigate to `/`). No mobile menu; the nav just shrinks.
 
 ### Footer (`components/Footer.jsx`)
 
@@ -178,11 +181,11 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 | 3 | Emoji logo, Vite favicon | Formcraft SVG logo and FC mark from `public/logos/` | P0.6 | To do |
 | 4 | Invented testimonials, "Trusted by" logos, collection makers, blog posts | Remove; `TODO:` placeholders | P0.9 | To do |
 | 5 | Prices in dollars | Whole UGX integers, `formatUGX` → "UGX 120,000" | P0.7 | To do |
-| 6 | Forced sign-in overlay after 2 s, can't be closed | Remove auto-popup; sign-in on demand, closable | P0.4 | To do |
+| 6 | Forced sign-in overlay after 2 s, can't be closed | Remove auto-popup; sign-in on demand, closable | P0.4 | Done (2026-10-09) |
 | 7 | Cart lost on navigation; Checkout dead; mouse-only drag | `CartContext` + localStorage; fixed touch-friendly button; Checkout "Coming soon" until Phase 3 | P0.8 | To do |
 | 8 | Products reshuffle every 14 s | Stable order | P0.7 | To do |
 | 9 | Buttons that do nothing (Home cards, Explore, Join, Donate, Settings, Read Our Story) | Real routes or remove | P0.9 | To do |
-| 10 | Blank screen until auth answers | Render immediately; gate only what needs the user | P0.4 | To do |
+| 10 | Blank screen until auth answers | Render immediately; gate only what needs the user | P0.4 | Done (2026-10-09) |
 | 11 | Routes don't match the site map; no 404; `Construction.jsx` name clash | `routes.jsx`, redirects, `NotFound`, `ComingSoon.jsx` | P0.5 | To do |
 | 12 | `Footer.jsx` empty | Build footer | P0.6 | To do |
 | 13 | Header links have no `href`; current page removed; no mobile menu | `<NavLink>`, active state, four doors, mobile menu | P0.6 | To do |
@@ -199,7 +202,7 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 | P0.1 Clean out | Done (2026-10-09) |
 | P0.2 Firebase config | To do |
 | P0.3 Brand base | To do |
-| P0.4 Auth | To do |
+| P0.4 Auth | Done (2026-10-09) |
 | P0.5 Layout and routing | To do |
 | P0.6 Header and footer | To do |
 | P0.7 Shop → Stores | To do |
@@ -214,6 +217,8 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 - Firebase project id is `fromcraft-2026` (misspelled). Decide before real data goes in; ids can't be renamed (open question in the plan).
 - The Firebase web API key is in the repo history. It isn't a secret, but restrict it to the site's domains in Google Cloud console.
 - No tests. Rules tests arrive in Phase 3.
+- `npm run lint` fails before linting anything: `.oxlintrc.json` uses `settings.react.version: "detect"` and `parserOptions`, which the installed oxlint rejects. Fix the config (e.g. version `"19.2"`, drop `parserOptions`) in P0.2 or as its own small commit.
+- P0.4 was tested in Edge for opening, closing (×, Escape, backdrop), focus and no auto-popup. A real Google sign-in wasn't tested; try it once in the browser.
 - Logos and fonts aren't in `public/` yet; P0.3 and P0.6 need the files copied in from the brand assets.
 
 ---
@@ -224,5 +229,6 @@ Newest first. One row per commit or task.
 
 | Date | Task | What changed | Files |
 | --- | --- | --- | --- |
+| 2026-10-09 | P0.4 | Added `AuthContext` + `useAuth()`. Removed the forced sign-in overlay and the blank screen while auth loads. `auth.jsx` became `auth/SignInDialog.jsx`: native `<dialog>`, closes with ×/Escape/backdrop, shows errors. Header gets a "Sign in" button and uses `useAuth()`. Pages no longer take a `user` prop; Home reads `useAuth()`. | `App.jsx`, `context/AuthContext.jsx`, `components/auth/SignInDialog.*`, `components/Header.*`, `pages/*.jsx` |
 | 2026-10-09 | P0.1 | Deleted unused Vite template files (`App.css`, `assets/react.svg`, `assets/vite.svg`, `assets/hero.png`, `public/icons.svg`, template `README.md`). Page title is now "Formcraft". | `index.html`, deleted files |
 | 2026-10-09 | — | Decided to build on the existing React code. Baseline of this file written from a full read of the code. `build-plan.md` and `CLAUDE.md` moved from plain JS to React; Phase 0 added. No code changed yet. | `docs/build-plan.md`, `docs/current-code.md`, `CLAUDE.md` |

@@ -1,6 +1,6 @@
 import "./Blog.css";
 
-export const Blog = ({ user }) => {
+export const Blog = () => {
   const blogPosts = [
     {
       id: 1,

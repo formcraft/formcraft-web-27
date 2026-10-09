@@ -1,6 +1,6 @@
 import "./AboutUs.css";
 
-export const AboutUs = ({ user }) => {
+export const AboutUs = () => {
     return (
         <>
             <div className="about-container">

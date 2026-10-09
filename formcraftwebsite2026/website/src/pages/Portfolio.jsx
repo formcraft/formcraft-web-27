@@ -1,6 +1,6 @@
 import "./Portfolio.css";
 
-export const Portfolio = ({ user }) => {
+export const Portfolio = () => {
 
     const projects = [
         { id: 1, title: "Project 1", emoji: "🎨" },

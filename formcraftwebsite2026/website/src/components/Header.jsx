@@ -1,17 +1,17 @@
-import { auth } from "../config/firebase";
-import { signOut } from "firebase/auth";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import "./Header.css";
 
-export const Header = ({ user }) => {
+export const Header = () => {
+    const { user, loading, signOut, openSignIn } = useAuth();
     const [showAccountMenu, setShowAccountMenu] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
     const handleLogout = async () => {
         try {
-            await signOut(auth);
+            await signOut();
             navigate("/");
             setShowAccountMenu(false);
         } catch (error) {
@@ -83,6 +83,14 @@ export const Header = ({ user }) => {
                                     </div>
                                 </div>
                             )}
+                        </li>
+                    )}
+
+                    {!user && !loading && (
+                        <li>
+                            <button type="button" className="header-signin-button" onClick={openSignIn}>
+                                Sign in
+                            </button>
                         </li>
                     )}
                 </ul>

@@ -1,6 +1,8 @@
+import { useAuth } from "../context/AuthContext";
 import "./Home.css";
 
-export const Home = ({ user }) => {
+export const Home = () => {
+    const { user } = useAuth();
     return (
         <>
             <div className="home-container">

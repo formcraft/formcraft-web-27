@@ -1,6 +1,6 @@
 import "./Construction.css";
 
-export const Construction = ({ user }) => {
+export const Construction = () => {
     return (
         <>
             <div className="construction-container">

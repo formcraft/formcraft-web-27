@@ -72,6 +72,26 @@
   background-color: rgba(255, 255, 255, 0.3);
 }
 
+.header-signin-button {
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.header-signin-button:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.header-signin-button:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
 .header-dropdown {
   position: absolute;
   top: 50px;
