@@ -1,0 +1,84 @@
+/* Construction Page Styles */
+
+.construction-container {
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.construction-content {
+  background-color: white;
+  padding: 60px 40px;
+  border-radius: 15px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+}
+
+.construction-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+}
+
+.construction-title {
+  font-size: 36px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.construction-message {
+  font-size: 18px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.construction-button {
+  background-color: #667eea;
+  color: white;
+  padding: 12px 30px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.construction-button:hover {
+  background-color: #764ba2;
+}
+
+@media (max-width: 768px) {
+  .construction-container {
+    padding: 15px;
+  }
+
+  .construction-content {
+    padding: 40px 25px;
+  }
+
+  .construction-icon {
+    font-size: 60px;
+    margin-bottom: 15px;
+  }
+
+  .construction-title {
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+
+  .construction-message {
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+}

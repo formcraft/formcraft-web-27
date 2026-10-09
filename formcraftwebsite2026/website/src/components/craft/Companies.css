@@ -1,0 +1,27 @@
+.companies {
+  padding: 3.5rem 0;
+  background: white;
+}
+
+.companies-label {
+  text-align: center;
+  color: #8a7e70;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 2rem;
+}
+
+.logo-strip {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3.5rem;
+  opacity: 0.55;
+}
+
+.logo-strip img {
+  height: 32px;
+  filter: grayscale(100%);
+}
