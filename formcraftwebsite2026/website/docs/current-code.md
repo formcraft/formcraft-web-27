@@ -1,62 +1,62 @@
-# Current code: what exists today and how to build on it
+# Current code: how the Formcraft website works
 
-> Written 2026-10-09 from a full read of `formcraftwebsite2026/website/`.
-> Purpose: brief Claude Code (or any developer) on the existing React code so the
-> build plan can be rewritten around it instead of replacing it.
-
----
-
-## Prompt for Claude Code
-
-**Status: done 2026-10-09.** `build-plan.md` and `CLAUDE.md` were updated from this
-prompt; Phase 0 in the plan is the summary of "Problems to fix" below. Kept for the record.
-
-> We are keeping the existing React + Vite code in this folder as the base of the
-> Formcraft website. Read `docs/current-code.md` (this file) and `docs/build-plan.md`.
+> **Living document.** It explains the code in `formcraftwebsite2026/website/` as it is
+> *right now*, so anyone (Claude Code, a developer, the founders) can understand it
+> without reading every file. `CLAUDE.md` loads it into every Claude Code session.
 >
-> 1. **Update `docs/build-plan.md`** so it matches a React app instead of a plain-JS
->    multi-page site. Keep everything that is framework-independent: the brand
->    system, site map, Firebase services, Flutterwave payment flow, Firestore data
->    model, security rules, open questions and the five phases. Change the parts
->    that assume vanilla JS: the stack line, the folder structure, `vite.config.js`
->    (single entry + React plugin, not one input per page), the `firebase.js`
->    example (move to `src/config/firebase.js`), "pages work without JavaScript"
->    (replace with a realistic React equivalent; see "Rendering" below), and the
->    Hosting setup (single-page app rewrite **yes**).
-> 2. **Update `CLAUDE.md`** to match: React 19 + React Router + Vite, JSX, no
->    TypeScript unless asked; where components, pages, styles and data live; and
->    keep every rule in "Rules that must never be broken" unchanged.
-> 3. **Add a "Phase 0: bring the existing code in line" section** to the plan, built
->    from the "Problems" list below, and put it before Phase 1.
-> 4. Do not rewrite working components from scratch. Reuse and restyle them;
->    rename or move files only when the plan's structure needs it, and say so.
-> 5. Show me the plan diff before changing any code.
+> - `docs/build-plan.md` says what we are building. This file says what exists.
+> - Claude Code updates this file **in the same commit** as any code change (see
+>   "How to keep this file up to date").
+>
+> Baseline written: 2026-10-09 from a full read of the code · Last updated: 2026-10-09
+> · Phase: **0, not started** (0 of 10 tasks done)
 
 ---
 
-## What the code is
+## How to keep this file up to date (for Claude Code)
 
-A **single-page React app** created from the Vite React template.
+After every change to the code, before committing:
 
-| | |
-| --- | --- |
-| Framework | React 19 (`react`, `react-dom` ^19.2), StrictMode |
-| Routing | `react-router-dom` ^6.30, `BrowserRouter` (client-side URLs like `/shop`) |
-| Build | Vite ^8.2 with `@vitejs/plugin-react` |
-| Lint | oxlint (`npm run lint`), React hooks rules |
-| Firebase | `firebase` ^11; **only Auth and Analytics are used** |
-| Language | JavaScript + JSX, no TypeScript |
-| Tests | None |
-| Firebase project files | None yet (no `firebase.json`, `.firebaserc`, rules or `functions/`) |
+1. **Status line** at the top: date, phase, tasks done.
+2. **At a glance:** change a row if the stack, a version or a tool changed.
+3. **File map:** add, move or delete entries so the tree matches the disk. Mark moves `(was …)` until the phase ends.
+4. **How it works today:** rewrite the paragraph for every part whose behaviour changed. Describe what it does now, not what it used to do; the old behaviour belongs in the change log.
+5. **Phase 0 checklist:** set the status of the task and of each problem it fixed.
+6. **Change log:** add one row (newest first).
+7. **Known issues:** add anything found but not fixed; remove what's fixed.
+
+Write plainly. Name files and components exactly. Don't describe planned features here as if they exist.
+
+---
+
+## At a glance
+
+| | Today | Target (from the plan) |
+| --- | --- | --- |
+| Framework | React 19 (`react`, `react-dom` ^19.2), StrictMode | same |
+| Routing | `react-router-dom` ^6.30, `BrowserRouter`, routes written in `App.jsx` | same version; routes in `src/routes.jsx`, lazy-loaded |
+| Build | Vite ^8.2 with `@vitejs/plugin-react` | same |
+| Lint | oxlint (`npm run lint`), React hooks rules | same |
+| Firebase SDK | `firebase` ^11; **only Auth and Analytics used** | current major; Auth, Firestore, Storage, Functions |
+| Firebase project files | none (no `firebase.json`, `.firebaserc`, rules, `functions/`) | all present (P0.2, Phase 2–3) |
+| Firebase project | `fromcraft-2026` (spelling: "fromcraft"), config hard-coded | from `VITE_FIREBASE_*` env vars |
+| Language | JavaScript + JSX, no TypeScript | same |
+| Styling | ~2,000 lines of plain CSS, one file per component; global rules leak from `Shop.css` | tokens + shared styles in `src/styles/`, component CSS scoped by class prefix |
+| State | `user` passed as a prop; cart state inside `CraftPage` | `AuthContext`, `CartContext` |
+| Data | hard-coded in `src/components/data/products.jsx`, prices in dollars | `src/data/products.js` (UGX) in Phase 0, Firestore `products` in Phase 3 |
+| Tests | none | rules tests from Phase 3 |
 
 Scripts: `npm run dev`, `npm run build`, `npm run lint`, `npm run preview`.
 
-### File map
+---
+
+## File map (today)
 
 ```
 website/
 ├─ index.html                 # <div id="root">, loads src/main.jsx; title "formcraft"
 ├─ vite.config.js             # react() plugin only
+├─ .oxlintrc.json
 ├─ public/favicon.svg, icons.svg   # Vite template icons, not Formcraft logos
 └─ src/
    ├─ main.jsx                # mounts <App/> in StrictMode
@@ -87,184 +87,144 @@ website/
    └─ assets/hero.png, react.svg, vite.svg   # template images, unused
 ```
 
-About 2,000 lines of CSS, one plain `.css` file per component (no CSS modules,
-no Tailwind).
+### Planned moves (Phase 0)
 
-### How it behaves
+| From | To | Task |
+| --- | --- | --- |
+| `src/App.css`, `src/assets/react.svg`, `src/assets/vite.svg`, `public/icons.svg`, template `README.md` | deleted | P0.1 |
+| `src/assets/hero.png` | deleted if unused, else `public/images/` | P0.1 |
+| `src/config/firebase.jsx` | `src/config/firebase.js` | P0.2 |
+| global rules in `Shop.css`, `FeaturedProducts.css` | `src/styles/base.css`, `components.css` | P0.3 |
+| `src/components/auth.jsx/.css` | `src/components/auth/SignInDialog.jsx/.css` | P0.4 |
+| `src/pages/Construction.jsx/.css` | `src/pages/ComingSoon.jsx/.css` | P0.5 |
+| `src/components/Header.*`, `Footer.jsx` | `src/components/layout/` | P0.6 |
+| `src/components/craft/*` | `src/components/shop/*` (`FeaturedProducts` → `ProductGrid` + `ProductModal`, `FeaturedCollections` → `Collections`, `CommunitySection` → `CommunityBand`, `Cart` → `CartButton` + `CartDrawer`) | P0.7, P0.8 |
+| `src/pages/Shop.jsx` (`CraftPage`) | `src/pages/Stores.jsx` (`Stores`) | P0.7 |
+| `src/components/data/products.jsx` | `src/data/products.js` | P0.7 |
+| `src/pages/Portfolio.*` | `src/pages/Projects.*` | Phase 1 |
+| `src/pages/AboutUs.*` | `src/pages/About.*` | Phase 1 |
+| `src/pages/Services.*` | deleted; `/services` redirects to `/studio` | Phase 1 |
+| `src/components/craft/Companies.*`, `Testimonials.*` | removed in P0.9 (invented content); bring back only with real clients and quotes | P0.9 |
 
-**App shell (`App.jsx`).** Subscribes to `onAuthStateChanged`. Renders nothing
-until Firebase reports the auth state. Then renders `<Header>`, the route, and,
-if the visitor is **not** signed in, opens the sign-in overlay after 2 seconds.
-The `user` object is passed as a prop to every page.
+---
 
-**Sign-in (`auth.jsx`).** A full-screen overlay: "Welcome to FormCraft, please
-sign in to continue", one "Sign in with Google" button (`signInWithPopup`).
-There is no close button, so a signed-out visitor cannot use the site after
-2 seconds without a Google account. Errors only go to the console.
+## How it works today
 
-**Header (`Header.jsx`).** Text logo "📝 FormCraft". Nav links: Home, Services,
-Portfolio, Shop, Blog, About Us; the link for the current page is **removed**
-from the menu. Links are `<a>` tags with `onClick` and no `href`. When signed in,
-a 👤 button opens a dropdown: email, "Settings" (does nothing), "Logout"
-(`signOut`, back to `/`). No mobile menu; the nav just shrinks.
+### Start-up and app shell (`main.jsx`, `App.jsx`)
 
-**Home (`/`).** "Welcome to FormCraft", "Logged in as: email" or "Welcome
-Visitor", and three cards (Create Form, View Forms, Analytics) with buttons that
-do nothing. Styled with inline styles and Google blue `#4285F4`.
+`main.jsx` mounts `<App/>` inside `StrictMode`. `App.jsx` subscribes to Firebase's `onAuthStateChanged` and keeps the result in a `user` state. It **renders nothing** until Firebase reports the auth state, so the first paint waits on a network call. Then it renders `<Header>`, the matching route, and, if the visitor is **not** signed in, opens the sign-in overlay after 2 seconds. The `user` object is passed as a prop to every page. Routes are written inline in `App.jsx`: `/`, `/services`, `/portfolio`, `/shop`, `/blog`, `/about`. There is no 404 route.
 
-**Services, About, Portfolio.** Static text written for a **form-builder
-software product** (form design, data collection, analytics, integrations,
-"enterprise-grade security", pricing plans). Portfolio is six emoji placeholder
-cards ("Project 1" to "Project 6"). None of it describes Formcraft Design and
-Construction.
+### Firebase (`config/firebase.jsx`)
 
-**Blog (`/blog`).** A featured post and three post cards, hard-coded in the
-component, Unsplash images. Copy is about "design subscriptions". Posts don't
-open.
+Calls `initializeApp` with the config for project `fromcraft-2026` written directly in the file, exports `auth`, and starts Analytics as soon as the module loads (also in development). No Firestore, Storage or Functions. The file has a `.jsx` extension but contains no JSX. The web config is not a secret, but it should come from env vars so dev/prod projects can differ.
 
-**Shop (`/shop`).** The most developed page, and the closest to the plan's
-Stores page. Warm terracotta theme defined in `Shop.css` `:root`
-(`--color-primary: #c47a4a`, Inter font). Sections, top to bottom:
-- **Hero:** "Handmade pieces. A community that makes them." Two buttons scroll
-  to products and to the community section.
-- **FeaturedProducts:** shows 8 random products from `data/products.jsx` and
-  **reshuffles every 14 seconds**. Hovering shows name and price; clicking opens
-  a modal with image, price, description, colour and size options, quantity and
-  "Add to Cart — $xx.xx".
-- **FeaturedCollections:** three collection cards ("Earth & Clay, By Amina"…),
-  "Explore →" does nothing.
-- **Companies:** "Trusted by makers, studios & brands" logo strip using
-  `via.placeholder.com` images (Design Milk, Kinfolk…).
-- **CommunitySection:** text + three buttons (Join, Read Our Story,
-  Donate / Support) that do nothing.
-- **Testimonials:** three quotes with `pravatar.cc` avatars.
-- **Cart:** floating 🛒 button with item count; draggable with the mouse; opens
-  a panel with items, +/−, remove, subtotal in **dollars**, and a Checkout button
-  that does nothing. Cart state lives in `CraftPage` memory only.
+### Sign-in (`components/auth.jsx`)
 
-**Data.** Everything comes from `src/components/data/products.jsx`: 9 products
-(ids 4–9 are the same "Linen Tea Towel Set" copied), 3 collections, 4 companies,
-3 testimonials. Prices are dollars. Nothing reads or writes Firestore.
+A full-screen overlay: "Welcome to FormCraft, please sign in to continue" and one "Sign in with Google" button using `signInWithPopup`. There is **no close button**, so a signed-out visitor can't use the site after 2 seconds without a Google account. Errors go to the console only; the visitor sees nothing.
+
+### Header (`components/Header.jsx`)
+
+Text logo "📝 FormCraft". Nav links: Home, Services, Portfolio, Shop, Blog, About Us. The link for the current page is **removed** from the menu. Links are `<a>` tags with `onClick` and no `href`, so they can't be focused with the keyboard, opened in a new tab, or followed by search engines. When signed in, a 👤 button opens a dropdown with the email, "Settings" (does nothing) and "Logout" (`signOut`, then navigate to `/`). No mobile menu; the nav just shrinks.
+
+### Footer (`components/Footer.jsx`)
+
+Empty file. Nothing renders below the pages.
+
+### Pages
+
+- **Home (`/`).** "Welcome to FormCraft", "Logged in as: email" or "Welcome Visitor", and three cards (Create Form, View Forms, Analytics) whose buttons do nothing. Inline styles, Google blue `#4285F4`.
+- **Services (`/services`), About (`/about`), Portfolio (`/portfolio`).** Static text written for a **form-builder software product** (form design, data collection, analytics, integrations, "enterprise-grade security", pricing plans). Portfolio shows six emoji placeholder cards ("Project 1" to "Project 6"). None of it describes Formcraft Design and Construction.
+- **Blog (`/blog`).** A featured post and three post cards, hard-coded in the component, Unsplash images, copy about "design subscriptions". Posts don't open. The layout (featured + grid) is reusable for a Journal.
+- **Construction (not routed).** An "under construction" placeholder. Its name clashes with the planned Construction division page.
+
+### Shop (`/shop`, `pages/Shop.jsx`, component `CraftPage`)
+
+The most developed page and the base for Stores. `Shop.css` defines its own `:root` theme (`--color-primary: #c47a4a` terracotta, Inter font) plus global `.container`, `.section` and `.btn` classes, which leak into every page once the shop has loaded. Sections, top to bottom:
+
+- **Hero:** "Handmade pieces. A community that makes them." Two buttons scroll to products and to the community section.
+- **FeaturedProducts:** shows 8 random products from `data/products.jsx` and **reshuffles every 14 seconds**, moving cards under the visitor's cursor. Hovering shows name and price; clicking a card (a `<div>`) opens a modal with image, price, description, colour and size options, quantity and "Add to Cart — $xx.xx". The modal doesn't trap focus or close on Escape.
+- **FeaturedCollections:** three collection cards ("Earth & Clay, By Amina"…); "Explore →" does nothing.
+- **Companies:** "Trusted by makers, studios & brands" with `via.placeholder.com` logos (Design Milk, Kinfolk…). Invented.
+- **CommunitySection:** text and three buttons (Join, Read Our Story, Donate / Support) that do nothing.
+- **Testimonials:** three quotes with `pravatar.cc` avatars. Invented.
+- **Cart:** a floating 🛒 button with item count, draggable with the mouse only (not touch). Opens a panel with items, +/−, remove, subtotal in **dollars**, and a Checkout button that does nothing. Cart state lives in `CraftPage` memory, so it's lost when the visitor leaves `/shop`. Adding the same product with the same colour and size increases the quantity instead of adding a new line; this merge logic is worth keeping.
+
+### Data (`components/data/products.jsx`)
+
+Exports 9 products (ids 4–9 are copies of the same "Linen Tea Towel Set"), 3 collections, 4 companies and 3 testimonials. Product shape: `id`, `name`, `price` (dollars), `images`, `description`, `colors`, `sizes`. Nothing reads or writes Firestore. Mapping to the plan's `products` fields: `name` → `title`, `price` → `priceUGX` (needs real UGX prices), plus new `slug`, `division`, `category`, `stock`, `isDigital`, `active`.
+
+### Styles
+
+One plain `.css` file per component, no CSS modules or Tailwind. No shared token file. Colours are hard-coded per file (terracotta in the shop, Google blue on Home). `.btn` is defined in `FeaturedProducts.css`. No Formcraft fonts are loaded.
 
 ---
 
 ## What to keep
 
-- **React + React Router + Vite** as the stack, and the one-folder-per-page
-  layout (`pages/X.jsx` + `X.css`).
-- **Firebase Auth wiring** in `App.jsx` (`onAuthStateChanged` → `user`), the
-  Header's account dropdown and logout. Extend it to Email/Password as the plan
-  says; move `user` into a React context instead of passing it to every page.
-- **The Shop page structure**: Hero → products → collections → community →
-  testimonials, plus the product modal (options + quantity) and the cart panel
-  layout. This becomes the Stores page.
-- **Cart logic** in `CraftPage` (merge same product + options, +/−, remove).
-  Move it into a cart context so it survives navigation, persist it as the plan
-  says (localStorage for guests, `users/{uid}/cart` when signed in).
-- **The product data shape** (name, price, images, description, colors, sizes),
-  mapped onto the plan's `products` collection (`title`, `priceUGX`, `images[]`,
-  `division`, `category`, `stock`, `isDigital`, plus `colors[]`, `sizes[]`).
-- **Blog page layout** (featured post + grid). The plan has no blog; decide
-  whether to keep it (e.g. for project stories and community news) or drop it.
+- **React + React Router + Vite** and the one-file-per-page layout (`pages/X.jsx` + `X.css`).
+- **Firebase Auth wiring** (`onAuthStateChanged` → user), the Header account dropdown and logout. Move the user into `AuthContext`; add Email/Password in Phase 4.
+- **Shop page structure:** Hero → products → collections → community, plus the product modal (options + quantity) and the cart panel layout. This becomes Stores.
+- **Cart merge logic** (same product + options → more quantity, +/−, remove), moved into `CartContext`.
+- **Product data shape** (name, price, images, description, colours, sizes), reshaped to the plan's fields.
+- **Blog layout** (featured post + grid), if the Journal is kept.
 
-## Problems to fix (becomes Phase 0)
+---
 
-**Content and brand**
-1. Home, Services, About and Portfolio describe a form-builder SaaS, not
-   Formcraft Design and Construction. Rewrite from the Company Profile; use
-   `TODO:` placeholders where facts are missing.
-2. Shop colours (terracotta, Inter) and Home's `#4285F4` don't follow the Brand
-   Guide. Create `src/styles/tokens.css` with the `--fc-*` tokens and fonts
-   (Satoshi, Clash Grotesk) from the plan, import it once in `main.jsx`, and
-   replace hard-coded hex values and inline styles.
-3. Logo is an emoji and favicon is the Vite logo. Use the SVGs from
-   `public/logos/` (to be added).
-4. Testimonials, "Trusted by" company logos, collection makers ("By Amina") and
-   blog posts are invented. CLAUDE.md forbids fake testimonials and clients:
-   replace with real ones or `TODO:` placeholders.
-5. Prices are in dollars. Switch to whole UGX integers, formatted as
-   `UGX 120,000`.
+## Phase 0 checklist
 
-**Behaviour**
-6. The sign-in overlay blocks the whole site for signed-out visitors after 2 s
-   and can't be closed. The plan only needs sign-in for account, community,
-   checkout and admin. Remove the auto-popup; show sign-in on demand.
-7. The cart is lost when you leave `/shop`, Checkout does nothing, and dragging
-   works only with a mouse (not touch). Make the cart a fixed button that
-   doesn't collide with the plant-a-tree button, keep state in context, wire
-   Checkout to `createCheckout` later (Phase 3).
-8. Products reshuffle every 14 s, which moves things under the user's cursor.
-   Show a stable order.
-9. Many buttons do nothing (Home cards, Explore, Join, Donate, Settings,
-   Read Our Story). Link them to real routes or remove them.
-10. The app renders a blank screen until Firebase auth answers. Render the page
-    immediately and only gate the parts that need the user.
+Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the plan.
 
-**Structure and quality**
-11. Routes don't match the plan's site map. Add: Studio, Construction, Concrete,
-    Stores (current Shop), Projects (current Portfolio), Community, Academy,
-    Invest, Donate, Contact, Account, Admin, and a 404 page. `Construction.jsx`
-    is currently an "under construction" placeholder and isn't routed; rename it
-    (e.g. `ComingSoon.jsx`) so the name is free for the real Construction page.
-12. `Footer.jsx` is empty. Build the footer (About, Contact, socials, tagline).
-13. Header links have no `href`, so they can't be focused with the keyboard,
-    opened in a new tab, or read by search engines. Use React Router `<Link>` /
-    `<NavLink>` and keep the current page in the menu (mark it active). Add a
-    mobile menu. Group the menu into the plan's four doors (Hire us, Shop, Join,
-    Back us).
-14. Clickable `<div>`s and `<article>`s (logo, product cards, dropdown items)
-    aren't keyboard-accessible. Use `<button>`/`<Link>`; add labels to icon-only
-    buttons (🛒, 👤, ×). Product modal needs focus trapping and Escape to close.
-15. Delete Vite template leftovers: `App.css`, `assets/react.svg`,
-    `assets/vite.svg`, `assets/hero.png` (if unused), `public/icons.svg`,
-    template `README.md`. `index.html` title should be "Formcraft".
-16. `Shop.css` defines `:root` variables and global `.container`, `.section`,
-    `.btn` classes; `.btn` lives in `FeaturedProducts.css`. These leak into every
-    page once loaded. Move shared styles into `src/styles/` (tokens, base,
-    components) and keep component CSS scoped by class prefix.
-17. `config/firebase.jsx` holds the config inline and calls Analytics at load.
-    Rename to `firebase.js` (no JSX in it), read config from `VITE_FIREBASE_*`
-    env vars, export `db`, `storage`, `functions`, connect to emulators in dev,
-    and load Analytics only in production. The Firebase project id is
-    `fromcraft-2026` (note the spelling); confirm it's the one to keep.
-18. Firebase JS SDK is ^11; update to the current major when touching it.
-19. External images (Unsplash, via.placeholder.com, pravatar.cc) are
-    placeholders, and via.placeholder.com is no longer reliable. Replace with
-    Formcraft photos in Storage or `public/images/`, WebP, `loading="lazy"`.
-20. No `firebase.json`, rules, functions, `.env.example`, or GitHub Actions yet.
-    Set them up as in the plan's setup steps, with Hosting rewriting all paths to
-    `/index.html` (required for `BrowserRouter`).
+| # | Problem | Fix | Task | Status |
+| --- | --- | --- | --- | --- |
+| 1 | Home, Services, About, Portfolio describe a form-builder SaaS | Rewrite from the Company Profile; `TODO:` where facts are missing (full rewrite in Phase 1) | P0.9 | To do |
+| 2 | Terracotta + Inter (shop) and `#4285F4` (Home) break the Brand Guide | `tokens.css` + fonts; replace hard-coded colours and inline styles | P0.3 | To do |
+| 3 | Emoji logo, Vite favicon | Formcraft SVG logo and FC mark from `public/logos/` | P0.6 | To do |
+| 4 | Invented testimonials, "Trusted by" logos, collection makers, blog posts | Remove; `TODO:` placeholders | P0.9 | To do |
+| 5 | Prices in dollars | Whole UGX integers, `formatUGX` → "UGX 120,000" | P0.7 | To do |
+| 6 | Forced sign-in overlay after 2 s, can't be closed | Remove auto-popup; sign-in on demand, closable | P0.4 | To do |
+| 7 | Cart lost on navigation; Checkout dead; mouse-only drag | `CartContext` + localStorage; fixed touch-friendly button; Checkout "Coming soon" until Phase 3 | P0.8 | To do |
+| 8 | Products reshuffle every 14 s | Stable order | P0.7 | To do |
+| 9 | Buttons that do nothing (Home cards, Explore, Join, Donate, Settings, Read Our Story) | Real routes or remove | P0.9 | To do |
+| 10 | Blank screen until auth answers | Render immediately; gate only what needs the user | P0.4 | To do |
+| 11 | Routes don't match the site map; no 404; `Construction.jsx` name clash | `routes.jsx`, redirects, `NotFound`, `ComingSoon.jsx` | P0.5 | To do |
+| 12 | `Footer.jsx` empty | Build footer | P0.6 | To do |
+| 13 | Header links have no `href`; current page removed; no mobile menu | `<NavLink>`, active state, four doors, mobile menu | P0.6 | To do |
+| 14 | Clickable `<div>`/`<article>`, unlabeled icon buttons, modal without focus trap/Escape | `<button>`/`<Link>`, `aria-label`, focus trap + Escape | P0.10 | To do |
+| 15 | Vite template leftovers; title "formcraft" | Delete; title "Formcraft" | P0.1 | To do |
+| 16 | `Shop.css` `:root`, global `.container`/`.section`/`.btn` leak | Move to `src/styles/`; prefix component classes | P0.3 | To do |
+| 17 | Firebase config inline, Analytics at load, `.jsx` extension | `firebase.js`, env vars, emulators in dev, Analytics in prod only | P0.2 | To do |
+| 18 | Firebase SDK ^11 | Update to current major | P0.2 | To do |
+| 19 | External placeholder images (Unsplash, via.placeholder.com, pravatar.cc) | Formcraft photos or `TODO:`; WebP, `loading="lazy"` | P0.9 | To do |
+| 20 | No `firebase.json`, rules, functions, `.env.example`, CI | Set up per plan (SPA rewrite) | P0.2 | To do |
 
-**Rendering.** The plan wanted pages readable without JavaScript. With a client
-React app that isn't true by default. Pick one and record it in the plan:
-(a) accept client rendering, but set per-route `<title>`/meta and keep bundles
-small with `React.lazy` per route; or (b) pre-render static routes at build time
-(e.g. `vite-react-ssg` or React Router's prerender). (a) is enough for Phase 1;
-revisit (b) in Phase 5 for SEO.
+| Task | Status |
+| --- | --- |
+| P0.1 Clean out | To do |
+| P0.2 Firebase config | To do |
+| P0.3 Brand base | To do |
+| P0.4 Auth | To do |
+| P0.5 Layout and routing | To do |
+| P0.6 Header and footer | To do |
+| P0.7 Shop → Stores | To do |
+| P0.8 Cart | To do |
+| P0.9 Honest content | To do |
+| P0.10 Accessibility | To do |
 
-## Suggested target structure (React)
+---
 
-```
-website/
-├─ CLAUDE.md
-├─ docs/  build-plan.md  current-code.md
-├─ index.html
-├─ vite.config.js
-├─ firebase.json  .firebaserc  firestore.rules  storage.rules  firestore.indexes.json
-├─ .env.example
-├─ functions/  src/index.js  package.json
-├─ public/  fonts/  logos/  images/  favicon.svg
-└─ src/
-   ├─ main.jsx  App.jsx  routes.jsx
-   ├─ config/firebase.js
-   ├─ context/  AuthContext.jsx  CartContext.jsx
-   ├─ styles/  tokens.css  base.css  components.css
-   ├─ components/
-   │  ├─ layout/  Header.jsx  Footer.jsx  DonateFab.jsx
-   │  ├─ shop/    (current craft/ components, renamed)
-   │  └─ ui/      Button.jsx  Modal.jsx  …
-   ├─ pages/  Home  About  Studio  Construction  Concrete  Stores  ProductPage
-   │          Projects  Community  Academy  Invest  Donate  Contact  Account
-   │          Admin  NotFound
-   └─ lib/  money.js (UGX formatting)  forms.js  checkout.js
-```
+## Known issues and notes
+
+- Firebase project id is `fromcraft-2026` (misspelled). Decide before real data goes in; ids can't be renamed (open question in the plan).
+- The Firebase web API key is in the repo history. It isn't a secret, but restrict it to the site's domains in Google Cloud console.
+- No tests. Rules tests arrive in Phase 3.
+- Logos and fonts aren't in `public/` yet; P0.3 and P0.6 need the files copied in from the brand assets.
+
+---
+
+## Change log
+
+Newest first. One row per commit or task.
+
+| Date | Task | What changed | Files |
+| --- | --- | --- | --- |
+| 2026-10-09 | — | Decided to build on the existing React code. Baseline of this file written from a full read of the code. `build-plan.md` and `CLAUDE.md` moved from plain JS to React; Phase 0 added. No code changed yet. | `docs/build-plan.md`, `docs/current-code.md`, `CLAUDE.md` |
