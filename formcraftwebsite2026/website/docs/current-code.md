@@ -9,7 +9,7 @@
 >   "How to keep this file up to date").
 >
 > Baseline written: 2026-10-09 from a full read of the code · Last updated: 2026-10-09
-> · Phase: **0, not started** (0 of 10 tasks done)
+> · Phase: **0, in progress** (1 of 10 tasks done)
 
 ---
 
@@ -54,14 +54,13 @@ Scripts: `npm run dev`, `npm run build`, `npm run lint`, `npm run preview`.
 
 ```
 website/
-├─ index.html                 # <div id="root">, loads src/main.jsx; title "formcraft"
+├─ index.html                 # <div id="root">, loads src/main.jsx; title "Formcraft"
 ├─ vite.config.js             # react() plugin only
 ├─ .oxlintrc.json
-├─ public/favicon.svg, icons.svg   # Vite template icons, not Formcraft logos
+├─ public/favicon.svg         # still the Vite logo; replaced in P0.6
 └─ src/
    ├─ main.jsx                # mounts <App/> in StrictMode
    ├─ App.jsx                 # auth state, router, header, sign-in popup
-   ├─ App.css                 # Vite template leftovers; NOT imported anywhere
    ├─ config/firebase.jsx     # initializeApp + exports auth; starts Analytics
    ├─ components/
    │  ├─ Header.jsx/.css      # logo + nav + account dropdown
@@ -84,15 +83,13 @@ website/
    │  ├─ Blog.jsx/.css        # "/blog"
    │  ├─ AboutUs.jsx/.css     # "/about"
    │  └─ Construction.jsx/.css  # "under construction" placeholder, not routed
-   └─ assets/hero.png, react.svg, vite.svg   # template images, unused
 ```
 
 ### Planned moves (Phase 0)
 
 | From | To | Task |
 | --- | --- | --- |
-| `src/App.css`, `src/assets/react.svg`, `src/assets/vite.svg`, `public/icons.svg`, template `README.md` | deleted | P0.1 |
-| `src/assets/hero.png` | deleted if unused, else `public/images/` | P0.1 |
+| ~~`src/App.css`, `src/assets/*` (react.svg, vite.svg, hero.png), `public/icons.svg`, template `README.md`~~ | deleted (none were referenced) | P0.1 ✓ |
 | `src/config/firebase.jsx` | `src/config/firebase.js` | P0.2 |
 | global rules in `Shop.css`, `FeaturedProducts.css` | `src/styles/base.css`, `components.css` | P0.3 |
 | `src/components/auth.jsx/.css` | `src/components/auth/SignInDialog.jsx/.css` | P0.4 |
@@ -190,7 +187,7 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 | 12 | `Footer.jsx` empty | Build footer | P0.6 | To do |
 | 13 | Header links have no `href`; current page removed; no mobile menu | `<NavLink>`, active state, four doors, mobile menu | P0.6 | To do |
 | 14 | Clickable `<div>`/`<article>`, unlabeled icon buttons, modal without focus trap/Escape | `<button>`/`<Link>`, `aria-label`, focus trap + Escape | P0.10 | To do |
-| 15 | Vite template leftovers; title "formcraft" | Delete; title "Formcraft" | P0.1 | To do |
+| 15 | Vite template leftovers; title "formcraft" | Delete; title "Formcraft" | P0.1 | Done (2026-10-09) |
 | 16 | `Shop.css` `:root`, global `.container`/`.section`/`.btn` leak | Move to `src/styles/`; prefix component classes | P0.3 | To do |
 | 17 | Firebase config inline, Analytics at load, `.jsx` extension | `firebase.js`, env vars, emulators in dev, Analytics in prod only | P0.2 | To do |
 | 18 | Firebase SDK ^11 | Update to current major | P0.2 | To do |
@@ -199,7 +196,7 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 
 | Task | Status |
 | --- | --- |
-| P0.1 Clean out | To do |
+| P0.1 Clean out | Done (2026-10-09) |
 | P0.2 Firebase config | To do |
 | P0.3 Brand base | To do |
 | P0.4 Auth | To do |
@@ -227,4 +224,5 @@ Newest first. One row per commit or task.
 
 | Date | Task | What changed | Files |
 | --- | --- | --- | --- |
+| 2026-10-09 | P0.1 | Deleted unused Vite template files (`App.css`, `assets/react.svg`, `assets/vite.svg`, `assets/hero.png`, `public/icons.svg`, template `README.md`). Page title is now "Formcraft". | `index.html`, deleted files |
 | 2026-10-09 | — | Decided to build on the existing React code. Baseline of this file written from a full read of the code. `build-plan.md` and `CLAUDE.md` moved from plain JS to React; Phase 0 added. No code changed yet. | `docs/build-plan.md`, `docs/current-code.md`, `CLAUDE.md` |
