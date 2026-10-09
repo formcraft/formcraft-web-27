@@ -8,19 +8,20 @@ Always follow the current build plan. When the plan and this file disagree, the 
 
 @docs/build-plan.md
 
-If the user says the plan changed, re-read `docs/build-plan.md` before continuing.
+If the user says the plan changed, re-read `docs/build-plan.md` before continuing. `docs/current-code.md` describes the code as it was when we decided to build on it, and lists the Phase 0 fixes in detail.
 
 ## Stack (do not change without asking)
 
-- Plain JavaScript ES modules, built with **Vite** as a **multi-page** site. No React, Vue or other framework; no TypeScript unless asked.
-- **Firebase**: Hosting, Auth, Firestore, Storage, Cloud Functions (Node, JavaScript). Use the modular Firebase JS SDK (`import { getFirestore } from "firebase/firestore"`), never the old namespaced `firebase.firestore()` style.
+- **React 19 + React Router + Vite**, a single-page app. JavaScript and JSX; no TypeScript, Next.js, Tailwind or UI kits unless asked.
+- **Firebase**: Hosting, Auth, Firestore, Storage, Cloud Functions (Node, JavaScript). Use the modular Firebase JS SDK (`import { getFirestore } from "firebase/firestore"`), never the old namespaced `firebase.firestore()` style. All Firebase setup lives in `src/config/firebase.js`; components import `auth`, `db`, `storage`, `functions` from there.
 - Payments: **Flutterwave** (MTN/Airtel mobile money + cards, UGX). Not Stripe.
-- Every new HTML page must be added to `build.rollupOptions.input` in `vite.config.js`.
+- Every new page gets a route in `src/routes.jsx` and is loaded with `React.lazy`.
 
 ## Commands
 
 ```bash
 npm run dev                 # local site, localhost:5173
+npm run lint                # oxlint
 firebase emulators:start    # Auth, Firestore, Functions, Storage locally
 npm run build               # build to dist/
 firebase deploy             # only when the user asks
@@ -39,7 +40,7 @@ Develop against the emulators. Never run `firebase deploy` or touch production d
 
 ## Brand (from Brand Guide v01)
 
-- Colours come only from `src/styles/tokens.css` (`--fc-navy`, `--fc-orange`, `--fc-rust`, `--fc-white`, `--fc-black`, plus division accents `--fc-studio`, `--fc-stores`, `--fc-construction`, `--fc-concrete`). Never hard-code other hex values.
+- Colours come only from `src/styles/tokens.css` (`--fc-navy`, `--fc-orange`, `--fc-rust`, `--fc-white`, `--fc-black`, plus division accents `--fc-studio`, `--fc-stores`, `--fc-construction`, `--fc-concrete`). Never hard-code other hex values, in CSS or in inline `style={{}}`.
 - Use #F1F1F1 instead of pure white and #171D1A instead of pure black.
 - Fonts: **Satoshi** for body and UI, **Clash Grotesk** for display headlines, self-hosted `.woff2` in `public/fonts/`. No other fonts.
 - Division pages keep the parent navy/orange and add only their own accent.
@@ -53,7 +54,11 @@ Quietly confident, plain, honest, no hard selling, contractions are fine. Profes
 
 ## Code style
 
-- Small modules in `src/js/`; shared UI in `src/js/components/`; page entry scripts in `src/pages/`.
-- Pages should still show their text and images without JavaScript; load interactive parts (cart, forms, counters, donate button) as modules.
-- Mobile first: test at 360px wide. Keep pages light for mobile data (WebP images, lazy loading).
-- Accessible by default: semantic HTML, labelled form fields, visible focus states, alt text on images.
+- Pages in `src/pages/` (`PageName.jsx` + `PageName.css`); shared layout in `src/components/layout/`; shop pieces in `src/components/shop/`; small reusable UI in `src/components/ui/`; app-wide state in `src/context/` (`AuthContext`, `CartContext`); helpers in `src/lib/`.
+- Function components and hooks only. Named exports for components (`export const Header = …`), matching the existing code.
+- One plain CSS file per component, classes prefixed with the component name (`.header-…`, `.cart-…`). Global styles only in `src/styles/` (`tokens.css`, `base.css`, `components.css`), imported once in `main.jsx`. No `:root` or bare `.btn` / `.container` rules in component CSS.
+- Get the signed-in user from `useAuth()`, not a `user` prop. Never block the whole site behind sign-in; only account, checkout, community posting and admin need it.
+- Navigation uses React Router `<Link>` / `<NavLink>` with real `href`s, never `<a onClick>` or clickable `<div>`s.
+- Each route sets its own `<title>` and meta description.
+- Mobile first: test at 360px wide, touch as well as mouse. Keep it light for mobile data (WebP images, `loading="lazy"`, lazy-loaded routes).
+- Accessible by default: semantic HTML, `<button>` for actions, labelled form fields and icon buttons, visible focus states, alt text, Escape closes modals and drawers.
