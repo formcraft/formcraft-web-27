@@ -1,0 +1,7 @@
+.about-timeline { list-style: none; margin: clamp(40px, 5vw, 64px) 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 16px; }
+.about-timeline li { display: flex; flex-direction: column; gap: 8px; }
+.about-person { overflow: hidden; height: 100%; }
+.about-statement { font-weight: 500; line-height: 1.3; text-wrap: pretty; }
+.about-values { list-style: none; padding: 0; margin: 0; }
+.about-audience { display: flex !important; flex-direction: column; gap: 12px; height: 100%; }
+.about-audience .link { margin-top: auto; align-self: flex-start; }

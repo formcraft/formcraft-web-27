@@ -8,8 +8,8 @@
 > - Claude Code updates this file **in the same commit** as any code change (see
 >   "How to keep this file up to date").
 >
-> Baseline written: 2026-10-09 from a full read of the code · Last updated: 2026-10-09
-> · Phase: **0, in progress** (2 of 10 tasks done)
+> Baseline written: 2026-10-09 from a full read of the code · Last updated: 2026-10-24
+> · Phase: **0 done, Phase 1 pages built** (branch `paper-edition`; not yet installed, linted or built — see `docs/handoff.md`)
 
 ---
 
@@ -53,38 +53,34 @@ Scripts: `npm run dev`, `npm run build`, `npm run lint`, `npm run preview`.
 ## File map (today)
 
 ```
-formcraft-web-27/   (repo root)
-├─ .gitignore                 # deps, builds, all .env files except .env.example, Firebase/service-account keys, logs, editor files
-├─ index.html                 # <div id="root">, loads src/main.jsx; title "Formcraft"
-├─ vite.config.js             # react() plugin only
-├─ .oxlintrc.json
-├─ public/favicon.svg         # still the Vite logo; replaced in P0.6
+formcraft-web-27/
+├─ index.html                 # picks the day/night edition before first paint; meta, font preloads
+├─ firebase.json  .firebaserc  firestore.rules  storage.rules  firestore.indexes.json  .env.example
+├─ docs/  build-plan.md  current-code.md  handoff.md (local install/lint/build checklist)
+├─ public/
+│  ├─ fonts/       Satoshi + Clash Grotesk variable .woff2
+│  ├─ logos/       official SVGs (navy + white), FC mark (also favicon.svg)
+│  ├─ textures/    paper, navy, black, orange paper textures (.webp)
+│  └─ images/      project renders + merch as WebP (1600 px and -800), fmc-sheet-a1.webp (A1 title block)
 └─ src/
-   ├─ main.jsx                # mounts <App/> in StrictMode
-   ├─ App.jsx                 # <AuthProvider> + router + header + routes
-   ├─ context/AuthContext.jsx # AuthProvider, useAuth(): user, isAdmin, loading, signIn, signOut, openSignIn
-   ├─ config/firebase.jsx     # initializeApp + exports auth; starts Analytics
+   ├─ main.jsx  App.jsx  routes.jsx
+   ├─ config/firebase.js
+   ├─ context/     AuthContext  ThemeContext  CartContext
+   ├─ styles/      tokens.css  fonts.css  base.css  components.css
+   ├─ data/        products.js  projects.js  sheets.js
+   ├─ hooks/       usePageMeta  useReveal  useDocument
+   ├─ lib/         money.js (formatUGX)  forms.js (messages, quotes + upload)  storage.js
    ├─ components/
-   │  ├─ Header.jsx/.css      # logo + nav + account dropdown
-   │  ├─ Footer.jsx           # EMPTY file
-   │  ├─ auth/SignInDialog.jsx/.css  # closable Google sign-in dialog (was components/auth.jsx)
-   │  ├─ data/products.jsx    # hard-coded products, collections, companies, testimonials
-   │  └─ craft/               # the shop page's sections
-   │     ├─ Hero.jsx/.css
-   │     ├─ FeaturedProducts.jsx/.css   # product grid + product modal
-   │     ├─ FeaturedCollections.jsx/.css
-   │     ├─ Companies.jsx/.css
-   │     ├─ CommunitySection.jsx/.css
-   │     ├─ Testimonials.jsx/.css
-   │     └─ Cart.jsx/.css               # floating draggable cart
-   ├─ pages/
-   │  ├─ Home.jsx/.css        # "/"
-   │  ├─ Services.jsx/.css    # "/services"
-   │  ├─ Portfolio.jsx/.css   # "/portfolio"
-   │  ├─ Shop.jsx/.css        # "/shop" (component is named CraftPage)
-   │  ├─ Blog.jsx/.css        # "/blog"
-   │  ├─ AboutUs.jsx/.css     # "/about"
-   │  └─ Construction.jsx/.css  # "under construction" placeholder, not routed
+   │  ├─ layout/   Layout  Header  Footer (title block)  DonateFab  PageSkeleton
+   │  ├─ page/     PageHero  Section  Photo
+   │  ├─ scene/    HotelScene (+ hotel/hotelDay.js, hotel/hotelNight.js, hotel/compat.js)
+   │  │            PaperLayers + sceneGeometry.js (paper silhouettes and page motifs)
+   │  ├─ shop/     ProductCard  CartButton  CartDrawer
+   │  ├─ forms/    QuoteForm
+   │  ├─ auth/     SignInDialog
+   │  └─ ui/       Icon  Logo  TornEdge  Reveal/Kinetic  Drawer
+   └─ pages/       Home  Studio  Construction  Concrete  Stores  ProductPage  Projects  ProjectPage
+                   About  Contact  ComingSoon  NotFound   (each .jsx + .css)
 ```
 
 ### Planned moves (Phase 0)
@@ -160,6 +156,15 @@ One plain `.css` file per component, no CSS modules or Tailwind. No shared token
 
 ---
 
+## How it works now (paper edition)
+
+- **Editions.** `data-theme="day|night"` on `<html>` switches every colour token. `index.html` sets it before paint (saved choice, else system setting); `ThemeContext` keeps it in sync, and the header switch saves the choice (localStorage, try/catch).
+- **Home.** `HotelScene` mounts a fixed full-screen canvas behind the page and lazy-loads one of two three.js scripts: `hotel/hotelDay.js` or `hotel/hotelNight.js`. They're ported from the owner's concept files: a four-storey hotel paper model on the Formcraft A1 sheet, half in design, half built, with a cutaway; drag to turn it. Sections with `data-cam="hero|chain|plan|work|dusk"` steer the camera as the page scrolls. The hero, value chain, site-plan band and closing doors are see-through windows; the other sections are paper sheets with torn edges. `hotel/compat.js` keeps the concept's light levels on current three.js (physical light units). Without WebGL, with reduced motion, on low-memory devices or with Save-Data on, `PaperLayers` shows instead.
+- **Other pages.** `PageHero` draws a layered paper landscape (`PaperLayers`) with a motif that fits the page: Studio `design` (building half cut from paper, half pencil drawing), Construction `construction` (frames and cranes), Concrete `precast` (gantry crane, beams, silos), Stores `workshop` (sawtooth shed, chimney smoke, logs, the armchair). Other pages use the `city` skyline. At night windows glow and stars come out; layers settle in on load and drift on scroll.
+- **Forms.** Contact → Firestore `messages`; Studio, Construction and Concrete use `QuoteForm` → `quotes` (optional drawing uploaded first to Storage `quotes/{id}/`). Without a Firebase config the forms show a "call us" message instead of failing silently.
+- **Shop.** `/stores` and `/stores/:slug` read `src/data/products.js`; cart in `CartContext`; checkout stays "coming soon" until Phase 3.
+- **Home counters** read `stats/public` with `useDocument` and show `[n]` until Cloud Functions write real numbers.
+
 ## What to keep
 
 - **React + React Router + Vite** and the one-file-per-page layout (`pages/X.jsx` + `X.css`).
@@ -177,25 +182,25 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 
 | # | Problem | Fix | Task | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Home, Services, About, Portfolio describe a form-builder SaaS | Rewrite from the Company Profile; `TODO:` where facts are missing (full rewrite in Phase 1) | P0.9 | To do |
+| 1 | Home, Services, About, Portfolio describe a form-builder SaaS | Rewrite from the Company Profile; `TODO:` where facts are missing (full rewrite in Phase 1) | P0.9 | Done (2026-10-24) |
 | 2 | Terracotta + Inter (shop) and `#4285F4` (Home) break the Brand Guide | `tokens.css` + fonts; replace hard-coded colours and inline styles | P0.3 | Done (2026-10-24) |
 | 3 | Emoji logo, Vite favicon | Formcraft SVG logo and FC mark from `public/logos/` | P0.6 | Done (2026-10-24) |
-| 4 | Invented testimonials, "Trusted by" logos, collection makers, blog posts | Remove; `TODO:` placeholders | P0.9 | To do |
+| 4 | Invented testimonials, "Trusted by" logos, collection makers, blog posts | Remove; `TODO:` placeholders | P0.9 | Done (2026-10-24) |
 | 5 | Prices in dollars | Whole UGX integers, `formatUGX` → "UGX 120,000" | P0.7 | Done (2026-10-24) |
 | 6 | Forced sign-in overlay after 2 s, can't be closed | Remove auto-popup; sign-in on demand, closable | P0.4 | Done (2026-10-09) |
 | 7 | Cart lost on navigation; Checkout dead; mouse-only drag | `CartContext` + localStorage; fixed touch-friendly button; Checkout "Coming soon" until Phase 3 | P0.8 | Done (2026-10-24) |
 | 8 | Products reshuffle every 14 s | Stable order | P0.7 | Done (2026-10-24) |
-| 9 | Buttons that do nothing (Home cards, Explore, Join, Donate, Settings, Read Our Story) | Real routes or remove | P0.9 | To do |
+| 9 | Buttons that do nothing (Home cards, Explore, Join, Donate, Settings, Read Our Story) | Real routes or remove | P0.9 | Done (2026-10-24) |
 | 10 | Blank screen until auth answers | Render immediately; gate only what needs the user | P0.4 | Done (2026-10-09) |
 | 11 | Routes don't match the site map; no 404; `Construction.jsx` name clash | `routes.jsx`, redirects, `NotFound`, `ComingSoon.jsx` | P0.5 | Done (2026-10-24) |
 | 12 | `Footer.jsx` empty | Build footer | P0.6 | Done (2026-10-24) |
 | 13 | Header links have no `href`; current page removed; no mobile menu | `<NavLink>`, active state, four doors, mobile menu | P0.6 | Done (2026-10-24) |
-| 14 | Clickable `<div>`/`<article>`, unlabeled icon buttons, modal without focus trap/Escape | `<button>`/`<Link>`, `aria-label`, focus trap + Escape | P0.10 | To do |
+| 14 | Clickable `<div>`/`<article>`, unlabeled icon buttons, modal without focus trap/Escape | `<button>`/`<Link>`, `aria-label`, focus trap + Escape | P0.10 | Done (2026-10-24) |
 | 15 | Vite template leftovers; title "formcraft" | Delete; title "Formcraft" | P0.1 | Done (2026-10-09) |
 | 16 | `Shop.css` `:root`, global `.container`/`.section`/`.btn` leak | Move to `src/styles/`; prefix component classes | P0.3 | Done (2026-10-24) |
 | 17 | Firebase config inline, Analytics at load, `.jsx` extension | `firebase.js`, env vars, emulators in dev, Analytics in prod only | P0.2 | Done (2026-10-24) |
 | 18 | Firebase SDK ^11 | Update to current major | P0.2 | Done (2026-10-24) |
-| 19 | External placeholder images (Unsplash, via.placeholder.com, pravatar.cc) | Formcraft photos or `TODO:`; WebP, `loading="lazy"` | P0.9 | To do |
+| 19 | External placeholder images (Unsplash, via.placeholder.com, pravatar.cc) | Formcraft photos or `TODO:`; WebP, `loading="lazy"` | P0.9 | Done (2026-10-24) |
 | 20 | No `firebase.json`, rules, functions, `.env.example`, CI | Set up per plan (SPA rewrite) | P0.2 | Done (2026-10-24) |
 
 | Task | Status |
@@ -208,8 +213,8 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 | P0.6 Header and footer | Done (2026-10-24) |
 | P0.7 Shop → Stores | Done (2026-10-24) |
 | P0.8 Cart | Done (2026-10-24) |
-| P0.9 Honest content | To do |
-| P0.10 Accessibility | To do |
+| P0.9 Honest content | Done (2026-10-24) |
+| P0.10 Accessibility | Done (2026-10-24) |
 
 ---
 
@@ -230,6 +235,7 @@ Newest first. One row per commit or task.
 
 | Date | Task | What changed | Files |
 | --- | --- | --- | --- |
+| 2026-10-24 | P0.9, P0.10, Phase 1 | Home rebuilt around the owner's three.js hotel model (day and night scripts ported from the concept files, lazy-loaded, camera driven by `data-cam` sections, drag to turn) with a paper-landscape fallback. Division pages get paper hero scenes with page motifs (design, construction, precast, workshop). New pages: Studio (process, package, rates, live fee calculator, BIM, 1D–7D, quote form), Construction (how we build, template builds, start a build), Concrete (products, green concrete, B2B supply), About, Projects (filter) and project pages, Contact (form to `messages`). All copy from the Company Profile and earlier designs; missing facts are `TODO:`. Old form-builder pages and invented content removed. Real `<Link>`s, labelled icon buttons, native dialogs (Escape, focus return). | `src/pages/*`, `src/components/scene/*`, `src/components/forms/*`, `src/data/projects.js`, `src/lib/forms.js`, `public/images/*` |
 | 2026-10-24 | P0.7, P0.8 | Shop → Stores: `/stores` (`pages/Stores.jsx`: hero, collection with category filter, community, made to order) and `/stores/:slug` (`pages/ProductPage.jsx`). `src/data/products.js` holds the real Formcraft merch (oak armchair, desk organiser, tote, bottle, helmet, vest) in the Firestore shape, `priceUGX: null` until real prices exist; `formatUGX` shows "UGX [price]" for those. `CartContext` (`useCart()`): `{ productId, color, size, qty }` lines only, same-options merge, localStorage via `lib/storage.js`. `CartButton` in the header and `CartDrawer` (native dialog, quantities, remove, Checkout "coming soon"). Old `components/craft/*`, `components/data/products.jsx`, `pages/Shop.*` removed (invented testimonials and logos went with them). | `src/pages/Stores.*`, `src/pages/ProductPage.*`, `src/components/shop/*`, `src/context/CartContext.jsx`, `src/data/products.js`, `src/lib/money.js` |
 | 2026-10-24 | P0.5, P0.6 | `src/routes.jsx`: every page lazy-loaded, redirects (`/shop`, `/portfolio`, `/services`, `/blog`), 404, `ComingSoon` for later-phase routes (was `pages/Construction.jsx`). `App.jsx`: Theme, Auth and Cart providers, `<Suspense>` with `PageSkeleton`. `components/layout/`: `Layout` (skip link, scroll and focus on navigation), `Header` (logo SVG, `<NavLink>` four-door groups with disclosure panels, mobile menu drawer, day/night switch, cart, account/sign-in, quote button), `Footer` (drawing title block with a sheet number per page), `DonateFab` (plant-a-tree drawer; payment off until a partner and price are agreed). Page shell pieces in `components/page/` (`PageHero`, `Section`, `Photo`). Old `components/Header.*` and `Footer.jsx` removed. Sign-in dialog restyled with tokens. | `src/routes.jsx`, `src/App.jsx`, `src/components/layout/*`, `src/components/page/*`, `src/pages/ComingSoon.jsx`, `src/pages/NotFound.jsx` |
 | 2026-10-24 | P0.3 | Paper design system with **day and night editions**: `src/styles/tokens.css` (brand colours + every derived value; theme variables switch on `data-theme` on `<html>`), `fonts.css` (self-hosted Satoshi and Clash Grotesk variable `.woff2`), `base.css` (reset, layout helpers, type scale, motion, reduced motion), `components.css` (buttons, paper cards, photos, tags, forms, tables, torn edges). `ThemeContext` (`useTheme()`), theme picked before paint in `index.html`. UI pieces in `components/ui/`: `Icon`, `Logo`, `TornEdge`, `Reveal`/`Kinetic`, `Drawer` (native `<dialog>`). Hooks `useReveal`, `usePageMeta`; `lib/money.js` (`formatUGX`), `lib/storage.js`. Assets in `public/` (fonts, logos, textures, WebP renders); favicon is the FC mark. | `src/styles/*`, `src/context/ThemeContext.jsx`, `src/components/ui/*`, `src/hooks/*`, `src/lib/*`, `index.html`, `src/main.jsx`, `public/*` |

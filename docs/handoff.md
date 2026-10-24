@@ -15,11 +15,14 @@ Phase 0 finished plus Phase 1 pages, in the new **paper-cut** design:
   rust sky glow, moon, lit windows). `data-theme="day|night"` on `<html>`, set before paint by a
   small script in `index.html`. It follows the visitor's system setting until they press the
   header switch, then the choice is kept in `localStorage` (wrapped in try/catch).
-- **three.js hero** (`src/components/scene/PaperScene.jsx`): layered, extruded paper shapes
-  (Kampala hills, skyline, crane, sun or moon) that move with the pointer or a tilted phone.
-  Loaded with `React.lazy` + dynamic `import("three")` only on pages that use it. Falls back
-  to an SVG layered scene (`PaperSceneFallback.jsx`) when WebGL is missing,
-  `prefers-reduced-motion` is set, the device is low-memory, or Save-Data is on.
+- **Home: the three.js hotel model** (`src/components/scene/HotelScene.jsx` +
+  `hotel/hotelDay.js` / `hotel/hotelNight.js`), ported from the owner's two concept files
+  (three.js r128) to three ^0.184: colour management off for the ported code, lights converted
+  from legacy to physical units in `hotel/compat.js`, `Clock` → `Timer`. Fixed canvas behind the
+  page; `data-cam` sections drive the camera; drag to turn. Falls back to the SVG paper scene
+  (`PaperLayers`) without WebGL, with reduced motion, low memory or Save-Data.
+- **Other pages: paper silhouette heroes** (`PaperLayers` + `sceneGeometry.js`) with a motif per
+  page: Studio `design`, Construction `construction`, Concrete `precast`, Stores `workshop`.
 - Paper textures (`public/textures/*.webp`), torn-edge section sheets, and a drawing
   **title-block footer** with a sheet number per page.
 - Brand assets in `public/`: `fonts/` (Satoshi + Clash Grotesk variable `.woff2`), `logos/`
@@ -43,9 +46,13 @@ Phase 0 finished plus Phase 1 pages, in the new **paper-cut** design:
    drawer → quantities), a product page, Projects (filter), a project page, About, Contact, the
    404 page and the plant-a-tree button. Keyboard: Tab through the header, menu, cart drawer and
    dialogs; Escape closes them and focus returns to the button that opened them.
-6. **three.js check.** On Home the hero scene renders, follows the pointer, swaps day ↔ night
-   lighting without reloading, and stops animating when the tab is hidden or the hero scrolls out
-   of view. With "reduce motion" on, the SVG fallback shows instead.
+6. **three.js check.** On Home the hotel model renders in both editions (switching swaps the
+   day/night script without a reload), the tags sit on the model, dragging turns it, and the
+   camera moves at the value chain, the site-plan band, the flagship work and the closing doors.
+   Compare against the owner's concept files: if the night lighting reads darker or brighter than
+   the concept, adjust `LEGACY_SAMPLE` in `hotel/compat.js` (it scales point and spot lights).
+   With "reduce motion" on, the paper landscape shows instead. Check frame rate on a mid-range
+   Android phone; if it struggles, lower the shadow map size in the scripts' `SM` variable.
 7. **Emulators (optional now, needed for forms).** `npm install -g firebase-tools`,
    `firebase emulators:start`, set `VITE_USE_EMULATORS=true`, send the Contact form and confirm a
    `messages` doc appears with `createdAt` set by the server.

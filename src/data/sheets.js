@@ -8,4 +8,12 @@ export const SHEETS = {
     "/about": ["A301", "About"],
     "/contact": ["A304", "Contact"],
     "/stores": ["S101", "Stores"],
+    "/community": ["C101", "Community"],
+    "/academy": ["C102", "Academy"],
+    "/invest": ["I101", "Invest"],
+    "/donate": ["I104", "Plant a tree"],
+    "/donate/thank-you": ["I105", "Thank you"],
+    "/account": ["U101", "Your account"],
+    "/admin": ["U103", "Admin"],
+    "/journal": ["A302", "Journal"],
 };

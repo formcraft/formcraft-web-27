@@ -1,0 +1,6 @@
+.concrete-product { overflow: hidden; height: 100%; }
+.concrete-sketch {
+  width: 100%; aspect-ratio: 176 / 120; padding: 18px; display: block;
+  background: repeating-linear-gradient(0deg, transparent 0 19px, var(--line) 19px 20px), repeating-linear-gradient(90deg, transparent 0 19px, var(--line) 19px 20px), var(--sheet-2);
+}
+.concrete-sketch g { fill: var(--fc-concrete); stroke: var(--ink); stroke-width: 1.4; filter: drop-shadow(3px 4px 0 var(--sh-2)); }

@@ -1,0 +1,12 @@
+.hotel-scene { position: fixed; inset: 0; z-index: 0; background: var(--ground); }
+.hotel-scene-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; cursor: grab; opacity: 0; transition: opacity .9s ease; -webkit-tap-highlight-color: transparent; }
+.hotel-scene.is-ready .hotel-scene-canvas { opacity: 1; }
+.grabbing .hotel-scene-canvas { cursor: grabbing; }
+.grabbing, .grabbing * { user-select: none; }
+.hotel-scene-fallback { position: absolute; left: 0; right: 0; bottom: 0; }
+.hotel-tags { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+.hotel-tags > div { position: absolute; left: 0; top: 0; opacity: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; white-space: nowrap; transition: opacity .3s; }
+.hotel-tags b { font: 700 11px/1.2 var(--fc-font-body); letter-spacing: .14em; text-transform: uppercase; padding: 7px 11px; background: var(--fc-navy); color: var(--fc-orange); box-shadow: 0 6px 16px var(--sh-2); }
+.hotel-tags i { display: block; width: 1px; height: 26px; background: var(--ink); }
+.hotel-tags small { font: 500 11px/1.2 var(--fc-font-body); color: var(--ink); background: var(--head-bg); padding: 3px 6px; }
+@media (max-width: 700px) { .hotel-tags small { display: none; } .hotel-tags i { height: 16px; } }

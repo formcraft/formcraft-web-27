@@ -6,7 +6,7 @@ import "./PageHero.css";
 
 // Opening sheet for inner pages: crumbs, division lockup, headline, lead, actions, and a
 // shallow paper landscape whose front hill takes the division colour.
-export const PageHero = ({ eyebrow, title, lead, children, brand, sheet, crumbs, seed = 21, sceneHeight = 300, city = true }) => (
+export const PageHero = ({ eyebrow, title, lead, children, brand, sheet, crumbs, seed = 21, sceneHeight = 300, city = true, motif = "city" }) => (
     <section className="page-hero">
         <div className="wrap page-hero-copy">
             {crumbs && (
@@ -36,6 +36,6 @@ export const PageHero = ({ eyebrow, title, lead, children, brand, sheet, crumbs,
                 </p>
             )}
         </div>
-        <PaperLayers seed={seed} height={sceneHeight} city={city} tall={0.7} sun={{ x: 1180, y: 70, r: 40 }} accent={Boolean(brand)} className="page-hero-scene" />
+        <PaperLayers seed={seed} height={sceneHeight} city={city} motif={motif} tall={motif === "city" ? 0.7 : 0.85} sun={{ x: 1180, y: 70, r: 40 }} accent={Boolean(brand)} className="page-hero-scene" />
     </section>
 );

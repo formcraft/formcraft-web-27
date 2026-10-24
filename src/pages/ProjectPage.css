@@ -1,0 +1,5 @@
+.project-page-head { display: flex; flex-direction: column; gap: 20px; padding-block: clamp(40px, 6vw, 88px) 36px; }
+.project-page-hero { margin-bottom: clamp(56px, 7vw, 96px); }
+.project-page-facts { margin: 0 0 clamp(36px, 5vw, 56px); }
+.project-page-facts dd { margin: 0; }
+.project-page-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: clamp(20px, 3vw, 40px); }

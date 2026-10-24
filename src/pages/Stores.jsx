@@ -17,7 +17,7 @@ export const Stores = () => {
 
     return (
         <div className="stores" data-division="stores">
-            <PageHero brand="stores" title="Made in our Kampala workshop." sheet="S101" seed={91} crumbs={[["/", "Home"], [null, "Stores"]]}
+            <PageHero motif="workshop" sceneHeight={360} brand="stores" title="Made in our Kampala workshop." sheet="S101" seed={91} crumbs={[["/", "Home"], [null, "Stores"]]}
                 lead="Furniture, joinery and everyday goods, built by the same hands that fit out our buildings. Pay by mobile money or card.">
                 <a href="#collection" className="btn btn-primary">Shop the collection <Icon name="arrow" size={18} /></a>
                 <a href="#custom" className="btn btn-line">Order something custom</a>

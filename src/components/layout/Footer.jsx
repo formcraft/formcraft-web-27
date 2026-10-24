@@ -11,7 +11,7 @@ const sheetFor = (pathname) => {
     if (SHEETS[pathname]) return SHEETS[pathname];
     if (pathname.startsWith("/stores/")) return ["S102", "Stores · product"];
     if (pathname.startsWith("/projects/")) return ["A202", "Projects · case study"];
-    return ["X000", "Formcraft"];
+    return ["X404", "Page not found"];
 };
 
 export const Footer = () => {
