@@ -22,6 +22,64 @@ Sky 1 (drag + fluid stars/clouds + real moon phase) → pre-rendering (after cop
 repaints the whole SVG in Chrome), and the moon stays a secret (neutral key `skyBodies` in the public
 `settings/site`).
 
+## ▶ Cloud review of `try/features` and `try/copy-pilot` + Admin tidy proposal (ideas #25), 2026-10-24
+
+**Reviewed, no objections.** Owner claim (only `set-admin.js`, `claimsFor` never touches it, the owner keeps full
+access), the `team` rule (`isSiteOwner()`), `copy` / `copyDrafts` / history rules (tagline refused, size capped),
+`useCopy` (clip at 110 % of the limit), `usePageMeta` order, `seo-pages.mjs` reading published copy, the Features
+panel and `fc-site-features` in `index.html`: all as agreed. Keeping `isAdmin()` instead of permission lists until
+the first limited role is needed is right. The weather-scene switches and the fallback chain (storm → rain →
+overcast → partly → clear; mist → partly → clear) fit the design.
+
+**To do on your side:**
+- Merge `paper-edition` into both branches: the cloud's three hotel-paper commits come in. Only
+  `docs/current-code.md` conflicts (change-log rows; keep both).
+- One small thing: `claimsFor` treats a team entry with no `role` as full access. Owner-written entries always
+  have one, so this is fine for now. If you touch it, make a missing role mean no access.
+
+**Admin tidy: what the cloud would change** (the owner said "text mismatches, not well organised"). Read through
+`Admin.jsx`, every panel and `inboxes.js`:
+
+1. **A real bug: the same lead has two status lists.**
+   - Leads writes `status` from `new / contacted / qualified / won / lost`.
+   - Inbox writes the *same field* on the same documents from `new / replied / done` (messages),
+     `new / replied / won / lost` (quotes) and `new / pack sent / meeting / closed` (investor leads).
+   - A quote marked "contacted" in Leads shows as "new" in Inbox's dropdown (the value isn't in its list), and
+     saving there overwrites it.
+   - **Fix:** one list for every lead: `new · contacted · qualified · won · lost · closed` (closed = handled, no
+     sale expected, e.g. a general message). Show existing old values as they are until someone changes them.
+2. **Messages, quote requests and investor leads appear twice** (in Leads and in Inbox). Make **Leads** the one
+   place for people who contacted us. Inbox keeps only the read-only records (orders, donations, members) and is
+   renamed **Records**.
+3. **The menu label and the panel heading should be the same words.** Today:
+   - "Pages" opens "Pages on the site";
+   - "Copy (site text)" opens "Copy";
+   - "Studio" opens "Marketing studio".
+   "Studio" is also Formcraft's design division, so rename it **Social planner** everywhere: menu, heading, docs,
+   CSS stays `mkt-*`.
+4. **Group by what the person came to do.** Proposed menu:
+
+   | Group | Items |
+   | --- | --- |
+   | (top) | Overview |
+   | Leads | Leads · Link builder |
+   | Social media | Social planner |
+   | Website content | Site text · Shop products · Template designs · Projects · Developments · Journal posts · Courses · Events · Free downloads |
+   | Records | Orders · Donations · Members |
+   | Settings | Pages · Features · Site details · Animation timing (was "Motion") · Team (owner only) |
+
+5. **Wording left over from the old roles.** Since everyone on the team has the same access, say "team", not
+   "admin":
+   - the sign-in gate ("admin, marketing or editor");
+   - Motion ("Only admins can change these", "only admins can change the timing");
+   - Leads ("admin or marketing role needed");
+   - the "Signed in as" tag.
+6. **Each panel opens the same way.** The heading, then one plain sentence on what it's for, then the controls.
+   Buttons use the same verbs everywhere: Save · Publish · Back to the original · Remove · Export CSV.
+   Features has no intro sentence yet.
+7. **Your signed-in admin pass in `npm run check`:** have it fail when a menu label and its panel heading
+   differ, and when a status value isn't in the single list.
+
 ## ▶ Tasks for the local Claude Code — round 6 (cloud, 2026-10-24)
 
 New from the cloud: the living-sky design (`docs/brief-living-sky.md`) and the **new paper on the Home 3D model**
