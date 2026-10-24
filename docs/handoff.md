@@ -147,43 +147,72 @@ screen tall.
 
 ## From the local machine (for the cloud session)
 
-Latest: 2026-10-24, **round 4** (checked `d9d6802`). Draft PR: https://github.com/formcraft/formcraft-web-27/pull/1
+Latest: 2026-10-24, **round 4 on `a5c5955`** (your task list). Draft PR: https://github.com/formcraft/formcraft-web-27/pull/1
+Tasks 1–3 are done; 4 was checked on `d9d6802` (the intro code hasn't changed since); 5–7 are next.
 
-**Not answered yet:** `docs/owner-brief-hero-and-speed.md` (the owner's brief: landscape and sky first,
-building fades in, Home's own sky plus one shared sky, Front/Back/Cutaway/Site views and zoom, device
-levels). Your round 4 crossed with it. Please answer it per section in your next reply and assign the local tasks.
+### Owner, on the still → live handover (2026-10-24, please treat as a requirement)
 
-**Round 4 results**
-1. **Lint** passes (3 `only-export-components` warnings: `page/Photo.jsx:6`, `scene/HotelScene.jsx:58`,
-   `admin/InboxPanel.jsx:14`). **Build** passes: main JS **80 kB** gz; three.js (140 kB) and the Firestore
-   SDK (162 kB) are still separate, not preloaded. `functions/`: `npm --prefix functions install` OK,
-   `node --check` OK; `functions/package-lock.json` committed.
-2. **Opening animation**, tested with `navigator.webdriver` hidden (Edge, 360 and 1440, both editions):
-   - Modes are right: full on the first visit, none on a reload in the same tab, quick in a new tab,
-     fade with reduced motion. A tap at 0.4 s cuts full from about 3.5 s to 1.8–2.3 s.
-   - **Landing:** the mark ends on the header logo in 7 of 8 runs (0 px off). In 360 night quick it ends
-     4–5 px off and slightly too large (26 vs 19 px tall), because it was removed before its 0.5 s fly
-     finished.
-   - **Night first visit takes 9–11 s** (day about 3.5 s). At 1440 night the tear starts at 1.5 s, but the
-     overlay only leaves at 11.2 s: its timers can't run while the night scene is being built (the
-     main-thread freeze from round 3). So the opening sits frozen mid-tear. Building the scene in
-     small steps (brief §4) fixes this as well. Until then, consider starting the 3D only after the
-     opening has finished (`fci` removed).
-3. **Real phone:** not done yet (owner).
-4. **Stills re-rendered on the real GPU** (NVIDIA Quadro T1000) and committed: same sizes and WebP
-   quality 72; 39–84 kB each.
-   - `scripts/render-hotel-stills.mjs` needed three changes to work here:
-     a) Windows gives browsers the Intel iGPU unless Chromium gets `--force_high_performance_gpu`;
-     b) a headed window adds a **scrollbar strip** to the screenshot; hide it
-        (`html{scrollbar-width:none}`);
-     c) `python3`/Pillow isn't available on this machine, so `sharp` was used for WebP.
-     Worth putting a), b) and a Node-only conversion into the script.
-   - **The moon follows the Kampala clock**, so a still taken at one hour won't match the live scene at
-     another. The old portrait-night still has the moon top left; the new one has none. Make the
-     `?still=1` frame and the live first frame use the same sky (fixed moon/sun position, or no moon
-     in both), or the handover will jump.
-   - **The background panel's edge shows** on the left of both landscape stills (the flat torn-paper sky
-     ends in a hard vertical edge). Part of the landscape/sky work in the brief.
+> The blend between the picture and the 3D model should be seamless. It should not wait for a click,
+> except maybe on a device that is very slow. The angle the image is taken from should be the angle the
+> 3D model fades in at, and then it starts moving the way it does, fluidly. It should be hard for anyone
+> to tell there was a still image; by the time someone looks twice, the 3D should have loaded.
+
+**Measured on this PC (NVIDIA, live level, day, 1600 × 1000):** the still and the first live frame differ by
+**0.6 %** on average. The building, its angle and its light don't move at the switch, so the requirement is
+met here. Three things still give it away:
+1. The **labels** ("Built", "Cutaway") appear all at once with the live canvas. Fade them in after the
+   handover.
+2. The **floating paper scraps** sit in different places in the still and the live frame (they drift).
+   Start them from the positions in the still, or leave them out of the still.
+3. After the fade the model **barely moves** (2 % change in 3 s). If the owner expects it to start
+   turning on its own, give it a slow idle turn from the still's angle.
+
+Also keep in mind: the night sky follows the Kampala clock, so a night still taken at one hour won't match
+the live sky at another (see the round-4 notes below).
+
+On this machine the live 3D started automatically on both GPUs (Intel and NVIDIA) with no stored level;
+"Tap to explore" wasn't needed.
+
+### Round 4 results
+
+1. **Lint and build:** both pass. Main JS **80 kB** gz. three.js (140 kB) and the Firestore SDK (162 kB) are
+   separate and not preloaded. Three `only-export-components` warnings: `admin/InboxPanel.jsx:14`,
+   `page/Photo.jsx:6`, `scene/HotelScene.jsx:77` (new). None is a plain mistake, so I left them for you.
+2. **Home freeze, before → after.** `fc-3d-level` forced to full; preview build; intro skipped.
+
+   | Setup | Model shown | Longest task (round 3: 8.1 s) | Blocked before model | Frame rate |
+   | --- | --- | --- | --- | --- |
+   | Headless Edge (Intel UHD 630), fast | 3.2 s | **0.91 s** | 1.6 s | 34 fps |
+   | Headless, 3G + 4× CPU | 11.6 s | **1.27 s** | 4.1 s | 15 fps |
+   | Visible Edge, NVIDIA Quadro T1000 | 4.4 s | **0.80 s** | 1.9 s | 29 fps |
+
+   (Correction to rounds 2–3: headless Edge here uses the Intel GPU, not software WebGL.)
+
+   **Where the remaining long task is** (CPU profile of the longest main-thread task, dev build for real names):
+   - *Intel run, 587 ms:* the **first `WebGLRenderer.render`** in `frame` (`hotelDay.js:1722`). 80 % is
+     `WebGLProgram.getUniforms → onFirstUse`: program link status and uniforms resolved synchronously at first
+     use. 30 % of the task is under `WebGLShadowMap.render`. So the shadow-depth programs (and any program
+     whose defines change at the first frame) aren't covered by `compileAsync`. Warm them too (compile with
+     the shadow pass included, or draw the first frame with shadows off and turn them on a frame later).
+   - *NVIDIA run, 691 ms:* the start of `createHotelScene`. 43 % is `getContext` (context creation, slow on
+     this driver), and about 49 % is **`canvasTex` (`hotelDay.js:121`) generating paper noise in JS on the
+     main thread** (`pulp` :150, `hash` :90, `vnoise` :94, `fbm` :100). The WebP paper textures added in
+     `d9d6802` could replace this, or generate it in a worker or smaller.
+3. **Stills:** re-rendered from `a5c5955` on the NVIDIA GPU and committed (`818221a` and the follow-up).
+   `scripts/render-hotel-stills.mjs` needs these to work on Windows:
+   a) `--force_high_performance_gpu` (otherwise the Intel iGPU is used);
+   b) hide the scrollbar (`html{scrollbar-width:none}`), or the headed window adds a grey strip;
+   c) a Node-only WebP step (no `python3` here; I used `sharp`).
+4. **Opening animation** (Edge, `navigator.webdriver` hidden, 360 and 1440, both editions):
+   - Modes are right: full, then none on the same tab, quick on a new tab, fade with reduced motion.
+     A tap cuts full from about 3.5 s to about 2 s.
+   - The mark lands on the header logo in 7 of 8 runs (0 px off). 360 night quick ends 4–5 px off, because
+     it's removed before its 0.5 s fly finishes.
+   - **Night first visit took 9–11 s** (day about 3.5 s): the tear starts at 1.5 s, but the overlay's timers
+     didn't run while the night scene was built. Re-check after the build fixes above. Consider starting
+     the 3D only after `#fci` is gone.
+   - Not checkable from automation: whether there's a visible flash of the page before the sheet. That
+     needs the owner's eyes (task 7).
 
 ## From the cloud session (reply)
 
