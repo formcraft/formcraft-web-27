@@ -67,40 +67,37 @@ Phase 0 finished plus Phase 1 pages, in the new **paper-cut** design:
 | --- | --- | --- |
 | 1 Install | ☑ 2026-10-24 | three 0.184.0, firebase 12.19.0. `npm audit fix` (patch/minor only). Left: 4 high in `@grpc/grpc-js` (Node-only, via firebase) and 2 moderate in react-router 6 (fix needs v7). npm skipped the postinstall scripts of `@firebase/util` and `protobufjs`; not needed for the Vite build. |
 | 2 Firebase env | ☑ 2026-10-24 | `.env.local` from the old `fromcraft-2026` config. `VITE_FUNCTIONS_REGION` left empty (TODO: region open question). |
-| 3 Lint | ☐ re-run | Passes; 1 warning (`useAuth` exported beside `AuthProvider`, hot reload only). |
-| 4 Build | ☐ re-run | Passes. Main JS 220.7 kB gzipped, mostly Firebase loaded eagerly in `config/firebase.js`; trim before adding pages. No three.js chunk yet (nothing imports it). Re-check when the scene lands. |
-| 5 Check by eye | ☐ | Ready: layout, shop and Phase 1 pages are pushed. |
-| 6 three.js | ☐ | Ready: Home now runs the owner's hotel model (`HotelScene`). |
-| 7 Emulators | ☑ 2026-10-24 (partial) | firebase-tools 15.34.1 and Java 21 (Temurin) installed; Auth, Firestore and Storage emulators start. Firestore moved to port **8081** (8080 is the Revit MCP plugin). Contact form test waits for the Contact page. |
+| 3 Lint | ☑ 2026-10-24 (re-run) | Passes; 1 warning: `Header.jsx:12` exports something beside the component (`only-export-components`, hot reload only). |
+| 4 Build | ☑ 2026-10-24 (re-run) | Passes. Main JS **97.4 kB** gzipped (was 220.7). First visit: main + `Logo` chunk 12.8 kB + CSS 7.2 kB. three.js (`compat-*.js`, 141.7 kB gz) and Firestore (164.6 kB gz) are separate lazy chunks. |
+| 5 Check by eye | ☑ 2026-10-24 | All routes at 360/768/1440, day and night: no sideways scroll, titles and h1 set, no page errors. Menu, cart drawer and plant-a-tree drawer open and close with Escape, focus returns. Theme choice persists. Cart survives navigation. Old URLs redirect. Issues listed below. |
+| 6 three.js | ☑ 2026-10-24 (partial) | Hotel scene renders in day and night. Reduced motion: no canvas, SVG fallback, three.js not downloaded. Not tested: pointer follow, pause when hidden/scrolled out (needs a real browser). |
+| 7 Emulators | ☑ 2026-10-24 | Contact → `messages` doc and Studio quote → `quotes` doc in the emulator, `createdAt` set by the server. Firestore on port 8081. |
 | 8 Docs | ☑ 2026-10-24 | `current-code.md` status line, known issues, change log. |
 | 9 PR | ☑ 2026-10-24 | Opened as a draft (branch still being written). Not merged or deployed. |
 
 ## From the local machine (for the cloud session)
 
-Latest: 2026-10-24, commits `384e9fd` and `a5d3fe3`. Draft PR: https://github.com/formcraft/formcraft-web-27/pull/1
+Latest: 2026-10-24, round 2 (checked everything up to `87d5901`). Draft PR: https://github.com/formcraft/formcraft-web-27/pull/1
 
-**Done locally**
-- `npm install` → `package-lock.json` committed (three 0.184.0, firebase 12.19.0); `npm audit fix`
-  (patch/minor only: vite 8.3.5, react-router-dom 6.30.6).
-- `.env.local` filled from the old `fromcraft-2026` config (not committed). `VITE_FUNCTIONS_REGION` empty.
-- `firebase-tools` 15.34.1 and Java 21 installed; Auth, Firestore and Storage emulators start.
-- **Firestore emulator moved to port 8081** in `firebase.json` and `src/config/firebase.js`
-  (and the setup snippet in `build-plan.md`). 8080 belongs to the Revit MCP plugin on this machine.
-  Keep 8081 in anything you write that talks to the emulator.
+Round 1 (install, `.env.local`, tools, Firestore emulator on 8081) is done; your bundle, lint and
+line-ending fixes all check out. Results are in the status table above.
+
+**Fixed locally in this round**
+- **Keyboard focus on first load.** `Layout.jsx` moved focus to `<main>` on every page load, so the
+  first Tab skipped the skip link and the whole header. It now moves focus only after navigating
+  (compares the previous address, so StrictMode's double effect doesn't trigger it). First Tab now
+  goes: Skip to content → logo → Hire us → Shop.
 
 **Please handle in your next commits**
-1. **Bundle size.** Main JS is already 220.7 kB gzipped (limit 250 kB) before three.js or the new
-   pages. Most of it is Firebase: `config/firebase.js` imports Auth, Firestore, Storage and
-   Functions up front for every page. Load Firestore, Storage and Functions only on the pages that
-   need them (the plan asks for this), and keep `three` in its own lazy chunk.
-2. **Lint warning** in `context/AuthContext.jsx` (`only-export-components`, because `useAuth` sits
-   beside `AuthProvider`). Harmless; move `useAuth` to `src/hooks/useAuth.js` only if you want it
-   gone.
-3. **Line endings.** Git on this machine converts LF to CRLF on checkout. Consider a
-   `.gitattributes` with `* text=auto eol=lf` so diffs stay clean on both sides.
-
-**Waiting on you:** steps 5 and 6 (pages by eye, three.js) and the Contact form test in step 7.
-Push the next task and tell the owner; the local side will pull and run the checks.
+1. **Home at 360 px:** the "Drag to turn the model" badge sits on top of the
+   "Design & construction · Kampala, Uganda" eyebrow. Move it into the model area or hide it on small
+   screens.
+2. **Studio at 360 px:** the process table is 603 px wide. The page doesn't scroll sideways, so it's
+   inside a scroll box; check that box is obvious (shadow or hint) and reachable by keyboard
+   (`tabIndex={0}`, `role="region"`, `aria-label`).
+3. **Lint warning:** `components/layout/Header.jsx:12` exports a non-component beside `Header`.
+4. **Prices:** products show `UGX [price]` — fine as a placeholder, just confirming it's intended until
+   the real prices arrive.
 
 ## From the cloud session (reply)
 
