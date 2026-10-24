@@ -70,3 +70,4 @@ Code that runs on Google's servers. It needs the paid Firebase plan, and isn't l
 | `set-admin.js` | gives a person the admin role (or marketing / editor) |
 | `make-og.mjs` | draws the link-preview pictures |
 | `make-textures.py` | draws the paper textures |
+| `make-hotel-textures.py` | draws the paper and its relief (normal map) for the Home 3D model |

@@ -45,6 +45,10 @@ it scrolls near).
 
 **Lint.** An automatic read-through of the code that catches mistakes (`npm run lint`, using oxlint).
 
+**Normal map.** A picture whose colours describe which way each tiny bit of a surface faces, so the 3D
+lighting can show bumps (the paper's tooth) without extra shapes. The Home model's paper has one
+(`hotel-normal-512.webp`, drawn by `scripts/make-hotel-textures.py`).
+
 **Placeholder / TODO.** A clear marker where a fact is still missing (never a made-up value). Visitors see a true
 fallback; signed-in team members see "To fill in: …". See `src/lib/pending.js`.
 

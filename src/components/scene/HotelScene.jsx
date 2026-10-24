@@ -105,11 +105,13 @@ const loadImage = (src) =>
         img.onerror = () => resolve(null);
         img.src = src;
     });
+// Bump TEX_V whenever scripts/make-hotel-textures.py writes new files, so browsers fetch them again.
+const TEX_V = 3;
 const loadTextures = () =>
     Promise.all([
-        loadImage(smallScreen() ? "/textures/hotel-paper-512.webp" : "/textures/hotel-paper.webp"),
-        loadImage("/textures/hotel-bump-512.webp"),
-    ]).then(([paper, bump]) => ({ paper, bump }));
+        loadImage(`/textures/${smallScreen() ? "hotel-paper-512" : "hotel-paper"}.webp?v=${TEX_V}`),
+        loadImage(`/textures/hotel-normal-512.webp?v=${TEX_V}`),
+    ]).then(([paper, normal]) => ({ paper, normal }));
 
 // Views and zoom, from the buttons in the hero (HotelControls)
 const hotelCommand = (detail) => window.dispatchEvent(new CustomEvent("fc:hotel", { detail }));

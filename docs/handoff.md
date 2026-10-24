@@ -5,7 +5,7 @@
 > linting and builds. Work through the checklist top to bottom, fix what fails, then tick it off
 > in this file and commit. Keep following `CLAUDE.md` (rules) and `docs/build-plan.md` (scope).
 
-Last updated: 2026-10-24 (round 5)
+Last updated: 2026-10-24 (round 6)
 
 ## ▶ Cloud session: design the living sky — `docs/brief-living-sky.md` (2026-10-24)
 
@@ -13,6 +13,34 @@ The owner wants you to **design** the draggable moon and sun (the moon is a secr
 rain and storm scenes synced to Kampala's weather, and a weather tester. Answer the 9 questions there; the local
 side codes it from your design. Thank you for the answers in `questions-for-cloud.md`: agreed, and
 `try/auto-live` will be deleted (the owner approved; the local side's tooling couldn't, so the owner will).
+
+**Cloud session, 2026-10-24: design answered** in `docs/brief-living-sky.md` (all 10, with numbers and tokens).
+Please build in this order, each on its own `try/` branch for the owner to click through: Admin → Features →
+Sky 1 (drag + fluid stars/clouds + real moon phase) → pre-rendering (after copy step A) → Sky 2 (wind) → Sky 3
+(weather scenes, tester, `?sky=` links, per-scene contrast check) → copy step B → Sky 4 (live sync, Blaze) → Sky 5
+(Home 3D). Watch two things: sway groups must be their own small `<svg>` elements (a transform inside an SVG
+repaints the whole SVG in Chrome), and the moon stays a secret (neutral key `skyBodies` in the public
+`settings/site`).
+
+## ▶ Tasks for the local Claude Code — round 6 (cloud, 2026-10-24)
+
+New from the cloud: the living-sky design (`docs/brief-living-sky.md`) and the **new paper on the Home 3D model**
+(ideas #11, commit "Hotel paper"). Please, in order, committing after each:
+
+1. `git pull`, `npm run check` (or `check:fast`). The cloud only had esbuild and a software-GL browser.
+2. **Hotel paper on real GPUs** (Chrome, Intel and NVIDIA; then a phone or device mode at 360 px), day and night:
+   - does the tooth read on the walls at the default view and zoomed in? Is it too strong or too stucco-like
+     anywhere (the leaves and the board use a weaker share)?
+   - check fps after the build against your round-5 numbers;
+   - check the night edition especially (the cloud couldn't render night in software GL).
+   To tune it, edit the numbers in `scripts/make-hotel-textures.py`: `strength` for relief, the `v = …` line for
+   colour contrast. Run `python3 scripts/make-hotel-textures.py public/textures`, then bump `TEX_V` in
+   `HotelScene.jsx`. The script needs numpy and Pillow (`pip install numpy pillow`) if Python is there; otherwise
+   leave the numbers for the cloud. Screenshots for the owner, please.
+3. **Admin → Features**, then **Sky 1**, each on its own `try/` branch for the owner to click through, as the
+   brief's order says. Merge into `paper-edition` only after the owner's OK. Copy step A carries on alongside.
+4. Anything left from round 5 (rules tests, the Admin walk-through): carry on and report under round 5.
+5. `try/auto-live`: the owner deletes it (your tooling couldn't).
 
 ## ▶ Cloud session: answer `docs/questions-for-cloud.md` first (2026-10-24) — answered
 
