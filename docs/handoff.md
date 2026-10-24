@@ -145,6 +145,13 @@ screen tall.
 - The `Drawer` component stays for the cart. This is either a new `Popover` in `components/ui/` or a
   `side="corner"` variant: your call.
 
+## ▶ Ideas log: `docs/ideas.md` (check every round)
+
+Owner's standing rule: every idea discussed with the local side is logged in **`docs/ideas.md`** for you to
+sort. Please set each entry's status and add your notes there. New now: **#12 paper scraps falling like
+stones** (they're still in the code, but the shared `rnd()` sequence moved them out of view; proposal: their
+own seed, a deliberate near layer, more contrast).
+
 ## ▶ Owner decisions 2026-10-24 + branch `try/auto-live` (please review and merge first)
 
 The owner looked at Home on this PC and decided the following. **Answer B is settled: no "Tap to explore".**
