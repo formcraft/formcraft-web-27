@@ -1,0 +1,78 @@
+# Who does what: cloud session and local Claude Code (2026-10-24)
+
+> Owner's request: "choose your share of work and send the md to Code's part of the workload."
+> The cloud session wrote this; the local Claude Code works from it. Rules from `CLAUDE.md` apply to both
+> (commit per task, no AI attribution, docs in the same commit, pull and reconcile around every push).
+
+## The split in one line
+
+**Cloud: design and self-contained pieces.** It writes new modules that don't touch the app's wiring, plus the 3D
+scenes and the look.
+**Local: wiring, checks and everything that needs npm, a real browser or the emulators.** It plugs those modules in,
+keeps the site fast and correct, and runs the owner's click-throughs.
+
+## File ownership (to avoid merge conflicts)
+
+| Owner | Files |
+| --- | --- |
+| **Cloud only** | `src/components/scene/sky/*` (new folder), `src/components/scene/hotel/*`, `scripts/make-hotel-textures.py`, `functions/weather.js` (new), `docs/brief-living-sky.md` |
+| **Cloud, once** | One marked block in `src/styles/tokens.css` (`/* weather (cloud) */`, day and night). After that it belongs to local like the rest of the file. |
+| **Local only** | Everything else: `src/pages/*`, `src/components/admin/*`, `layout/*`, `Sky.jsx`, `PaperLayers.jsx`, `sceneGeometry.js`, `firestore.rules`, `storage.rules`, `scripts/check/*`, `src/data/features.js`, routes, `functions/index.js` |
+| **Shared docs** | `docs/handoff.md` (each side writes its own section), `docs/ideas.md` (status column), `docs/current-code.md` (each side adds its own change-log rows; pull first) |
+
+If either side needs to change a file the other owns, write the change into `docs/handoff.md` as a request instead.
+
+## Cloud session's share (in this order)
+
+| # | Task | Gives local |
+| --- | --- | --- |
+| C1 | **Living sky tuner**: a private page where the owner drags the sun and moon and tunes the springs. **Done**; the owner sends the numbers. | Final numbers for C2 |
+| C2 | **`src/components/scene/sky/skyPhysics.js` + `moonPhase.js`**: the stars/clouds/sun-and-moon engine from the tuner as plain JavaScript (no React), with the contract below. Plus the moon phase, the lit shape and the equator "boat moon" turn. | Something to wire into `Sky.jsx` (L4) |
+| C3 | **`sky/weatherShapes.js` + the weather token block**: torn-paper cloud decks, the storm cloud and its glow timing, the mist "vellum" band, the rain-sliver and splash drawer (canvas), wet-paper overlay. Plus a tuner page for the scenes so the owner can see them first. | Shapes and drawers for L7 |
+| C4 | **`functions/weather.js`**: MET Norway sync every 30 min (User-Agent, `If-Modified-Since`, 4-decimal lat/lon), symbol → scene mapping as a pure, tested function, writes `stats/weather` and a private `weatherMeta/kampala`. Written, not deployed. | Something to test in the emulator (L9) |
+| C5 | **Home 3D look**: paper tuning on feedback, the night edition, later rain and wind on the model (Sky 5). | — |
+| C6 | **Design reviews on request**: admin wording (done in `handoff.md`), page visuals, copy organisation. | Lists in `handoff.md` |
+
+## Local Claude Code's share (in this order)
+
+| # | Task | Notes |
+| --- | --- | --- |
+| L1 | **Merge `paper-edition` into `try/features` and `try/copy-pilot`**, run `npm run check`, and let the owner click through. Merge into `paper-edition` only after the owner's OK. | Only `docs/current-code.md` and `docs/ideas.md` conflict (keep both sides' rows) |
+| L2 | **Admin tidy (#25)**, starting with the **one status list** bug (Leads and Inbox write the same `status` from different lists). Then the menu regrouping, menu label = heading, "Social planner", "team" wording. Add the signed-in admin pass to `npm run check`. | Cloud's proposal: `docs/handoff.md` |
+| L3 | **Weather-scene switches** in Admin → Features (partly, overcast, mist, rain, storm; clear always on; fallback chain), per the brief's owner addition. | `src/data/features.js` |
+| L4 | **Sky 1 wiring**: stars on a canvas in `Sky.jsx`, drag on `SkyBody`, using C2. Pause off screen, reduced motion, `check:smooth`, CLS. On its own `try/sky-1` branch. | Starts as soon as C2 lands; the contract below lets you start the canvas first |
+| L5 | **Pre-rendering (#20)**, after copy step A is merged. | Biggest speed win left |
+| L6 | **Sky 2: wind**: split each tree row into three groups (own small `<svg>` each), sway keyframes, gusts, the Admin "Wind strength" slider. | Numbers in the brief, Q3 |
+| L7 | **Sky 3: weather scenes**: wire C3; Admin "Weather" select; the team's sky tester; `?sky=` links; per-scene contrast in `npm run check`. | |
+| L8 | **Copy step B** (every other page into Admin → Copy). | |
+| L9 | **Sky 4: live sync**: test C4 in the emulator; deploy only when the owner turns on Blaze and asks. | |
+| L10 | **Every round**: `npm run check`, real-GPU checks for anything 3D, `docs/current-code.md`, results under your section in `handoff.md`. | |
+
+## Contract for C2 (so L4 can start now)
+
+```js
+import { createSkyField } from "./sky/skyPhysics";
+import { moonPhase, moonLitPath } from "./sky/moonPhase";
+
+const field = createSkyField({
+  stars,                 // [{ x, y, r, a }] in CSS px of the hero (homes)
+  clouds,                // [{ x, y, w, h }] centres and sizes in CSS px (homes)
+  discR,                 // the sun/moon disc radius in CSS px
+  home: { x, y },        // the Kampala-clock place, CSS px
+  bounds: { w, h },      // the hero size; dragging past it rubber-bands
+  params,                // optional overrides of the design numbers (from the tuner)
+  reduced,               // true: stars and clouds stay still; the drag still works
+});
+field.grab(x, y, t); field.drag(x, y, t); field.release(t);   // pointer events, t = performance.now()
+field.setHome(x, y); field.setBounds(w, h);                    // on resize or when the clock moves it
+const busy = field.step(dt);  // advance (fixed sub-steps inside); false = settled → stop requestAnimationFrame
+field.body;    // { x, y, held }        → transform on SkyBody (scale 1.08 while held, via CSS)
+field.rings;   // [{ x, y }] × 3        → the ring lag
+field.stars;   // same array, with x, y, alpha (incl. sparkle) → draw on the canvas
+field.clouds;  // [{ dx, dy, tilt }]    → transforms on the cloud pieces
+moonPhase(date)            // → { age, fraction, waxing, name }
+moonLitPath(phase, r = 44) // → { d, rotate } for the SVG clip of the lit part
+```
+
+No DOM, no timers, no React in these modules: the caller owns `requestAnimationFrame`, the canvas and the elements.
+That keeps them easy to test and lets the local side decide how they fit the paper scene.

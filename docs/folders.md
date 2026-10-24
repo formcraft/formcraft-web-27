@@ -34,7 +34,7 @@ formcraft-web-27/
 | `components/ui/` | small reusable pieces | `Icon`, `Logo`, `Drawer`, `Popover`, `Reveal`, `TornEdge`, `Todo` |
 | `components/shop/` | the store | `ProductCard`, `CartButton`, `CartDrawer` |
 | `components/forms/` | forms used on several pages | `QuoteForm`, `SubscribeForm`, `Honeypot` (spam trap) |
-| `components/scene/` | the drawn scenery and the home page's model | `HotelScene` (3D), `Hotel2D`, `PaperLayers`, `Sky` |
+| `components/scene/` | the drawn scenery and the home page's model | `HotelScene` (3D), `Hotel2D`, `PaperLayers`, `Sky`; `sky/` holds the living-sky engine (motion and moon phase, plain JavaScript) |
 | `components/admin/` | the admin page's panels | `ContentPanel`, `LeadsPanel`, `PagesPanel`, `studio/` (marketing calendar) |
 | `components/auth/` | sign-in | `SignInDialog` |
 | `context/` | app-wide information ("providers") | `AuthContext`, `CartContext`, `SiteContext`, `ThemeContext` |
