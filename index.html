@@ -82,11 +82,11 @@
       [data-theme="night"] #fci .fci-mark { fill: #FFAE61; filter: drop-shadow(0 2px 3px rgba(0,0,0,.4)); }
       #fci .fci-tag { margin: 0; font: 600 15px/1.3 "Satoshi", system-ui, sans-serif; letter-spacing: .02em; color: #1C252D; text-align: center; white-space: nowrap; }
       [data-theme="night"] #fci .fci-tag { color: #F1F1F1; }
-      #fci .fci-tag span { opacity: 0; transition: opacity .3s ease; }
+      #fci .fci-tag span { opacity: 0; transition: opacity .4s ease; }
       #fci .fci-tag b { font-weight: 600; color: #D15334; }
       [data-theme="night"] #fci .fci-tag b { color: #FFAE61; }
-      #fci.is-in .fci-mark { animation: fci-in calc(.4s * var(--fci-k, 1)) ease-out forwards; }
-      #fci.is-stamp .fci-mark { animation: fci-stamp calc(.65s * var(--fci-k, 1)) cubic-bezier(.3,.7,.3,1) forwards; }
+      #fci.is-in .fci-mark { animation: fci-in calc(.8s * var(--fci-k, 1)) ease-out forwards; }
+      #fci.is-stamp .fci-mark { animation: fci-stamp calc(.8s * var(--fci-k, 1)) cubic-bezier(.3,.7,.3,1) forwards; }
       #fci.is-fly .fci-mark { opacity: 1; transition: transform calc(.65s * var(--fci-k, 1)) cubic-bezier(.6,0,.2,1), opacity .3s ease calc(.5s * var(--fci-k, 1)); }
       #fci.is-fly .fci-tag { opacity: 0; transition: opacity .25s ease; }
       #fci.is-drop .fci-strip, #fci.is-drop .fci-perf, #fci.is-drop .fci-tear { transform: translateY(-110%); transition: transform .5s ease-in .1s; }
@@ -223,12 +223,13 @@
           at(900, function () { tearWhenReady(start + 4000 * M.intro); });
           return;
         }
-        // full (≈ 2.6 s before the tear at 1×; Admin → Motion "Opening animation" scales it)
+        // full (≈ 3 s before the tear at 1×; Admin → Motion "Opening animation" scales it). The start is
+        // unhurried on purpose (owner, 2026-10-24: "initially it's a bit too fast").
         el.classList.add("is-in");
-        at(380, function () { el.classList.remove("is-in"); el.classList.add("is-stamp"); });
-        words.forEach(function (wd, i) { at(480 + i * 150, function () { wd.style.opacity = 1; }); });
-        at(1500, flyToHeader);
-        at(2200, function () { tearWhenReady(start + 5000 * M.intro); });
+        at(800, function () { el.classList.remove("is-in"); el.classList.add("is-stamp"); });
+        words.forEach(function (wd, i) { at(1100 + i * 200, function () { wd.style.opacity = 1; }); });
+        at(2300, flyToHeader);
+        at(3000, function () { tearWhenReady(start + 5800 * M.intro); });
       })();
     </script>
     <div id="root"></div>
