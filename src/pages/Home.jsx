@@ -228,7 +228,7 @@ export const Home = () => {
                                 {p.image ? (
                                     <img src={`/images/${p.image}-800.webp`} alt={`${p.title}, render`} loading="lazy" />
                                 ) : (
-                                    <div className="placeholder">[{p.title} photo]</div>
+                                    <div className="placeholder" role="img" aria-label={`${p.title}, photo coming soon`}>Photo coming soon</div>
                                 )}
                                 <div className="home-flag-body">
                                     <span className="tag">{p.division}</span>

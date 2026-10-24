@@ -12,6 +12,9 @@
 
 | # | Idea | Area | Status | Where |
 | --- | --- | --- | --- | --- |
+| 21 | Admin → Copy: every piece of text on the site editable from Admin (length limits, preview, drafts, history, size presets), plus a simpler permission model: one owner (Emlyn Atochon) assigns permissions; everyone else on the team gets the same full access for now; roles such as blog writers with review added later | Admin, all pages, marketing | **discussed with owner**, plan agreed in chat; **on hold** until the owner says go | chat 2026-10-24; plan to be written into the build plan on go |
+| 20 | Pre-render the public pages at build time so phones show the page before the JavaScript runs (Lighthouse mobile 41–61 today; most of it is ~4.7 s render delay from client-side rendering) | Speed, SEO | **proposed by local side**, needs the owner's go-ahead (build-plan Phase 5) | §19–20 below |
+| 19 | UI beauty pass: email prompt out of the way, drawing-sheet photo placeholders, Home/Stores/About phone fixes | All pages | **done** (UI beauty pass commit) | §19–20 below |
 | 18 | Documentation anyone can follow: guides in `docs/`, a plain-English header on every file, inputs/outputs on every export, a documentation standard in `CLAUDE.md` | All code | **proposed by owner**, local side, waiting for go-ahead | §16–18 below |
 | 17 | Full review of code and graphics: text overlapping, panels covering text while scrolling; clean and neat everywhere | All pages | **proposed by owner**, local side | §16–18 below |
 | 16 | Offline checks (GitHub Actions is blocked by billing): `npm run check` with lint, build, SEO files, size budget, every route × 3 widths × 2 editions in local Chrome, overlap detection while scrolling, screenshot report; `check:speed` with local Lighthouse | Tooling | **proposed by owner**, local side | §16–18 below |
@@ -30,6 +33,22 @@
 | 3 | Device levels with a live frame check, remembered per device | Speed | done in `a5c5955`; now full / standard / 2D, never downscaled | owner brief §4 |
 | 2 | Front / Back / Cutaway / Site views, zoom, reset | Home 3D | done in `a5c5955` | owner brief §3 |
 | 1 | Sky and landscape first, building fades in; Home's own sky; one shared sky for other pages; all-round landscape from the owner's models | Home, all heroes | accepted; shared sky done in `ffff37a`; models waiting for owner (A) | owner brief §1–2 |
+
+---
+
+## §19–20 UI beauty pass and pre-rendering (local side, 2026-10-24)
+
+**Owner:** "...Smoothness checks. And then UI beauty."
+
+**Done (§19):** see the "UI beauty pass" row in `docs/current-code.md`.
+
+**Proposed (§20):** pre-render each public route into its HTML at build time (the SEO step already writes a
+folder per route; it would also write the page's markup), then let React take over. Expected: it removes most
+of the ~4.7 s render delay Lighthouse measured (to be measured again after). Risks: the 3D Home and auth-aware
+parts must render the same on the server and in the browser; best done after Phase 1 content settles.
+**Waiting for the owner.**
+
+**Cloud notes:**
 
 ---
 

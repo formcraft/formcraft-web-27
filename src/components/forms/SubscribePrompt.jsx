@@ -6,10 +6,12 @@ import { SubscribeForm } from "./SubscribeForm";
 import { Icon } from "../ui/Icon";
 import "./SubscribePrompt.css";
 
-// A small paper slip that slides up from the bottom-left once a visitor has read more than half of
+// A small paper slip that slides up in the bottom-right corner, just above the plant-a-tree button, once a visitor has read more than half of
 // a long page (≥ 2.5 screens tall, scrolled 55 %). At most once every 14 days, never for people who
 // already subscribed, never while the cookie banner is up, and never on team, account, checkout,
-// sign-in or link-in-bio pages. It doesn't take focus; × or Escape closes it.
+// sign-in or link-in-bio pages. It doesn't take focus; × or Escape closes it. It tucks itself away
+// while the footer (which has its own sign-up form) or any form on the page is on screen, so it never
+// covers a form someone is filling in.
 const KEY = "fc-subscribe-prompt";
 const EVERY = 14 * 24 * 60 * 60 * 1000;
 const SKIP = [/^\/admin/, /^\/account/, /^\/checkout/, /^\/sign-in/, /^\/links/, /^\/privacy/];
@@ -24,6 +26,7 @@ const allowed = () => {
 export const SubscribePrompt = () => {
     const { pathname } = useLocation();
     const [open, setOpen] = useState(false);
+    const [inTheWay, setInTheWay] = useState(false);
 
     useEffect(() => {
         if (open || SKIP.some((re) => re.test(pathname)) || !allowed()) return undefined;
@@ -63,9 +66,25 @@ export const SubscribePrompt = () => {
         return () => document.removeEventListener("keydown", onKey);
     }, [open]);
 
+    // step aside while the footer (it has its own sign-up) or a form on the page is on screen
+    useEffect(() => {
+        const watched = document.querySelectorAll(".footer, main form");
+        if (!open || !watched.length || typeof IntersectionObserver === "undefined") return undefined;
+        const showing = new Set();
+        const io = new IntersectionObserver((entries) => {
+            for (const e of entries) {
+                if (e.isIntersecting) showing.add(e.target);
+                else showing.delete(e.target);
+            }
+            setInTheWay(showing.size > 0);
+        });
+        watched.forEach((el) => io.observe(el));
+        return () => io.disconnect();
+    }, [open, pathname]);
+
     if (!open) return null;
     return (
-        <aside className="subscribe-prompt" aria-labelledby="subscribe-prompt-title">
+        <aside className={`subscribe-prompt ${inTheWay ? "is-tucked" : ""}`} aria-labelledby="subscribe-prompt-title" inert={inTheWay}>
             <button type="button" className="icon-btn subscribe-prompt-close" onClick={() => setOpen(false)} aria-label="Close the email sign-up">
                 <Icon name="close" size={18} />
             </button>

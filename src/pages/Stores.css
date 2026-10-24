@@ -7,5 +7,10 @@
 .stores .steps { list-style: none; padding: 0; margin: 0; }
 .stores-custom-cta { margin-top: 32px; }
 @media (max-width: 1100px) { .stores-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (max-width: 800px) { .stores-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 800px) {
+  .stores-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* the two promo tiles take a full row each: their headings don't fit half a phone */
+  .stores-grid > :has(> .stores-tile) { grid-column: 1 / -1; }
+  .stores-tile { min-height: 0; }
+}
 @media (max-width: 380px) { .stores-grid { gap: 18px 10px; } }

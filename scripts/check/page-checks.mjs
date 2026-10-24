@@ -86,7 +86,9 @@ function measurePage({ fixedOnly = false } = {}) {
         if (!el || el.closest("script,style,noscript,template,title,.hotel-preview")) continue;
         if (shownAmount(el) < 0.05 || isScreenReaderOnly(el)) continue;
         const raw = t.nodeValue.trim();
-        if (/\bTODO\b/.test(raw) || /\[[A-Za-z][^\]]{0,40}\]/.test(raw)) placeholders.add(`"${raw.slice(0, 70)}" (${describe(el)})`);
+        // React splits "[{title} photo]" into separate text nodes, so a bracket is checked against the whole element
+        const whole = /[[\]]/.test(raw) ? el.textContent.trim() : raw;
+        if (/\bTODO\b/.test(raw) || /\[[A-Za-z][^\]]{0,40}\]/.test(whole)) placeholders.add(`"${whole.slice(0, 70)}" (${describe(el)})`);
         const range = document.createRange();
         range.selectNodeContents(t);
         const layer = floatingLayer(el);

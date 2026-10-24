@@ -40,7 +40,8 @@
 
 /* development-only preview switch (HotelPreviewSwitch; from the local side's try/auto-live branch) */
 /* Dev-only preview panel: bottom-right, 12px above the 50px plant-a-tree button, same right edge.
-   Away from the cookie notice and the email prompt (bottom-left). Folds to a small tab. */
+   Away from the cookie notice (bottom-left); it sits over the email prompt, which shares this corner, and can
+   be dragged aside. Folds to a small tab. */
 .hotel-preview { position: fixed; right: 18px; bottom: calc(18px + 50px + 12px + env(safe-area-inset-bottom)); z-index: 60; display: grid; gap: 6px; max-width: min(360px, calc(100vw - 36px)); padding: 8px 10px; border-radius: 6px; background: var(--fc-navy); color: var(--fc-white); font-size: 12px; box-shadow: 0 6px 20px -8px var(--fc-black); }
 .hotel-preview:not([open]) { padding: 6px 10px; }
 .hotel-preview.is-moved { right: auto; bottom: auto; } /* dragged: placed by left/top instead */

@@ -7,7 +7,9 @@
 
 .home-hero { min-height: min(100svh, 980px); display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; }
 .home-hero::before { content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--ground) 82%, transparent) 0%, color-mix(in srgb, var(--ground) 50%, transparent) 36%, transparent 62%); }
+  background: linear-gradient(90deg, color-mix(in srgb, var(--ground) 88%, transparent) 0%, color-mix(in srgb, var(--ground) 72%, transparent) 30%, color-mix(in srgb, var(--ground) 36%, transparent) 46%, transparent 64%); }
+/* a soft paper halo keeps the small text readable where it crosses the model's edges */
+.home-hero-copy .lead, .home-hero-strip { text-shadow: 0 0 10px var(--ground), 0 0 3px var(--ground); }
 .home-hero-inner { position: relative; padding-top: 120px; padding-bottom: 64px; display: flex; flex-direction: column; gap: 40px; }
 .home-hero-copy { display: flex; flex-direction: column; gap: 24px; max-width: 640px; }
 .home-hero-title { display: flex; flex-direction: column; font-size: clamp(48px, 7.2vw, 108px); }
@@ -53,6 +55,8 @@
 .home-pair-a { width: 78%; }
 .home-pair-b { width: 70%; justify-self: end; margin-top: -18%; }
 .home-kpis { margin-top: clamp(48px, 6vw, 80px); }
+/* "ISO 19650" and "IFC · IDS" are words, not numbers: a size that keeps each on one line in a quarter-width cell */
+.home-kpis .num { font-size: clamp(30px, 2.9vw, 46px); white-space: nowrap; }
 
 .home-library { display: flex; flex-direction: column; gap: 16px; }
 

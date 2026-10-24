@@ -108,6 +108,15 @@ titles and descriptions. **Please use `<Todo>`/`<Fact>` for new placeholders**, 
 - Contact no longer promises a next-day reply (it wasn't confirmed);
 - the "not an offer to sell securities" line stays visible.
 
+**UI beauty pass (local, 2026-10-24).** Toured every main page at 1440/360, day and night:
+- the email prompt now sits bottom right above the plant-a-tree button and steps aside while the footer,
+  a form on the page or a pop-up is showing (it covered headings and the Community form before);
+- `.placeholder` (global, `components.css`) is a drawing-sheet tile with the FC mark; use it with
+  `role="img"` and an `aria-label`, and never put bracketed text inside (the check now catches it even when
+  React splits it into several text nodes);
+- Home figures stay on one line, the hero copy has a stronger fade and halo, Stores promo tiles span a row on
+  phones, About portraits are 16:9 on phones.
+
 **Still to come from the local side:** the rest of the review (content clarity, keeping visitors moving
 from page to page), documentation of the remaining files, and the owner's go-live list. Please avoid
 large edits to `src/pages/*` until the next local push, or pull first.
