@@ -1,0 +1,26 @@
+.donate-counter { display: flex; flex-direction: column; gap: 4px; padding: 16px 20px; border-radius: var(--fc-radius); max-width: 320px; }
+.donate-counter b { font: 600 clamp(34px, 5vw, 48px)/1 var(--fc-font-display); color: var(--fc-orange); }
+
+.donate-grid { display: grid; gap: 32px; align-items: start; }
+@media (min-width: 900px) {
+  .donate-grid { grid-template-columns: minmax(0, 1.4fr) minmax(300px, 1fr); gap: 48px; }
+  .donate-summary { position: sticky; top: 96px; }
+}
+.donate-set { border: 0; margin: 0; padding: 0; display: grid; gap: 14px; min-width: 0; }
+.donate-set + .donate-set { padding-top: 24px; border-top: 1px solid var(--line); }
+.donate-set legend { padding: 0; margin-bottom: 14px; }
+.donate-species { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); }
+.donate-custom { max-width: 220px; }
+.donate-check { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; cursor: pointer; }
+.donate-check input { width: 20px; height: 20px; accent-color: var(--fc-orange); }
+
+.donate-summary { display: flex; flex-direction: column; gap: 14px; }
+.donate-summary p { margin: 0; }
+.donate-totals { margin: 0; border-top: 1px solid var(--line-2); }
+.donate-totals > div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; }
+.donate-totals dt { font-weight: 600; }
+.donate-totals dd { margin: 0; text-align: right; }
+.donate-total { border-top: 1px solid var(--line); font-weight: 700; }
+
+.donate-wall { list-style: none; margin: 0; padding: 0; }
+.donate-wall-card { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }

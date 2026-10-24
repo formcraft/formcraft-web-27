@@ -5,7 +5,9 @@ import { PageHero } from "../components/page/PageHero";
 import { Section } from "../components/page/Section";
 import { Reveal } from "../components/ui/Reveal";
 import { Icon } from "../components/ui/Icon";
-import { projects, DIVISIONS } from "../data/projects";
+import { DIVISIONS } from "../data/projects";
+import { useContent } from "../hooks/useContent";
+import { imgProps, imgAlt } from "../lib/images";
 import "./Projects.css";
 
 const divisionLabel = (id) => DIVISIONS.find((d) => d.id === id)?.label ?? id;
@@ -13,7 +15,8 @@ const divisionLabel = (id) => DIVISIONS.find((d) => d.id === id)?.label ?? id;
 export const Projects = () => {
     usePageMeta("Projects", "Work Formcraft has designed, built and made: from factory complexes and schools to landscapes and joinery.");
     const [filter, setFilter] = useState("all");
-    const shown = projects.filter((p) => filter === "all" || p.divisions.includes(filter));
+    const { items: projects, loading } = useContent("projects");
+    const shown = projects.filter((p) => filter === "all" || (p.divisions ?? []).includes(filter));
 
     return (
         <div className="projects">
@@ -31,7 +34,9 @@ export const Projects = () => {
                     </div>
                     <p className="fine" aria-live="polite">{shown.length} project{shown.length === 1 ? "" : "s"}</p>
                 </div>
-                {shown.length === 0 ? (
+                {loading ? (
+                    <div className="projects-grid">{[0, 1, 2].map((k) => <div key={k} className="skeleton" style={{ aspectRatio: "4 / 3" }} />)}</div>
+                ) : shown.length === 0 ? (
                     <p className="body projects-empty">No projects in this division on the site yet. <span className="todo">TODO: add construction, concrete and joinery case studies.</span></p>
                 ) : (
                     <div className="projects-grid">
@@ -39,18 +44,18 @@ export const Projects = () => {
                             <Reveal key={p.slug} delay={(i % 3) * 0.06} className={i === 0 ? "projects-wide" : ""}>
                                 <Link to={`/projects/${p.slug}`} className="card projects-card">
                                     <img
-                                        src={`/images/${p.images[0].name}-800.webp`}
-                                        srcSet={`/images/${p.images[0].name}-800.webp 800w, /images/${p.images[0].name}.webp 1600w`}
+                                        {...(imgProps(p.images?.[0], { small: true }) ?? {})}
                                         sizes={i === 0 ? "(max-width: 700px) 100vw, 66vw" : "(max-width: 700px) 100vw, 33vw"}
-                                        alt={p.images[0].alt}
+                                        alt={imgAlt(p.images?.[0], p.title)}
                                         loading={i < 2 ? "eager" : "lazy"}
                                     />
                                     <div className="projects-card-body">
                                         <div className="row" style={{ "--gap": "6px" }}>
-                                            {p.divisions.map((d) => <span key={d} className="tag">{divisionLabel(d)}</span>)}
+                                            {(p.divisions ?? []).map((d) => <span key={d} className="tag">{divisionLabel(d)}</span>)}
                                         </div>
                                         <h2 className="h3">{p.title}</h2>
-                                        <p className={`small ${p.summary.startsWith("TODO") ? "todo" : ""}`}>{p.summary}</p>
+                                        <p className={`small ${String(p.summary ?? "").startsWith("TODO") ? "todo" : ""}`}>{p.summary}</p>
+                                        {p.hidden && <span className="tag">Hidden</span>}
                                     </div>
                                 </Link>
                             </Reveal>

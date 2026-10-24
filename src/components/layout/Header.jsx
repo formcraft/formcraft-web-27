@@ -1,42 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { useTheme } from "../../hooks/useTheme";
+import { useShowLink } from "../../hooks/useSite";
+import { NAV_GROUPS, filterNav } from "../../data/nav";
+import { prefetchRoute } from "../../routes";
+import { ThemeSwitch } from "./ThemeSwitch";
 import { Icon } from "../ui/Icon";
 import { Logo } from "../ui/Logo";
 import { Drawer } from "../ui/Drawer";
 import { CartButton } from "../shop/CartButton";
 import "./Header.css";
 
-// The four doors from the site map, mirrored in the header
-export const NAV_GROUPS = [
-    {
-        label: "Hire us",
-        links: [
-            { to: "/studio", label: "Studio", note: "Design, pre-construction & BIM" },
-            { to: "/construction", label: "Construction", note: "Building what the model promised" },
-            { to: "/concrete", label: "Concrete", note: "Precast and green concrete" },
-            { to: "/projects", label: "Projects", note: "Work we've designed and built" },
-        ],
-    },
-    { label: "Shop", to: "/stores" },
-    {
-        label: "Join",
-        links: [
-            { to: "/community", label: "Community", note: "Artisans and creatives" },
-            { to: "/academy", label: "Academy", note: "BIM and CAD courses" },
-        ],
-    },
-    {
-        label: "Back us",
-        links: [
-            { to: "/invest", label: "Invest", note: "Developments and the investor pack" },
-            { to: "/donate", label: "Plant a tree", note: "Give back some of what building takes" },
-        ],
-    },
-    { label: "About", to: "/about" },
-    { label: "Contact", to: "/contact" },
-];
+// Start loading a page's code as soon as a link to it is hovered, focused or touched
+const prefetchFromEvent = (event) => {
+    const href = event.target.closest?.("a[href]")?.getAttribute("href");
+    if (href) prefetchRoute(href);
+};
 
 const NavGroup = ({ group, pathname }) => {
     const [open, setOpen] = useState(false);
@@ -91,26 +70,12 @@ const NavGroup = ({ group, pathname }) => {
     );
 };
 
-export const ThemeSwitch = ({ className = "" }) => {
-    const { theme, toggle } = useTheme();
-    const next = theme === "night" ? "day" : "night";
-    return (
-        <button
-            type="button"
-            className={`icon-btn header-mode ${className}`}
-            onClick={toggle}
-            aria-label={`Switch to the ${next} edition`}
-            title={`${next === "night" ? "Night" : "Day"} edition`}
-        >
-            <Icon name={theme === "night" ? "sun" : "moon"} size={19} />
-        </button>
-    );
-};
-
 export const Header = () => {
-    const { user, loading, openSignIn } = useAuth();
+    const { user, isAdmin, loading, openSignIn } = useAuth();
     const { pathname } = useLocation();
     const [menuOpen, setMenuOpen] = useState(false);
+    const show = useShowLink();
+    const groups = filterNav(NAV_GROUPS, show);
 
     useEffect(() => setMenuOpen(false), [pathname]);
 
@@ -121,8 +86,8 @@ export const Header = () => {
                     <Logo height={30} decorative />
                 </Link>
 
-                <nav className="header-nav" aria-label="Main">
-                    {NAV_GROUPS.map((group) =>
+                <nav className="header-nav" aria-label="Main" onPointerOver={prefetchFromEvent} onFocus={prefetchFromEvent}>
+                    {groups.map((group) =>
                         group.links ? (
                             <NavGroup key={group.label} group={group} pathname={pathname} />
                         ) : (
@@ -135,6 +100,11 @@ export const Header = () => {
 
                 <div className="header-tools">
                     <ThemeSwitch />
+                    {isAdmin && (
+                        <Link to="/admin" className="icon-btn" aria-label="Admin" title="Admin">
+                            <Icon name="layers" size={19} />
+                        </Link>
+                    )}
                     <CartButton />
                     {user ? (
                         <Link to="/account" className="icon-btn" aria-label="Your account" title={user.email ?? "Your account"}>
@@ -155,8 +125,8 @@ export const Header = () => {
             </div>
 
             <Drawer open={menuOpen} onClose={() => setMenuOpen(false)} title="Menu">
-                <nav className="header-mobile" aria-label="Main">
-                    {NAV_GROUPS.map((group) =>
+                <nav className="header-mobile" aria-label="Main" onPointerDown={prefetchFromEvent}>
+                    {groups.map((group) =>
                         group.links ? (
                             <div key={group.label} className="header-mobile-group">
                                 <p className="eyebrow">{group.label}</p>

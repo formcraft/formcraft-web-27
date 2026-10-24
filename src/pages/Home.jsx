@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
-import { useDocument } from "../hooks/useDocument";
+import { usePublicDoc } from "../hooks/usePublicDoc";
+import { useShowLink } from "../hooks/useSite";
 import { HotelScene, HotelTags } from "../components/scene/HotelScene";
 import { Section, SectionHead } from "../components/page/Section";
 import { Photo } from "../components/page/Photo";
@@ -41,7 +42,8 @@ const Counter = ({ value, label }) => (
 
 export const Home = () => {
     usePageMeta(null, "Formcraft Design and Construction, Kampala: BIM-led design, construction, precast concrete and workshop-made furniture, in one value chain with local artisans.");
-    const { data: stats } = useDocument("stats/public");
+    const { data: stats } = usePublicDoc("stats/public");
+    const show = useShowLink();
 
     return (
         <div className="home">
@@ -271,7 +273,7 @@ export const Home = () => {
                 <div className="wrap">
                 <h2 className="h1-s home-join-title">Find your way in.</h2>
                 <div className="grid-4">
-                    {DOORS.map((d, i) => (
+                    {DOORS.filter((d) => show(d.to)).map((d, i) => (
                         <Reveal key={d.title} delay={i * 0.06}>
                             <Link to={d.to} className={`card home-door home-door-${d.tone} ${d.tone === "dark" ? "paper-dark" : ""} ${d.tone === "orange" ? "paper-orange" : ""}`}>
                                 {d.tone === "photo" && <img src="/images/chair-800.webp" alt="" loading="lazy" className="home-door-img" />}

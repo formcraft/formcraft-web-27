@@ -265,7 +265,7 @@ export const Studio = () => {
                 <SectionHead eyebrow="The Formcraft 1D–7D framework" title="Seven layers of information. Scoped, never assumed.">
                     Requirements, drawings and the model come as standard on every BIM project. Time, carbon and operations are added when your BIM Execution Plan includes them.
                 </SectionHead>
-                <div className="table-wrap card">
+                <div className="table-wrap card" role="region" aria-label="Design stages, what you get and when you pay" tabIndex={0}>
                     <table className="table">
                         <thead><tr><th>Layer</th><th>Meaning</th><th>What you get</th><th>On BIM projects</th></tr></thead>
                         <tbody>

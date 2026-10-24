@@ -13,12 +13,14 @@
     <meta property="og:description" content="Designing spaces. Empowering communities." />
     <meta property="og:image" content="/images/bwebajja-night-800.webp" />
     <script>
-      // Pick the paper edition before first paint: saved choice, else the system setting.
+      // Pick the paper edition before first paint: the visitor's saved choice, else Kampala's
+      // clock (day from 06:45 to 18:55 EAT). Same rule as src/lib/skyClock.js.
       (function () {
         var t = null;
         try { t = localStorage.getItem("fc-theme"); } catch (e) {}
         if (t !== "day" && t !== "night") {
-          t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "night" : "day";
+          var d = new Date(), m = (d.getUTCHours() * 60 + d.getUTCMinutes() + 180) % 1440;
+          t = m >= 405 && m < 1135 ? "day" : "night";
         }
         document.documentElement.setAttribute("data-theme", t);
       })();

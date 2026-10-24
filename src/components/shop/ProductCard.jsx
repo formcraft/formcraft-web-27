@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../../hooks/useCart";
 import { categoryLabel } from "../../data/products";
+import { imgProps } from "../../lib/images";
 import { formatUGX } from "../../lib/money";
 import { Icon } from "../ui/Icon";
 import "./ProductCard.css";
@@ -14,14 +15,19 @@ export const ProductCard = ({ product }) => {
     return (
         <article className="product-card">
             <Link to={`/stores/${product.slug}`} className="product-card-media" aria-label={product.title}>
+                {product.images?.[0] ? (
                 <img
-                    src={`/images/${product.images[0]}-800.webp`}
-                    alt={product.imageAlt}
+                    {...imgProps(product.images[0], { small: true })}
+                    sizes="(max-width: 700px) 50vw, 25vw"
+                    alt={product.imageAlt || product.title}
                     loading="lazy"
                     decoding="async"
                     width="800"
                     height="800"
                 />
+                ) : (
+                    <span className="placeholder">[Photo]</span>
+                )}
             </Link>
             <div className="product-card-body">
                 <div className="product-card-top">

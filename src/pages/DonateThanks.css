@@ -1,0 +1,10 @@
+.donatethanks-grid { display: grid; gap: 32px; align-items: start; }
+@media (min-width: 900px) { .donatethanks-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 48px; } }
+.donatethanks-count { display: flex; flex-direction: column; gap: 4px; padding: 20px 22px; border-radius: var(--fc-radius); }
+.donatethanks-count b { font: 600 clamp(40px, 6vw, 60px)/1 var(--fc-font-display); color: var(--fc-orange); }
+
+.donatethanks-cert { margin: 0; display: flex; flex-direction: column; gap: 12px; padding: clamp(24px, 4vw, 44px); border: 1px solid var(--line-2); outline: 1px solid var(--line); outline-offset: -10px; text-align: center; }
+.donatethanks-cert p { margin: 0; }
+.donatethanks-cert .between { text-align: left; }
+.donatethanks-cert-name { margin-top: 8px; }
+.donatethanks-cert-foot { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }

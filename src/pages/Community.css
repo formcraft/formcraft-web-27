@@ -1,0 +1,29 @@
+.community-kpis { max-width: 640px; }
+.community-kpis dd { margin: 0; }
+.community-note { margin-top: 12px; }
+
+.community-benefits { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 18px; }
+.community-benefit { display: flex; flex-direction: column; gap: 10px; }
+.community-num { font: 600 15px/1 var(--fc-font-display); letter-spacing: .06em; color: var(--acc-ink); }
+
+.community-bar { align-items: center; margin-bottom: 28px; }
+.community-makers { list-style: none; margin: 0; padding: 0; }
+.community-maker { overflow: hidden; display: flex; flex-direction: column; }
+.community-maker-photo { aspect-ratio: 4 / 3; border-radius: 0; }
+.community-maker-body { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 16px 18px 20px; }
+.community-after { align-items: center; margin-top: 24px; }
+
+.community-caption { caption-side: bottom; text-align: left; padding: 12px 14px; }
+
+.community-skeleton { height: 220px; }
+.community-events { list-style: none; margin: 0; padding: 0; }
+.community-event { display: flex; flex-direction: column; gap: 10px; }
+.community-book { align-self: flex-start; margin-top: auto; }
+.community-book-wrap { margin-top: clamp(28px, 4vw, 48px); max-width: 640px; }
+.community-training { margin-top: clamp(28px, 4vw, 44px); }
+
+.community-join-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.community-join-num {
+  flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--fc-orange); color: var(--fc-navy); font: 700 15px/1 var(--fc-font-display);
+}

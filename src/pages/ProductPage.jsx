@@ -5,21 +5,26 @@ import { useCart } from "../hooks/useCart";
 import { Section } from "../components/page/Section";
 import { ProductCard } from "../components/shop/ProductCard";
 import { Icon } from "../components/ui/Icon";
-import { products, productBySlug, categoryLabel } from "../data/products";
+import { categoryLabel } from "../data/products";
+import { useContentItem } from "../hooks/useContent";
+import { imgProps } from "../lib/images";
 import { formatUGX } from "../lib/money";
 import { NotFound } from "./NotFound";
 import "./ProductPage.css";
 
 export const ProductPage = () => {
     const { slug } = useParams();
-    const product = productBySlug(slug);
+    const { item: product, items: products, loading } = useContentItem("products", slug);
     usePageMeta(product?.title ?? "Product not found", product?.description);
     const { add, openCart } = useCart();
-    const [color, setColor] = useState(product?.colors[0] ?? null);
-    const [size, setSize] = useState(product?.sizes[0] ?? null);
+    const [picked, setColor] = useState(null);
+    const [pickedSize, setSize] = useState(null);
+    const color = picked ?? product?.colors?.[0] ?? null;
+    const size = pickedSize ?? product?.sizes?.[0] ?? null;
     const [qty, setQty] = useState(1);
     const [added, setAdded] = useState(false);
 
+    if (!product && loading) return <div className="wrap section"><div className="skeleton" style={{ height: 480 }} /></div>;
     if (!product) return <NotFound />;
     const related = products.filter((p) => p.id !== product.id).slice(0, 3);
 
@@ -33,7 +38,7 @@ export const ProductPage = () => {
         <div className="product-page" data-division="stores">
             <div className="wrap product-page-grid">
                 <figure className="photo product-page-photo" style={{ "--ar": "1 / 1" }}>
-                    <img src={`/images/${product.images[0]}.webp`} srcSet={`/images/${product.images[0]}-800.webp 800w, /images/${product.images[0]}.webp 1600w`} sizes="(max-width: 900px) 100vw, 50vw" alt={product.imageAlt} fetchPriority="high" />
+                    {product.images?.[0] ? <img {...imgProps(product.images[0])} sizes="(max-width: 900px) 100vw, 50vw" alt={product.imageAlt || product.title} fetchPriority="high" /> : <div className="placeholder">[Photo]</div>}
                 </figure>
                 <div className="product-page-info">
                     <nav className="crumbs" aria-label="Breadcrumb">

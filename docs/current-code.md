@@ -9,7 +9,8 @@
 >   "How to keep this file up to date").
 >
 > Baseline written: 2026-10-09 from a full read of the code · Last updated: 2026-10-24
-> · Phase: **0 done, Phase 1 pages built** (branch `paper-edition`; not yet installed, linted or built — see `docs/handoff.md`)
+> · Phase: **0 done; every designed page built; admin control room, page switches, content in Firestore**
+> (branch `paper-edition`; the latest commits were compiled with esbuild only — run lint/build locally, see `docs/handoff.md`)
 
 ---
 
@@ -33,20 +34,20 @@ Write plainly. Name files and components exactly. Don't describe planned feature
 
 | | Today | Target (from the plan) |
 | --- | --- | --- |
-| Framework | React 19 (`react`, `react-dom` ^19.2), StrictMode | same |
-| Routing | `react-router-dom` ^6.30, `BrowserRouter`, routes written in `App.jsx` | same version; routes in `src/routes.jsx`, lazy-loaded |
-| Build | Vite ^8.2 with `@vitejs/plugin-react` | same |
-| Lint | oxlint (`npm run lint`), React hooks rules | same |
-| Firebase SDK | `firebase` ^12; Auth eager; Firestore, Storage, Functions on demand | current major; Auth, Firestore, Storage, Functions |
-| Firebase project files | none (no `firebase.json`, `.firebaserc`, rules, `functions/`) | all present (P0.2, Phase 2–3) |
-| Firebase project | `fromcraft-2026` (spelling: "fromcraft"), config hard-coded | from `VITE_FIREBASE_*` env vars |
-| Language | JavaScript + JSX, no TypeScript | same |
-| Styling | ~2,000 lines of plain CSS, one file per component; global rules leak from `Shop.css` | tokens + shared styles in `src/styles/`, component CSS scoped by class prefix |
-| State | `AuthContext` (`useAuth()`) for the signed-in user; cart state inside `CraftPage` | `AuthContext`, `CartContext` |
-| Data | hard-coded in `src/components/data/products.jsx`, prices in dollars | `src/data/products.js` (UGX) in Phase 0, Firestore `products` in Phase 3 |
+| Framework | React 19, StrictMode | same |
+| Routing | `react-router-dom` ^6.30; table in `src/routes.jsx`, every page `React.lazy`, prefetched on link hover/focus/touch | same |
+| Build | Vite ^8 with `@vitejs/plugin-react` | same |
+| Lint | oxlint (`npm run lint`) | same |
+| Firebase SDK | `firebase` ^12; Auth eager; Firestore, Storage, Functions on demand; public reads over the Firestore REST API (no SDK) | same |
+| Firebase project files | `firebase.json` (SPA rewrite, cache headers), `.firebaserc`, `firestore.rules`, `storage.rules`, `firestore.indexes.json`; no `functions/` yet | functions in Phase 3 |
+| Firebase project | `fromcraft-2026`, config from `VITE_FIREBASE_*` | open question |
+| Styling | tokens + shared styles in `src/styles/`, one CSS file per component, coarse paper textures | same |
+| State | `AuthContext`, `ThemeContext`, `CartContext`, `SiteContext` (page switches) | same |
+| Content | `useContent()`: Firestore collection if the admin added items, else starter data in `src/data/` | Firestore |
+| Offline / caching | service worker `public/sw.js` (production only), localStorage content cache, long cache headers | same |
 | Tests | none | rules tests from Phase 3 |
 
-Scripts: `npm run dev`, `npm run build`, `npm run lint`, `npm run preview`.
+Scripts: `npm run dev`, `npm run build`, `npm run lint`, `npm run preview`. Texture generator: `python3 scripts/make-textures.py public/textures`. Admin claim: `node scripts/set-admin.js you@example.com`.
 
 ---
 
@@ -54,33 +55,37 @@ Scripts: `npm run dev`, `npm run build`, `npm run lint`, `npm run preview`.
 
 ```
 formcraft-web-27/
-├─ index.html                 # picks the day/night edition before first paint; meta, font preloads
+├─ index.html                 # picks the edition before first paint (saved choice, else Kampala clock); meta, font preloads
 ├─ firebase.json  .firebaserc  firestore.rules  storage.rules  firestore.indexes.json  .env.example
-├─ docs/  build-plan.md  current-code.md  handoff.md (local install/lint/build checklist)
+├─ docs/  build-plan.md  current-code.md  handoff.md
+├─ scripts/   set-admin.js (admin custom claim)  make-textures.py (paper textures)
 ├─ public/
-│  ├─ fonts/       Satoshi + Clash Grotesk variable .woff2
-│  ├─ logos/       official SVGs (navy + white), FC mark (also favicon.svg)
-│  ├─ textures/    paper, navy, black, orange paper textures (.webp)
-│  └─ images/      project renders + merch as WebP (1600 px and -800), fmc-sheet-a1.webp (A1 title block)
+│  ├─ sw.js        service worker (offline cache, fast repeat visits)
+│  ├─ fonts/  logos/  images/ (WebP renders, 1600 + -800)
+│  └─ textures/    paper, navy, black, orange: 768 px tileable coarse paper (shown at 384 px)
 └─ src/
-   ├─ main.jsx  App.jsx  routes.jsx
+   ├─ main.jsx (registers sw.js in production)  App.jsx  routes.jsx (lazy pages, PageGate, redirects, prefetchRoute)
    ├─ config/firebase.js
-   ├─ context/     AuthContext  ThemeContext  CartContext
+   ├─ context/     contexts.js  AuthContext  ThemeContext  CartContext  SiteContext
    ├─ styles/      tokens.css  fonts.css  base.css  components.css
-   ├─ data/        products.js  projects.js  sheets.js
-   ├─ hooks/       usePageMeta  useReveal  useDocument
-   ├─ lib/         money.js (formatUGX)  forms.js (messages, quotes + upload)  storage.js
+   ├─ data/        pages.js (every page + on/off defaults)  nav.js (header groups)  content.js (admin collections + fields)
+   │               products.js  templates.js  projects.js  developments.js  posts.js  courses.js  events.js  sheets.js
+   ├─ hooks/       useAuth  useTheme  useCart  useSite (+ useShowLink)  useContent (+ useContentItem)  useCollection
+   │               useDocument  usePublicDoc  usePageMeta  useReveal  useSky
+   ├─ lib/         money.js  forms.js  storage.js  images.js  firestoreRest.js  adminContent.js  skyClock.js
    ├─ components/
-   │  ├─ layout/   Layout  Header  Footer (title block)  DonateFab  PageSkeleton
+   │  ├─ layout/   Layout  Header  ThemeSwitch  Footer  DonateFab  PageGate  PageSkeleton
    │  ├─ page/     PageHero  Section  Photo
-   │  ├─ scene/    HotelScene (+ hotel/hotelDay.js, hotel/hotelNight.js, hotel/compat.js)
-   │  │            PaperLayers + sceneGeometry.js (paper silhouettes and page motifs)
+   │  ├─ scene/    HotelScene (+ hotel/*.js)  PaperLayers  sceneGeometry.js (hills, motifs, trees)
+   │  ├─ admin/    PagesPanel  ContentPanel  AdminField  InboxPanel
    │  ├─ shop/     ProductCard  CartButton  CartDrawer
    │  ├─ forms/    QuoteForm
    │  ├─ auth/     SignInDialog
    │  └─ ui/       Icon  Logo  TornEdge  Reveal/Kinetic  Drawer
-   └─ pages/       Home  Studio  Construction  Concrete  Stores  ProductPage  Projects  ProjectPage
-                   About  Contact  ComingSoon  NotFound   (each .jsx + .css)
+   └─ pages/       Home  Studio  Construction  Concrete  Templates  TemplateDesign  Projects  ProjectPage
+                   Stores  ProductPage  Checkout  OrderConfirmed  Community  Academy  Journal  Post
+                   Invest  RealEstate  RealEstateProject  Donate  DonateThanks  About  Contact
+                   Account  SignIn  Admin  ComingSoon (unused, kept for later)  NotFound   (each .jsx + .css)
 ```
 
 ### Planned moves (Phase 0)
@@ -105,76 +110,46 @@ formcraft-web-27/
 
 ## How it works today
 
-### Start-up and app shell (`main.jsx`, `App.jsx`)
+### App shell and routes
+`main.jsx` loads the global styles and renders `<App/>`; in production it also registers `public/sw.js`. `App.jsx` nests `ThemeProvider > AuthProvider > SiteProvider > CartProvider > BrowserRouter > Layout > Suspense(PageSkeleton)`. `routes.jsx` maps every path to a lazily loaded page (`page(name)`), wraps each in `PageGate` (keyed by `pageForPath` from `data/pages.js`), keeps the old redirects (`/shop`, `/portfolio`, `/services`, `/blog`, `/plans`) and ends with `NotFound`. `prefetchRoute(href)` starts loading a page's code when a header link is hovered, focused or touched.
 
-`main.jsx` mounts `<App/>` inside `StrictMode`. `App.jsx` wraps everything in `<AuthProvider>` and renders `<Header>` and the matching route **straight away**; it doesn't wait for Firebase. Pages no longer receive a `user` prop; anything that needs the user calls `useAuth()`.
+### Page switches (`data/pages.js`, `SiteContext`, `PageGate`)
+`PAGES` lists every page with its paths, group, `defaultOn` and `locked` (Home, Contact, Sign in and Admin can't be turned off). `SiteProvider` reads Firestore `settings/site` `{ pages: { key: bool } }` over the REST API (no Firestore SDK on public pages), caches it in localStorage, and exposes `isOn(key)`, `canSee(key)` (admins see everything) and `setPage(key, on)` (admin only; the rules check the `admin` claim). `PageGate` shows a hidden page to admins under a "Hidden from visitors" strip, and visitors an "opens soon" sheet. `useShowLink()` filters links: the header (`data/nav.js` + `filterNav`), mobile menu, footer, home doors and the new pages all drop links to hidden pages. Everything is on by default.
 
-`AuthProvider` (`context/AuthContext.jsx`) subscribes to `onAuthStateChanged` and exposes `user`, `isAdmin` (from the `admin` custom claim on the ID token), `loading` (true until Firebase first answers), `signIn()` (Google popup; returns `null` on success or when the visitor closes the popup, otherwise a message to show), `signOut()` and `openSignIn()`. It renders `SignInDialog` when `openSignIn()` has been called, and closes it automatically once someone is signed in. Routes are written inline in `App.jsx`: `/`, `/services`, `/portfolio`, `/shop`, `/blog`, `/about`. There is no 404 route.
+### Content (`data/content.js`, `useContent`, admin)
+`CONTENT` defines the collections the admin can edit — products, templates, projects, developments, posts, courses, events — each with a starter-data loader from `src/data/` and a field list for the admin form. `useContent(name)` shows cached or starter items at once, then lists the Firestore collection over REST; if it has any documents they replace the starter data. Items with `active: false` are hidden from visitors (admins see them tagged "Hidden"). Lists are cached per visit (5 minutes) and in localStorage. Images in `images[]` can be public/images names, `{ name, alt }` objects or Storage URLs (`lib/images.js`, `Photo`).
 
-### Firebase (`config/firebase.jsx`)
+### Admin (`/admin`)
+Signed out → sign-in card; signed in without the claim → how to get it (`scripts/set-admin.js`). Admins get a side menu: **Overview**; **Pages** (switches, grouped like the site map); **Content** (one panel per collection: live list via `useCollection`, add/edit form built from the field list, photo uploads to Storage `public/content/<collection>/`, hide via "Show on the site", delete with confirmation, "Import the starter list" to copy `src/data/` into Firestore); **Inbox** (messages, quotes, investor leads with a status the team sets; orders, donations and members read-only). Nothing on this page can mark a payment paid.
 
-Calls `initializeApp` with the config for project `fromcraft-2026` written directly in the file, exports `auth`, and starts Analytics as soon as the module loads (also in development). No Firestore, Storage or Functions. The file has a `.jsx` extension but contains no JSX. The web config is not a secret, but it should come from env vars so dev/prod projects can differ.
-
-### Sign-in (`components/auth.jsx`)
-
-Only opens when asked (the header's "Sign in" button calls `openSignIn()`); nothing pops up on its own. It's a native `<dialog>` opened with `showModal()`, so keyboard focus stays inside it. It closes with the × button, the Escape key, or a click on the dimmed backdrop. One "Sign in with Google" button; while the popup is open it reads "Signing in…". Errors (popup blocked, network down, anything else) are shown in the dialog in plain words; closing the Google popup isn't treated as an error. Styles still use the old hard-coded colours until P0.3.
-
-### Header (`components/Header.jsx`)
-
-Text logo "📝 FormCraft". Nav links: Home, Services, Portfolio, Shop, Blog, About Us. The link for the current page is **removed** from the menu. Links are `<a>` tags with `onClick` and no `href`, so they can't be focused with the keyboard, opened in a new tab, or followed by search engines. Reads the user from `useAuth()`. When signed out (and auth has finished loading), a "Sign in" button at the end of the nav opens the sign-in dialog. When signed in, a 👤 button opens a dropdown with the email, "Settings" (does nothing) and "Logout" (`signOut()`, then navigate to `/`). No mobile menu; the nav just shrinks.
-
-### Footer (`components/Footer.jsx`)
-
-Empty file. Nothing renders below the pages.
+### Firebase and data access
+`config/firebase.js` loads Auth eagerly and Firestore/Storage/Functions on demand; the Firestore emulator is on 8081. Public reads use `lib/firestoreRest.js` (it also passes the server's `Date` header to the sky clock). Forms (`lib/forms.js`): `sendMessage`, `sendQuote` (+ drawing upload), `sendInvestorLead`, `sendInterest` (sign-ups, course and event places, newsletter → `messages` with a `[topic]` subject). Rules added in this round: `templates`, `developments` and `settings` are public read / admin write; admins can update or delete `messages`, update `investorLeads`, approve `members`; donors can read their own `donations`.
 
 ### Pages
+All copy comes from the owner's designs and the Company Profile; anything unknown is a `TODO:` or `[placeholder]`.
+- **Home**: the three.js hotel model (see Scene), value chain, flagship projects, counters from `stats/public` (REST), roadmap, four doors (filtered by page switches).
+- **Studio / Construction / Concrete / About / Contact / Projects / project pages**: as before; Projects and project pages now read `useContent("projects")` (brief and "what we did" fields).
+- **Templates** (`/templates`, `/templates/:slug`): template home designs with type and bedroom filters, what's included, plans-only vs plans-and-build, designer royalties, quote form. "Buy the plans" waits for Phase 3 payments.
+- **Stores / product pages**: `useContent("products")`; the cart drawer links to **Checkout** (`/checkout`: cart review, delivery details, MTN / Airtel / card choice; the pay button stays disabled until Flutterwave runs server-side) and **Order confirmed** (`/checkout/confirmed`, status read from Firestore only).
+- **Community** (market motif): why join, directory and jobs previews (samples), events from `useContent("events")`, sign-up via `sendInterest`. **Academy**: courses from `useContent("courses")`, workshops, internships, enrolment interest. **Journal / Post**: `useContent("posts")`, category filter, newsletter; post bodies support blank-line paragraphs, `## ` subheadings and `- ` lists.
+- **Invest**, **Real estate** and development pages: vision, 2028 targets, roadmap, investor levels (all terms TODO), investor-pack and interest forms (`sendInvestorLead`).
+- **Donate / Thank you**: tree picker, live counter, donor wall samples; payment off until a partner and price are agreed.
+- **Account** (orders and enrolments filtered by `uid`, downloads, donations, profile), **Sign in** (Google; email in Phase 4), **Admin**.
 
-- **Home (`/`).** "Welcome to FormCraft", "Logged in as: email" or "Welcome Visitor", and three cards (Create Form, View Forms, Analytics) whose buttons do nothing. Inline styles, Google blue `#4285F4`.
-- **Services (`/services`), About (`/about`), Portfolio (`/portfolio`).** Static text written for a **form-builder software product** (form design, data collection, analytics, integrations, "enterprise-grade security", pricing plans). Portfolio shows six emoji placeholder cards ("Project 1" to "Project 6"). None of it describes Formcraft Design and Construction.
-- **Blog (`/blog`).** A featured post and three post cards, hard-coded in the component, Unsplash images, copy about "design subscriptions". Posts don't open. The layout (featured + grid) is reusable for a Journal.
-- **Construction (not routed).** An "under construction" placeholder. Its name clashes with the planned Construction division page.
+### Scene: sky, hills, trees, motifs
+`PaperLayers` draws the paper landscape. The **sun (day edition) or moon (night edition) follows Kampala's clock** (`lib/skyClock.js`: sunrise 06:45, sunset 18:55 EAT, corrected by the server time when known): it rises on the left, is overhead at noon/midnight and sets on the right. It's placed in screen space so it's always in view, and rests low and rust-coloured when it's below the horizon. **Trees** (broadleaf, umbrella acacia, cypress and banana) are cut from the same sheet as their hill: small on the middle hills, a belt on the near hill and two big ones framing the front. Motifs per page: `design`, `construction`, `precast`, `workshop`, `plots` (template homes on pegged plots), `estate`, `forest` (staked saplings in front of grown trees), `academy`, `market`; others use the `city` skyline. With no saved choice, **the edition itself follows Kampala's clock** (day 06:45–18:55) and switches at dusk and dawn.
 
-### Shop (`/shop`, `pages/Shop.jsx`, component `CraftPage`)
+### Home 3D scene and speed
+`HotelScene` paints the paper landscape first, waits for the browser to be idle, then loads the day or night three.js script. The scripts render only while a see-through `.home-window` section is on screen, refresh shadows every third frame, cap the pixel ratio (1.25 phones, 1.5 desktop), turn off antialiasing on phones, use 1024/2048 shadow maps, and drop the pixel ratio further (down to 0.75) if frames keep running slow.
 
-The most developed page and the base for Stores. `Shop.css` defines its own `:root` theme (`--color-primary: #c47a4a` terracotta, Inter font) plus global `.container`, `.section` and `.btn` classes, which leak into every page once the shop has loaded. Sections, top to bottom:
+### Caching
+`public/sw.js` (production only): pages network-first with an offline copy; `/assets/` cache-first; fonts, textures, logos and images stale-while-revalidate (images capped at 160). Firebase Hosting: `/assets`, fonts and textures cached for a year (textures are versioned with `?v=`), logos 30 days, images 30 days + stale-while-revalidate, `index.html` and `sw.js` no-cache. Content and page switches are cached in localStorage.
 
-- **Hero:** "Handmade pieces. A community that makes them." Two buttons scroll to products and to the community section.
-- **FeaturedProducts:** shows 8 random products from `data/products.jsx` and **reshuffles every 14 seconds**, moving cards under the visitor's cursor. Hovering shows name and price; clicking a card (a `<div>`) opens a modal with image, price, description, colour and size options, quantity and "Add to Cart — $xx.xx". The modal doesn't trap focus or close on Escape.
-- **FeaturedCollections:** three collection cards ("Earth & Clay, By Amina"…); "Explore →" does nothing.
-- **Companies:** "Trusted by makers, studios & brands" with `via.placeholder.com` logos (Design Milk, Kinfolk…). Invented.
-- **CommunitySection:** text and three buttons (Join, Read Our Story, Donate / Support) that do nothing.
-- **Testimonials:** three quotes with `pravatar.cc` avatars. Invented.
-- **Cart:** a floating 🛒 button with item count, draggable with the mouse only (not touch). Opens a panel with items, +/−, remove, subtotal in **dollars**, and a Checkout button that does nothing. Cart state lives in `CraftPage` memory, so it's lost when the visitor leaves `/shop`. Adding the same product with the same colour and size increases the quantity instead of adding a new line; this merge logic is worth keeping.
+### Paper and textures
+`public/textures/*.webp` are generated by `scripts/make-textures.py`: 768 px seamless tiles with pulp clouds, a coarse cold-press tooth lit from the top left, long fibres, short hairs, flecks and bark inclusions; shown at 384 px (`--tex-size`) so the grain stays sharp. The tint overlays in `tokens.css` were thinned so the texture shows. Each sheet's torn top edge (`TornEdge`) is now cut from the same textured paper (`--edge-tex`, clipped to the tear in pixels) with a pale fibre line and loose hairs along the tear.
 
-### Data (`components/data/products.jsx`)
-
-Exports 9 products (ids 4–9 are copies of the same "Linen Tea Towel Set"), 3 collections, 4 companies and 3 testimonials. Product shape: `id`, `name`, `price` (dollars), `images`, `description`, `colors`, `sizes`. Nothing reads or writes Firestore. Mapping to the plan's `products` fields: `name` → `title`, `price` → `priceUGX` (needs real UGX prices), plus new `slug`, `division`, `category`, `stock`, `isDigital`, `active`.
-
-### Styles
-
-One plain `.css` file per component, no CSS modules or Tailwind. No shared token file. Colours are hard-coded per file (terracotta in the shop, Google blue on Home). `.btn` is defined in `FeaturedProducts.css`. No Formcraft fonts are loaded.
-
----
-
-## How it works now (paper edition)
-
-- **Editions.** `data-theme="day|night"` on `<html>` switches every colour token. `index.html` sets it before paint (saved choice, else system setting); `ThemeContext` keeps it in sync, and the header switch saves the choice (localStorage, try/catch).
-- **Home.** `HotelScene` mounts a fixed full-screen canvas behind the page and lazy-loads one of two three.js scripts: `hotel/hotelDay.js` or `hotel/hotelNight.js`. They're ported from the owner's concept files: a four-storey hotel paper model on the Formcraft A1 sheet, half in design, half built, with a cutaway; drag to turn it. Sections with `data-cam="hero|chain|plan|work|dusk"` steer the camera as the page scrolls. The hero, value chain, site-plan band and closing doors are see-through windows; the other sections are paper sheets with torn edges. `hotel/compat.js` keeps the concept's light levels on current three.js (physical light units). Without WebGL, with reduced motion, on low-memory devices or with Save-Data on, `PaperLayers` shows instead.
-- **Other pages.** `PageHero` draws a layered paper landscape (`PaperLayers`) with a motif that fits the page: Studio `design` (building half cut from paper, half pencil drawing), Construction `construction` (frames and cranes), Concrete `precast` (gantry crane, beams, silos), Stores `workshop` (sawtooth shed, chimney smoke, logs, the armchair). Other pages use the `city` skyline. At night windows glow and stars come out; layers settle in on load and drift on scroll.
-- **Forms.** Contact → Firestore `messages`; Studio, Construction and Concrete use `QuoteForm` → `quotes` (optional drawing uploaded first to Storage `quotes/{id}/`). Without a Firebase config the forms show a "call us" message instead of failing silently.
-- **Shop.** `/stores` and `/stores/:slug` read `src/data/products.js`; cart in `CartContext`; checkout stays "coming soon" until Phase 3.
-- **Home counters** read `stats/public` with `useDocument` and show `[n]` until Cloud Functions write real numbers.
-
-## What to keep
-
-- **React + React Router + Vite** and the one-file-per-page layout (`pages/X.jsx` + `X.css`).
-- **Firebase Auth wiring** (`onAuthStateChanged` → user), the Header account dropdown and logout. Move the user into `AuthContext`; add Email/Password in Phase 4.
-- **Shop page structure:** Hero → products → collections → community, plus the product modal (options + quantity) and the cart panel layout. This becomes Stores.
-- **Cart merge logic** (same product + options → more quantity, +/−, remove), moved into `CartContext`.
-- **Product data shape** (name, price, images, description, colours, sizes), reshaped to the plan's fields.
-- **Blog layout** (featured post + grid), if the Journal is kept.
-
----
+### Plant-a-tree button
+`DonateFab` is a 50 px round orange button in the bottom-right corner with a leaf; "Plant a tree" shows as a tooltip on hover or focus (and stays the button's accessible name).
 
 ## Phase 0 checklist
 
@@ -223,9 +198,15 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 - Firebase project id is `fromcraft-2026` (misspelled). Decide before real data goes in; ids can't be renamed (open question in the plan).
 - The Firebase web API key is in the repo history. It isn't a secret, but restrict it to the site's domains in Google Cloud console.
 - No tests. Rules tests arrive in Phase 3.
+- The latest commits (all pages, admin, textures, sky, service worker) were compiled with esbuild and checked in a headless browser only; run `npm run lint` and `npm run build` locally, and try Admin with a real admin account against the emulators.
+- `useContent` replaces the starter list as soon as a collection has **any** Firestore document, so importing or adding one item hides the rest of the starter list (the Admin page says so).
+- The service worker only registers in production builds. After a deploy, returning visitors get the new site on the next navigation (pages are network-first); bump `VERSION` in `public/sw.js` when its caching rules change.
+- The Home 3D scene doesn't follow the Kampala sky clock yet (its day and night scripts keep their own lighting); the paper scenes do.
+- `pages/ComingSoon.jsx` is no longer routed (hidden pages use `PageGate`); kept for later phases.
 - The Firestore emulator runs on port **8081**, not the default 8080, because the Revit MCP plugin uses 8080 on the owner's machine. Keep `firebase.json` and `config/firebase.js` in step.
 - `npm audit`: 4 high in `@grpc/grpc-js` (pulled in by `firebase`, Node-only, not in the browser build) and 2 moderate in `react-router` 6 (fixed only in v7, a later task).
-- Bundle: Firestore, Storage and Functions now load on demand (`getDb()`, `getStorageService()`, `getFunctionsService()`); only Auth loads with the app. three.js loads only with the Home hotel scene. Re-measure the main chunk after `npm run build` (was 220.7 kB gzipped before this change).
+- Bundle: Firestore, Storage and Functions load on demand; public pages read Firestore over REST, so the Firestore SDK loads only on Admin, Account, Checkout confirmation and form submits. three.js loads only with the Home hotel scene. Last local measure: main JS 97.4 kB gzipped (before this round); re-measure.
+- Textures are ~105–130 kB each (three per page, cached for a year and by the service worker).
 - The hotel scenes (`components/scene/hotel/`) are ported from the concept files written for three.js r128. Lights are converted to physical units in `hotel/compat.js`; the day edition was compared against the concept and matches; the night edition still needs a look on real hardware.
 - The pages from the paper-edition commits were written in a session without npm: they were compiled with esbuild and checked in a headless browser at 390 and 1440 px in both editions, but `npm run lint` / `npm run build` need running locally (see `docs/handoff.md`).
 - P0.4 was tested in Edge for opening, closing (×, Escape, backdrop), focus and no auto-popup. A real Google sign-in wasn't tested; try it once in the browser.
@@ -238,6 +219,8 @@ Newest first. One row per commit or task.
 
 | Date | Task | What changed | Files |
 | --- | --- | --- | --- |
+| 2026-10-24 | P1 paper & speed | Coarse paper textures (`scripts/make-textures.py`, 768 px tiles at 384 px, `?v=2`), thinner tint overlays, torn edges cut from the section's own textured paper with a fibre line. Sun/moon follow Kampala's clock (`lib/skyClock.js`, `useSky`); with no saved choice the edition follows the clock too. Green tree silhouettes on every scene (`plantTrees`, `treeShape`) and new motifs `plots`, `estate`, `forest`, `academy`, `market`. Plant-a-tree button is a 50 px circle. Home 3D: idle loading, paper landscape until ready, renders only while visible, adaptive pixel ratio, smaller shadow maps. Service worker `public/sw.js`, new Hosting cache headers. Round-2 fixes: drag hint at 360 px, Studio table region + scroll shadows. | `src/styles/*`, `src/components/scene/*`, `src/components/ui/TornEdge.jsx`, `src/components/layout/DonateFab.*`, `src/lib/skyClock.js`, `src/hooks/useSky.js`, `src/context/ThemeContext.jsx`, `index.html`, `public/textures/*`, `public/sw.js`, `src/main.jsx`, `firebase.json`, `src/pages/Home.*`, `src/pages/Studio.jsx` |
+| 2026-10-24 | P1 all pages + admin | Every page from the design: Templates, TemplateDesign, Checkout, OrderConfirmed, Community, Academy, Journal, Post, Invest, RealEstate, RealEstateProject, Donate, DonateThanks, Account, SignIn, Admin (starter data in `src/data/`). Page switches (`data/pages.js`, `SiteContext`, `PageGate`, `useShowLink`; Firestore `settings/site`). Content layer (`data/content.js`, `useContent`, REST reads in `lib/firestoreRest.js`); Stores, product pages, Projects and project pages read it. Admin control room (pages, content editor with photo uploads, inbox). `useCollection`, `usePublicDoc`, `lib/images.js`, `lib/adminContent.js`, `scripts/set-admin.js`. Header groups moved to `data/nav.js`, `ThemeSwitch` to its own file (clears the lint warning); admin icon in the header for admins. Rules: `templates`, `developments`, `settings`; admin update on `messages`, `investorLeads`, `members`; donors read their own `donations`. | `src/pages/*`, `src/data/*`, `src/context/SiteContext.jsx`, `src/components/admin/*`, `src/components/layout/*`, `src/hooks/*`, `src/lib/*`, `src/routes.jsx`, `src/App.jsx`, `firestore.rules`, `scripts/set-admin.js` |
 | 2026-10-24 | local check | `Layout` no longer moves focus to `<main>` on the first page load (only after navigating), so Tab starts at the skip link and header. Local checks of all routes, cart, drawers, redirects, reduced-motion fallback and the Contact/quote forms against the emulators; results in `docs/handoff.md`. | `src/components/layout/Layout.jsx`, docs |
 | 2026-10-24 | P1 follow-up | Firestore, Storage and Functions load on demand from `config/firebase.js` (`getDb()`, `getStorageService()`, `getFunctionsService()`); `lib/forms.js` and `useDocument` use them. Contexts moved to `context/contexts.js`, hooks to `hooks/useAuth.js`, `useTheme.js`, `useCart.js` (clears the `only-export-components` warning). `.gitattributes` keeps LF line endings. | `src/config/firebase.js`, `src/lib/forms.js`, `src/hooks/*`, `src/context/*`, `.gitattributes` |
 | 2026-10-24 | P0.9, P0.10, Phase 1 | Home rebuilt around the owner's three.js hotel model (day and night scripts ported from the concept files, lazy-loaded, camera driven by `data-cam` sections, drag to turn) with a paper-landscape fallback. Division pages get paper hero scenes with page motifs (design, construction, precast, workshop). New pages: Studio (process, package, rates, live fee calculator, BIM, 1D–7D, quote form), Construction (how we build, template builds, start a build), Concrete (products, green concrete, B2B supply), About, Projects (filter) and project pages, Contact (form to `messages`). All copy from the Company Profile and earlier designs; missing facts are `TODO:`. Old form-builder pages and invented content removed. Real `<Link>`s, labelled icon buttons, native dialogs (Escape, focus return). | `src/pages/*`, `src/components/scene/*`, `src/components/forms/*`, `src/data/projects.js`, `src/lib/forms.js`, `public/images/*` |

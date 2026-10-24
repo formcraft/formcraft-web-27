@@ -11,3 +11,11 @@ createRoot(document.getElementById("root")).render(
         <App />
     </StrictMode>
 );
+
+// Offline cache and fast repeat visits (public/sw.js). Production only, so development
+// always shows fresh files.
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js").catch(() => {});
+    });
+}

@@ -6,14 +6,16 @@ import { Section, SectionHead } from "../components/page/Section";
 import { ProductCard } from "../components/shop/ProductCard";
 import { Reveal } from "../components/ui/Reveal";
 import { Icon } from "../components/ui/Icon";
-import { products, CATEGORIES } from "../data/products";
+import { CATEGORIES } from "../data/products";
+import { useContent } from "../hooks/useContent";
 import "./Stores.css";
 
 // Hero → collection → community → made to order (the shop's existing order, rebuilt)
 export const Stores = () => {
     usePageMeta("Stores", "Furniture, joinery and everyday goods made in the Formcraft workshop in Kampala. Pay by mobile money or card.");
     const [category, setCategory] = useState("all");
-    const shown = products.filter((p) => p.active && (category === "all" || p.category === category));
+    const { items: products, loading } = useContent("products");
+    const shown = products.filter((p) => category === "all" || p.category === category);
 
     return (
         <div className="stores" data-division="stores">
@@ -33,7 +35,8 @@ export const Stores = () => {
                         ))}
                     </div>
                 </SectionHead>
-                <div className="stores-grid">
+                <div className="stores-grid" aria-busy={loading}>
+                    {loading && [0, 1, 2, 3].map((k) => <div key={k} className="skeleton" style={{ aspectRatio: "3 / 4" }} />)}
                     {shown.map((p, i) => (
                         <Reveal key={p.id} delay={(i % 4) * 0.05}>
                             <ProductCard product={p} />

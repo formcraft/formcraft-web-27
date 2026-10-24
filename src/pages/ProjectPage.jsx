@@ -4,24 +4,27 @@ import { Section } from "../components/page/Section";
 import { Photo } from "../components/page/Photo";
 import { Reveal } from "../components/ui/Reveal";
 import { Icon } from "../components/ui/Icon";
-import { projects, projectBySlug, DIVISIONS } from "../data/projects";
+import { DIVISIONS } from "../data/projects";
+import { useContentItem } from "../hooks/useContent";
+import { imgName, imgAlt } from "../lib/images";
 import { NotFound } from "./NotFound";
 import "./ProjectPage.css";
 
 export const ProjectPage = () => {
     const { slug } = useParams();
-    const project = projectBySlug(slug);
+    const { item: project, items: projects, loading } = useContentItem("projects", slug);
     usePageMeta(project ? project.title : "Project not found", project?.summary);
+    if (!project && loading) return <div className="wrap section"><div className="skeleton" style={{ height: 480 }} /></div>;
     if (!project) return <NotFound />;
 
     const index = projects.indexOf(project);
     const next = projects[(index + 1) % projects.length];
-    const [hero, ...gallery] = project.images;
+    const [hero, ...gallery] = project.images ?? [];
     const facts = [
         ["Client", project.client ?? "TODO (with permission)"],
         ["Location", project.location ?? "TODO"],
         ["Year", project.year ?? "TODO"],
-        ["Divisions", project.divisions.map((d) => DIVISIONS.find((x) => x.id === d)?.label).join(", ")],
+        ["Divisions", (project.divisions ?? []).map((d) => DIVISIONS.find((x) => x.id === d)?.label).join(", ")],
     ];
 
     return (
@@ -39,7 +42,7 @@ export const ProjectPage = () => {
                 </div>
             </section>
             <div className="wrap">
-                <Photo name={hero.name} alt={hero.alt} caption="Render" ratio="16 / 9" eager sizes="100vw" className="project-page-hero" />
+                <Photo name={imgName(hero)} alt={imgAlt(hero, project.title)} caption="Render" ratio="16 / 9" eager sizes="100vw" className="project-page-hero" />
             </div>
 
             <Section tone="sheet" seed={2} small>
@@ -54,11 +57,11 @@ export const ProjectPage = () => {
                 <div className="grid-2 project-page-text">
                     <div className="stack" style={{ "--gap": "12px" }}>
                         <p className="eyebrow">The brief</p>
-                        <p className="body todo">TODO: the client's problem in two or three sentences; site, constraints, budget range (if the client agrees to share it).</p>
+                        {project.brief ? <p className="body">{project.brief}</p> : <p className="body todo">TODO: the client's problem in two or three sentences; site, constraints, budget range (if the client agrees to share it).</p>}
                     </div>
                     <div className="stack" style={{ "--gap": "12px" }}>
                         <p className="eyebrow">What we did</p>
-                        <p className="body todo">TODO: survey & design, engineering, costing and approvals for this project.</p>
+                        {project.work ? <p className="body">{project.work}</p> : <p className="body todo">TODO: survey & design, engineering, costing and approvals for this project.</p>}
                     </div>
                 </div>
             </Section>
@@ -68,8 +71,8 @@ export const ProjectPage = () => {
                     <h2 className="h2" style={{ marginBottom: 32 }}>Gallery</h2>
                     <div className="project-page-gallery">
                         {gallery.map((img, i) => (
-                            <Reveal key={img.name} delay={i * 0.08}>
-                                <Photo name={img.name} alt={img.alt} caption="Render" ratio="4 / 3" className={i % 2 ? "tilt-r" : "tilt-l"} />
+                            <Reveal key={`${imgName(img)}-${i}`} delay={i * 0.08}>
+                                <Photo name={imgName(img)} alt={imgAlt(img, project.title)} caption="Render" ratio="4 / 3" className={i % 2 ? "tilt-r" : "tilt-l"} />
                             </Reveal>
                         ))}
                     </div>

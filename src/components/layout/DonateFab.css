@@ -1,14 +1,23 @@
+/* A small round button in the corner; the label shows as a tooltip on hover/focus */
 .donate-fab {
-  position: fixed; right: 24px; bottom: calc(24px + env(safe-area-inset-bottom)); z-index: 45;
-  display: inline-flex; align-items: center; gap: 10px; min-height: 54px; padding: 0 22px 0 18px;
-  border: 0; border-radius: 999px; font: 700 16px var(--fc-font-body); color: var(--fc-navy);
-  background: url("/textures/orange.webp") center / 600px, var(--fc-orange);
-  box-shadow: 0 3px 0 var(--fc-orange-edge), 0 16px 30px -10px var(--sh);
+  position: fixed; right: 18px; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 45;
+  display: grid; place-items: center; width: 50px; height: 50px; padding: 0;
+  border: 0; border-radius: 50%; color: var(--fc-navy); cursor: pointer;
+  background: var(--tex-orange);
+  box-shadow: 0 2px 0 var(--fc-orange-edge), 0 10px 22px -8px var(--sh);
   transition: translate .25s var(--fc-ease);
 }
-.donate-fab:hover { translate: 0 -2px; }
+.donate-fab:hover, .donate-fab:focus-visible { translate: 0 -2px; }
 .donate-fab svg { transition: rotate .4s var(--fc-ease); }
 .donate-fab:hover svg { rotate: -14deg; }
+.donate-fab-label {
+  position: absolute; right: calc(100% + 10px); top: 50%; translate: 4px -50%;
+  padding: 6px 10px; border-radius: var(--fc-radius); white-space: nowrap;
+  font: 700 13px/1 var(--fc-font-body); background: var(--ink); color: var(--ground);
+  opacity: 0; pointer-events: none; transition: opacity .2s, translate .2s var(--fc-ease);
+}
+.donate-fab:hover .donate-fab-label, .donate-fab:focus-visible .donate-fab-label { opacity: 1; translate: 0 -50%; }
+@media (hover: none) { .donate-fab-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); padding: 0; } }
 .donate-count { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: var(--fc-radius); }
 .donate-count b { font: 600 30px/1 var(--fc-font-display); color: var(--fc-orange); }
 .donate-count .bar { background: var(--line-2); height: 6px; margin: 6px 0 4px; }
@@ -16,7 +25,3 @@
 .donate-set legend { padding: 0; margin-bottom: 8px; font-weight: 700; }
 .donate-species { padding: 12px 14px; }
 .donate-species em { font-weight: 400; color: var(--ink-3); }
-@media (max-width: 600px) {
-  .donate-fab { right: 14px; bottom: calc(14px + env(safe-area-inset-bottom)); width: 54px; padding: 0; justify-content: center; }
-  .donate-fab-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-}

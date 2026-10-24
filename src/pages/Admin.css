@@ -1,0 +1,53 @@
+.admin-head { margin-bottom: 28px; align-items: center; }
+.admin-gate { max-width: 560px; }
+.admin-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: clamp(20px, 3vw, 40px); align-items: start; }
+.admin-nav { position: sticky; top: calc(var(--fc-header-h) + 16px); display: flex; flex-direction: column; gap: 18px; }
+.admin-nav-head { text-transform: uppercase; letter-spacing: .14em; margin: 0 0 4px; }
+.admin-nav-btn { text-align: left; padding: 9px 12px; border: 0; border-radius: var(--fc-radius); background: transparent; color: var(--ink-2); font: inherit; font-size: 15px; cursor: pointer; }
+.admin-nav-btn:hover { background: var(--sheet); color: var(--ink); }
+.admin-nav-btn[aria-current="page"] { background: var(--ink); color: var(--ground); font-weight: 700; }
+.admin-main { min-width: 0; }
+.admin-tile { text-align: left; display: flex; flex-direction: column; gap: 8px; cursor: pointer; font: inherit; color: inherit; border: 1px solid var(--line); }
+.admin-tile:hover { border-color: var(--ink); }
+
+/* pages */
+.admin-pages { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; }
+.admin-pages legend { margin-bottom: 8px; }
+.admin-page-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 0; border-top: 1px solid var(--line); }
+.admin-switch { position: relative; display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px 0 6px; border: 1.5px solid var(--line-2); border-radius: 999px; background: var(--sheet); color: var(--ink); font: 700 13px/1 var(--fc-font-body); cursor: pointer; flex: none; }
+.admin-switch-knob { width: 30px; height: 30px; border-radius: 50%; background: var(--line-2); transition: background .2s, translate .2s var(--fc-ease); }
+.admin-switch[aria-checked="true"] { border-color: var(--ink); }
+.admin-switch[aria-checked="true"] .admin-switch-knob { background: var(--fc-orange); }
+.admin-switch:disabled { opacity: .6; cursor: not-allowed; }
+.admin-switch:focus-visible { outline: 3px solid var(--fc-orange); outline-offset: 2px; }
+
+/* content */
+.admin-items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.admin-item { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto auto; align-items: center; gap: 16px; padding: 10px 14px 10px 10px; }
+.admin-item .photo { margin: 0; }
+.admin-item .photo figcaption { display: none; }
+.admin-editor { gap: 20px; }
+.admin-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px 20px; }
+.admin-wide { grid-column: 1 / -1; }
+.admin-check { display: flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 700; font-size: 14px; cursor: pointer; }
+.admin-check input { width: 20px; height: 20px; accent-color: var(--fc-orange); }
+.admin-images { border: 0; padding: 0; margin: 0; }
+.admin-thumbs { list-style: none; margin: 0 0 8px; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
+.admin-thumbs .photo { margin: 0 0 6px; }
+.admin-mini { width: 32px; height: 32px; min-width: 32px; }
+.admin-upload { align-self: flex-start; cursor: pointer; }
+.admin-upload:has(+ input:focus-visible) { outline: 3px solid var(--fc-orange); outline-offset: 2px; }
+
+/* inbox */
+.admin-table td { font-size: 14px; max-width: 320px; }
+.admin-cell { white-space: pre-wrap; overflow-wrap: anywhere; }
+.admin-more { border: 0; background: none; padding: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.admin-status { min-height: 36px; border: 1px solid var(--line-2); border-radius: var(--fc-radius); background: var(--sheet); color: var(--ink); font: inherit; font-size: 14px; padding: 0 8px; }
+
+@media (max-width: 820px) {
+  .admin-layout { grid-template-columns: 1fr; }
+  .admin-nav { position: static; flex-direction: row; overflow-x: auto; gap: 14px; padding-bottom: 8px; }
+  .admin-nav > div { flex: none; }
+  .admin-item { grid-template-columns: 56px minmax(0, 1fr); }
+  .admin-item > .tag, .admin-item > .row { grid-column: 2; justify-self: start; }
+}

@@ -1,23 +1,24 @@
 import { Link, useLocation } from "react-router-dom";
 import { useTheme } from "../../hooks/useTheme";
-import { SHEETS } from "../../data/sheets";
+import { sheetFor } from "../../data/sheets";
+import { useShowLink } from "../../hooks/useSite";
 import { Icon } from "../ui/Icon";
 import { Logo, LogoMark } from "../ui/Logo";
 import { TornEdge } from "../ui/TornEdge";
 import "./Footer.css";
 
-// Drawing title block: every page has a sheet number, like a set of construction drawings.
-const sheetFor = (pathname) => {
-    if (SHEETS[pathname]) return SHEETS[pathname];
-    if (pathname.startsWith("/stores/")) return ["S102", "Stores · product"];
-    if (pathname.startsWith("/projects/")) return ["A202", "Projects · case study"];
-    return ["X404", "Page not found"];
+// A footer link that disappears when the admin turns its page off
+const L = ({ to, children }) => {
+    const show = useShowLink();
+    return show(to) ? <Link to={to}>{children}</Link> : null;
 };
 
+// Drawing title block: every page has a sheet number, like a set of construction drawings.
 export const Footer = () => {
     const { pathname } = useLocation();
     const { theme } = useTheme();
     const [sheet, name] = sheetFor(pathname);
+    const show = useShowLink();
 
     return (
         <footer className="footer paper-dark">
@@ -31,30 +32,35 @@ export const Footer = () => {
                         <p className="small" style={{ maxWidth: 260 }}>
                             Designing spaces. Empowering communities.
                         </p>
-                        <Link to="/journal" className="link">
-                            Get the Journal by email
-                        </Link>
+                        {show("/journal") && (
+                            <Link to="/journal" className="link">
+                                Read the Journal
+                            </Link>
+                        )}
                     </div>
                     <nav aria-label="Divisions">
                         <p className="footer-head">Divisions</p>
-                        <Link to="/studio">Studio</Link>
-                        <Link to="/construction">Construction</Link>
-                        <Link to="/concrete">Concrete</Link>
-                        <Link to="/stores">Stores</Link>
+                        <L to="/studio">Studio</L>
+                        <L to="/construction">Construction</L>
+                        <L to="/concrete">Concrete</L>
+                        <L to="/templates">Template builds</L>
+                        <L to="/stores">Stores</L>
                     </nav>
                     <nav aria-label="Get involved">
                         <p className="footer-head">Get involved</p>
-                        <Link to="/community">Community</Link>
-                        <Link to="/academy">Academy</Link>
-                        <Link to="/invest">Invest in Formcraft</Link>
-                        <Link to="/donate">Plant a tree</Link>
+                        <L to="/community">Community</L>
+                        <L to="/academy">Academy</L>
+                        <L to="/invest">Invest in Formcraft</L>
+                        <L to="/real-estate">Real estate</L>
+                        <L to="/donate">Plant a tree</L>
                     </nav>
                     <nav aria-label="Company">
                         <p className="footer-head">Company</p>
-                        <Link to="/about">About</Link>
-                        <Link to="/projects">Projects</Link>
-                        <Link to="/contact">Contact</Link>
-                        <Link to="/account">Your account</Link>
+                        <L to="/about">About</L>
+                        <L to="/projects">Projects</L>
+                        <L to="/journal">Journal</L>
+                        <L to="/contact">Contact</L>
+                        <L to="/account">Your account</L>
                     </nav>
                     <div className="footer-contact">
                         <p className="footer-head">Talk to us</p>

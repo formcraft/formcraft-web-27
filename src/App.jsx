@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { CartProvider } from "./context/CartContext";
+import { SiteProvider } from "./context/SiteContext";
 import { Layout } from "./components/layout/Layout";
 import { PageSkeleton } from "./components/layout/PageSkeleton";
 import { routes } from "./routes";
@@ -12,6 +13,7 @@ function App() {
     return (
         <ThemeProvider>
             <AuthProvider>
+                <SiteProvider>
                 <CartProvider>
                     <BrowserRouter>
                         <Layout>
@@ -25,6 +27,7 @@ function App() {
                         </Layout>
                     </BrowserRouter>
                 </CartProvider>
+                </SiteProvider>
             </AuthProvider>
         </ThemeProvider>
     );

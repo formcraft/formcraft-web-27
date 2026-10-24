@@ -81,7 +81,7 @@
 .home-door-photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--fc-black) 25%, transparent), color-mix(in srgb, var(--fc-black) 82%, transparent)); }
 .home-door-photo > *:not(img) { z-index: 1; }
 .home-door:hover .home-door-img { scale: 1.04; }
-.home-door-orange { background: url("/textures/orange.webp") center / 600px, var(--fc-orange); }
+.home-door-orange { background: var(--tex-orange); }
 
 @media (max-width: 1000px) {
   .home-roadmap { grid-template-columns: 1fr; gap: 26px; padding-left: 30px; }
@@ -104,6 +104,7 @@
 @media (max-width: 600px) {
   .home-hero-inner { padding-top: 46svh; padding-bottom: 40px; gap: 28px; }
   .home-hero-copy .row .btn { flex: 1 1 auto; }
+  .home-drag-hint { top: calc(var(--fc-header-h) + 14px); padding: 8px 12px 8px 10px; font-size: 11px; }
   .home-plan-inner { padding-top: 48svh; }
   .home-join .wrap { padding-top: 42svh; }
 }

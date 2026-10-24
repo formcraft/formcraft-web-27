@@ -1,5 +1,7 @@
 import { useId, useMemo } from "react";
-import { W, random, ridgePath, rectPath, roofPath, framePath, cranePath, cloudCircles, cloudPath, landscape, motifShapes } from "./sceneGeometry";
+import { useSky } from "../../hooks/useSky";
+import { useTheme } from "../../hooks/useTheme";
+import { W, random, ridgePath, rectPath, roofPath, framePath, cranePath, cloudCircles, cloudPath, landscape, motifShapes, plantTrees } from "./sceneGeometry";
 import "./PaperLayers.css";
 
 // The paper-cut landscape as stacked SVG sheets: each layer casts a soft shadow on the one
@@ -28,11 +30,64 @@ const Quill = ({ id, d, seed, h, n, className }) => {
     );
 };
 
+// The sun (day edition) or moon (night edition) follows Kampala's clock across the sky:
+// up on the left after rising, overhead at noon/midnight, down on the right before setting.
+// It's placed in screen space (not inside the cropped landscape drawing), so it's always in view.
+const Sky = ({ r, id }) => {
+    const { theme } = useTheme();
+    const sky = useSky();
+    const night = theme === "night";
+    // the body that belongs to this edition; if it's below the horizon, rest it low on the side
+    const raw = night ? sky.moon : sky.sun;
+    const t = Math.min(0.94, Math.max(0.06, raw));
+    const below = raw < 0 || raw > 1;
+    const lift = Math.sin(Math.PI * t); // 0 at the horizons, 1 overhead
+    const style = { "--sky-x": `${6 + t * 88}%`, "--sky-y": `${(1 - lift) * 17 + 4}%`, "--sky-r": `${r}px` };
+    const label = night ? "moon" : "sun";
+    return (
+        <div className={`pl-sky ${below ? "is-low" : ""}`} style={style} data-body={label}>
+            <svg className="pl-sky-body" viewBox="-100 -100 200 200" aria-hidden="true" focusable="false">
+                <defs>
+                    <mask id={id}>
+                        <rect x="-100" y="-100" width="200" height="200" fill="white" />
+                        <circle cx="26" cy="-14" r="40" fill="black" />
+                    </mask>
+                </defs>
+                <g className="pl-rings">
+                    {[3, 2, 1].map((k) => (
+                        <circle key={k} className={`pl-f-ring pl-ring-${k}`} r={44 + 16 * k} />
+                    ))}
+                </g>
+                {night ? (
+                    <g mask={`url(#${id})`}>
+                        <circle className="pl-f-sun" r="44" />
+                        <circle className="pl-moon-crater" cx="-16" cy="12" r="7" />
+                        <circle className="pl-moon-crater" cx="-4" cy="-20" r="4.5" />
+                    </g>
+                ) : (
+                    <circle className="pl-f-sun" r="44" />
+                )}
+            </svg>
+            {!night && (
+                <svg className="pl-sky-birds" viewBox="0 0 160 70" aria-hidden="true" focusable="false">
+                    {[[10, 30], [34, 14], [58, 36], [110, 8], [128, 44]].map(([x, y]) => (
+                        <path key={`${x}${y}`} d={`M${x},${y} q6,-6 12,0 q6,-6 12,0`} />
+                    ))}
+                </svg>
+            )}
+        </div>
+    );
+};
+
 export const PaperLayers = ({ seed = 7, height = 560, city = true, motif = "city", tall = 1, sun = { x: 1110, y: 120, r: 64 }, accent = false, className = "" }) => {
-    const uid = useId().replace(/:/g, "");
+    const uid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
     const L = useMemo(() => landscape({ seed, h: height, city: city && motif === "city", tall }), [seed, height, city, motif, tall]);
     // a page motif (construction site, workshop, precast yard, design) replaces the skyline
-    const M = useMemo(() => (city ? motifShapes(motif, height * 0.86, tall, seed + 8) : null), [city, motif, height, tall, seed]);
+    const M = useMemo(() => {
+        const m = city ? motifShapes(motif, height * 0.86, tall, seed + 8) : null;
+        if (m?.trees) m.trees = m.trees.flatMap((d) => d.split(/(?=M)/).filter((x) => x.trim()));
+        return m;
+    }, [city, motif, height, tall, seed]);
     const h = L.h;
     const vb = `0 0 ${W} ${h}`;
     const paths = useMemo(() => {
@@ -54,7 +109,14 @@ export const PaperLayers = ({ seed = 7, height = 560, city = true, motif = "city
             glowD = c.blocks.map((b) => rectPath({ x: b.x + 2, y: b.y + 4, w: b.w - 4, h: b.h - 4 })).join(" ");
             if (c.crane) craneD = cranePath(c.crane);
         }
-        return { band, far, mid, near, front, c1, c2, cityD, glowD, craneD };
+        // Trees cut from the same sheet as their hill: small ones on the middle hills (behind the
+        // buildings), a belt on the near hill left of the buildings, and two big ones framing the front.
+        // every sub-shape as its own path, so overlapping crowns and trunks never cancel out
+        const split = (list) => list.flatMap((d) => d.split(/(?=M)/).filter((x) => x.trim()));
+        const midTrees = plantTrees({ pts: L.mid, seed: seed + 21, ranges: [[-40, W + 40]], every: 64, scale: 0.55 * Math.max(0.8, h / 560) });
+        const nearTrees = plantTrees({ pts: L.near, seed: seed + 22, ranges: [[-30, 600], [W - 70, W + 30]], every: 58, scale: 0.95 * Math.max(0.8, h / 560) });
+        const frontTrees = plantTrees({ pts: L.front, seed: seed + 23, ranges: [[-10, 90]], every: 80, scale: 1.7 * Math.max(0.7, h / 560), kinds: ["acacia", "broadleaf", "banana"] });
+        return { band, far, mid, near, front, c1, c2, cityD, glowD, craneD, midTrees: split(midTrees), nearTrees: split(nearTrees), frontTrees: split(frontTrees) };
     }, [L, h, seed, sun.x, sun.y]);
 
     const stars = useMemo(() => {
@@ -74,29 +136,18 @@ export const PaperLayers = ({ seed = 7, height = 560, city = true, motif = "city
                 <path className="pl-f-band" d={paths.band} />
                 <Quill id={`${uid}q0`} d={paths.band} seed={seed + 11} h={h} n={9} className="pl-q-band" />
             </>)}
-            {layer("sun", 0.08, <>
-                <g className="pl-rings">
-                    {[3, 2, 1].map((k) => (
-                        <circle key={k} className={`pl-f-ring pl-ring-${k}`} cx={sun.x} cy={sun.y} r={sun.r + 22 * k} />
-                    ))}
-                </g>
-                <circle className="pl-f-sun" cx={sun.x} cy={sun.y} r={sun.r} />
-            </>)}
             {layer("stars", 0.06, <g className="pl-stars">
                 {stars.map((s, i) => (
                     <circle key={i} cx={s.x} cy={s.y} r={s.r} style={{ "--tw": `${s.d}s`, "--td": `${s.o}s` }} />
                 ))}
             </g>)}
-            {layer("birds", 0.1, <g className="pl-birds">
-                {[[-260, -40], [-228, -58], [-200, -34], [-330, -10], [140, -60]].map(([dx, dy]) => (
-                    <path key={`${dx}${dy}`} d={`M${sun.x + dx},${sun.y + dy} q6,-6 12,0 q6,-6 12,0`} />
-                ))}
-            </g>)}
+            <Sky id={`${uid}moon`} r={Math.round(sun.r * (h < 420 ? 0.9 : 1))} />
             {layer("cloud pl-cloud-a", 0.12, <path className="pl-f-cloud" d={paths.c1} />)}
             {layer("cloud pl-cloud-b", 0.1, <path className="pl-f-cloud" d={paths.c2} />)}
             {layer("far", 0.16, <path className="pl-f-far" d={paths.far} />)}
             {layer("mid", 0.22, <>
                 <path className="pl-f-mid" d={paths.mid} />
+                {paths.midTrees.map((d, i) => <path key={i} className={`pl-tree pl-tree-far ${i % 3 ? "" : "alt"}`} d={d} />)}
                 <Quill id={`${uid}qm`} d={paths.mid} seed={seed + 13} h={h} n={5} className="pl-q-mid" />
             </>)}
             {L.city && layer("glow", 0.3, <>
@@ -118,6 +169,7 @@ export const PaperLayers = ({ seed = 7, height = 560, city = true, motif = "city
             {M && layer("glow", 0.3, <path className="pl-f-glow" d={M.glow} />)}
             {M && layer("city", 0.3, <>
                 <path className="pl-f-city" fillRule="evenodd" d={M.solid} />
+                {(M.trees ?? []).map((d, i) => <path key={i} className={`pl-tree pl-tree-near ${i % 3 ? "" : "alt"}`} d={d} />)}
                 {M.outline && <path className="pl-outline" d={M.outline} />}
             </>)}
             {M && M.puffs.length > 0 && layer("puffs", 0.31, <g className="pl-puffs">
@@ -125,9 +177,13 @@ export const PaperLayers = ({ seed = 7, height = 560, city = true, motif = "city
             </g>)}
             {layer("near", 0.36, <>
                 <path className="pl-f-near" d={paths.near} />
+                {paths.nearTrees.map((d, i) => <path key={i} className={`pl-tree pl-tree-mid ${i % 3 ? "" : "alt"}`} d={d} />)}
                 <Quill id={`${uid}qn`} d={paths.near} seed={seed + 14} h={h} n={8} className="pl-q-near" />
             </>)}
-            {layer("front", 0.42, <path className="pl-f-front" d={paths.front} />)}
+            {layer("front", 0.42, <>
+                <path className="pl-f-front" d={paths.front} />
+                {paths.frontTrees.map((d, i) => <path key={i} className={`pl-tree pl-tree-near ${i % 3 ? "" : "alt"}`} d={d} />)}
+            </>)}
         </div>
     );
 };

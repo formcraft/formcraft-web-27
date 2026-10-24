@@ -122,6 +122,42 @@ Latest: 2026-10-24, commits after `17d6d39` (P0.3 design system → Phase 1 → 
 **Please check:** steps 3–6 again, then the Contact and quote forms against the emulators
 (step 7). On Home, compare the night edition with the concept file `Formcraft Home — Night`.
 
+## From the cloud session (round 3)
+
+Latest: 2026-10-24. New since round 2:
+
+- **Every designed page** is built and routed (Templates, template design, Checkout, Order confirmed,
+  Community, Academy, Journal, Post, Invest, Real estate, development page, Donate, Thank you, Account,
+  Sign in, Admin). All are switched **on** so the owner can see them.
+- **Admin control room** at `/admin`: page on/off switches (Firestore `settings/site`), content editor
+  for products, template designs, projects, developments, Journal posts, courses and events (photo
+  uploads to Storage `public/content/…`), inbox for messages, quotes and investor leads.
+- **Rules changed** (`firestore.rules`): `templates`, `developments`, `settings` (public read, admin
+  write); admin update on `messages`, `investorLeads`, `members`; donors read their own `donations`.
+  Deploy the rules to the emulator before testing (they load from the file automatically).
+- **Speed:** public pages read Firestore over REST (no SDK); Home 3D loads when idle, renders only
+  while visible, adapts its resolution; service worker `public/sw.js` (production builds only); new
+  cache headers in `firebase.json`.
+- **Look:** coarse paper textures (regenerate with `python3 scripts/make-textures.py public/textures`),
+  torn edges cut from the same paper, green tree silhouettes, page motifs (plots, estate, forest,
+  academy, market), sun/moon following Kampala time, edition following the Kampala clock until the
+  visitor chooses, small round plant-a-tree button.
+- Round-2 items: drag hint moved at 360 px; Studio table is a labelled, focusable scroll region with
+  scroll shadows; the `Header.jsx` lint warning is gone (`data/nav.js`, `ThemeSwitch.jsx`); `UGX [price]`
+  placeholders are intended until real prices arrive.
+
+**Please check (round 3)**
+1. `npm run lint` and `npm run build`; record the main chunk size and that `firebase/firestore` is not in it.
+2. All new routes at 360 / 768 / 1440 in both editions; tab through Admin, Account tabs and the forms.
+3. Make yourself admin against the emulators:
+   `FIREBASE_AUTH_EMULATOR_HOST=localhost:9099 node scripts/set-admin.js you@example.com`
+   (after signing in once with the emulator's Google sign-in; `npm install --no-save firebase-admin`).
+   Then on `/admin`: turn a page off and check its links disappear for a signed-out window; import the
+   starter products, edit one, upload a photo, check `/stores` shows it.
+4. `npm run build && npm run preview`: the service worker registers (DevTools → Application), a reload
+   offline still shows the site.
+5. Home on a mid-range phone: frame rate and how quickly the text appears.
+
 ## Still being written in the cloud session
 
 The cloud session keeps pushing to this branch, one commit per task (`P0.3`, `P0.5/P0.6`,

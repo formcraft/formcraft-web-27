@@ -62,10 +62,11 @@ button { cursor: pointer; }
 .grid-2 > *, .grid-3 > *, .grid-4 > * { min-width: 0; }
 .mw { max-width: var(--mw, 680px); }
 .center { text-align: center; align-items: center; margin-inline: auto; }
-.paper-ground { background: var(--tex-ground); }
-.paper-sheet { background: var(--tex-sheet); }
-.paper-dark { background: var(--tex-dark); color: var(--ink); }
-.paper-orange { background: url("/textures/orange.webp") center / 600px, var(--fc-orange); color: var(--ink); }
+/* each sheet's torn top edge is cut from the same paper (--edge-tex, see .torn-edge) */
+.paper-ground { background: var(--tex-ground); --edge-tex: var(--tex-ground); }
+.paper-sheet { background: var(--tex-sheet); --edge-tex: var(--tex-sheet); }
+.paper-dark { background: var(--tex-dark); color: var(--ink); --edge-tex: var(--tex-dark); }
+.paper-orange { background: var(--tex-orange); color: var(--ink); --edge-tex: var(--tex-orange); }
 
 /* ---------- type ---------- */
 .h1, .h2, .h3, .h4 {

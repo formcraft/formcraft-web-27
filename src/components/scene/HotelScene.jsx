@@ -37,7 +37,11 @@ export const HotelScene = () => {
         let handle = null;
         let cancelled = false;
         setReady(false);
-        loaders[theme === "night" ? "night" : "day"]()
+        // wait until the page has painted and the browser is idle, so text and buttons come first
+        const idle = window.requestIdleCallback ?? ((fn) => setTimeout(fn, 600));
+        const cancelIdle = window.cancelIdleCallback ?? clearTimeout;
+        const idleId = idle(() => start(), { timeout: 1800 });
+        const start = () => loaders[theme === "night" ? "night" : "day"]()
             .then(({ createHotelScene }) => {
                 if (cancelled || !canvasRef.current) return;
                 handle = createHotelScene(canvasRef.current, {
@@ -48,17 +52,18 @@ export const HotelScene = () => {
             .catch((error) => console.warn("Hotel model unavailable, keeping the paper scene.", error));
         return () => {
             cancelled = true;
+            cancelIdle(idleId);
             handle?.dispose();
         };
     }, [use3D, theme]);
 
     return (
         <div className={`hotel-scene ${ready ? "is-ready" : ""}`} aria-hidden="true">
-            {use3D ? (
+            {/* the paper landscape shows straight away, and stays if 3D isn't possible */}
+            {(!use3D || !ready) && <PaperLayers seed={7} height={620} className="hotel-scene-fallback" />}
+            {use3D && (
                 // a fresh canvas per edition, so each script gets a clean WebGL context
                 <canvas key={theme} id="scene" ref={canvasRef} className="hotel-scene-canvas" />
-            ) : (
-                <PaperLayers seed={7} height={620} className="hotel-scene-fallback" />
             )}
         </div>
     );

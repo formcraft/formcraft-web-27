@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../../hooks/useCart";
-import { productById } from "../../data/products";
+import { useContent } from "../../hooks/useContent";
+import { useShowLink } from "../../hooks/useSite";
+import { imgProps } from "../../lib/images";
 import { formatUGX } from "../../lib/money";
 import { Drawer } from "../ui/Drawer";
 import { Icon } from "../ui/Icon";
@@ -9,7 +11,9 @@ import "./CartDrawer.css";
 // Prices shown here are for display only; the order total is set server-side at checkout.
 export const CartDrawer = () => {
     const { items, count, update, remove, open, closeCart } = useCart();
-    const lines = items.map((line) => ({ line, product: productById(line.productId) }));
+    const { items: products } = useContent("products");
+    const show = useShowLink();
+    const lines = items.map((line) => ({ line, product: products.find((p) => p.id === line.productId) })).filter((l) => l.product);
     const allPriced = lines.every(({ product }) => Number.isInteger(product.priceUGX));
     const subtotal = allPriced ? lines.reduce((sum, { line, product }) => sum + product.priceUGX * line.qty, 0) : null;
 
@@ -26,9 +30,15 @@ export const CartDrawer = () => {
                             <span>Subtotal</span>
                             <strong>{formatUGX(subtotal)}</strong>
                         </div>
-                        <button type="button" className="btn btn-primary btn-block" disabled>
-                            Checkout · coming soon
-                        </button>
+                        {show("/checkout") ? (
+                            <Link to="/checkout" className="btn btn-primary btn-block" onClick={closeCart}>
+                                Go to checkout
+                            </Link>
+                        ) : (
+                            <button type="button" className="btn btn-primary btn-block" disabled>
+                                Checkout · coming soon
+                            </button>
+                        )}
                         <p className="fine">Pay by MTN or Airtel mobile money or card once checkout opens. Delivery: TODO areas and price.</p>
                     </div>
                 )
@@ -48,7 +58,7 @@ export const CartDrawer = () => {
                         const options = [line.color, line.size].filter(Boolean).join(" · ");
                         return (
                             <li key={`${line.productId}-${line.color}-${line.size}`} className="cart-line">
-                                <img src={`/images/${product.images[0]}-800.webp`} alt="" width="72" height="72" loading="lazy" />
+                                <img {...(imgProps(product.images?.[0], { small: true }) ?? {})} alt="" width="72" height="72" loading="lazy" />
                                 <div className="cart-line-info">
                                     <Link to={`/stores/${product.slug}`} onClick={closeCart} className="cart-line-title">
                                         {product.title}

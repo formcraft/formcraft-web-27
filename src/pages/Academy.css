@@ -1,0 +1,16 @@
+.academy-bar { align-items: center; margin-bottom: 28px; }
+.academy-skeleton { height: 280px; }
+.academy-courses { list-style: none; margin: 0; padding: 0; }
+.academy-course { display: flex; flex-direction: column; gap: 12px; transition: box-shadow .25s ease; }
+.academy-course.is-selected { box-shadow: inset 0 0 0 2px var(--fc-orange), 0 16px 32px -16px var(--sh); }
+.academy-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 4px 0 0; padding-top: 12px; border-top: 1px solid var(--line); }
+.academy-facts div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.academy-facts dd { margin: 0; font-weight: 700; font-size: 14.5px; overflow-wrap: anywhere; }
+.academy-choose { align-self: flex-start; margin-top: auto; }
+.academy-reset { border: 0; background: none; font: inherit; cursor: pointer; }
+.academy-note { margin-top: 24px; }
+.academy-link { align-self: flex-start; }
+.academy-steps { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); list-style: none; margin: 0; padding: 0; }
+@media (max-width: 380px) {
+  .academy-facts { grid-template-columns: 1fr 1fr; }
+}

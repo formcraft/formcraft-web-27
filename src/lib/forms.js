@@ -50,3 +50,22 @@ export const sendQuote = async ({ type, name, contact, location, budgetUGX, mess
     });
     return quoteRef.id;
 };
+
+// Investor pack request → investorLeads/{id}. Rules require name, email, createdAt.
+export const sendInvestorLead = async ({ name, org, email, ticketSize, message }) => {
+    assertReady();
+    const [db, { addDoc, collection, serverTimestamp }] = await Promise.all([getDb(), import("firebase/firestore")]);
+    return addDoc(collection(db, "investorLeads"), {
+        name: trim(name, 120),
+        org: trim(org, 200),
+        email: trim(email, 200),
+        ticketSize: trim(ticketSize, 80),
+        message: trim(message, 5000),
+        createdAt: serverTimestamp(),
+    });
+};
+
+// Small "count me in" forms (community sign-up interest, course places, event places, newsletter)
+// go to messages/{id} with a subject saying what they're for, so the team sees them in Admin.
+export const sendInterest = ({ topic, name, email, body }) =>
+    sendMessage({ name, email, subject: `[${topic}]`, body: body || `${name} is interested in: ${topic}` });

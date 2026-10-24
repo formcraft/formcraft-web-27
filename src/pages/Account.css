@@ -1,0 +1,26 @@
+.account-signin { max-width: 560px; align-items: flex-start; }
+.account-signin p { margin: 0; }
+.account-notice { margin-bottom: 24px; }
+.account-notice .tag { margin-inline: 4px; }
+
+.account-tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--line-2); margin-bottom: 28px; scrollbar-width: thin; }
+.account-tab {
+  flex: none; min-height: 46px; padding: 0 16px; border: 0; border-bottom: 3px solid transparent; background: transparent;
+  color: var(--ink-3); font: 700 15px var(--fc-font-body); cursor: pointer; transition: color .2s, border-color .2s;
+}
+.account-tab:hover { color: var(--ink); }
+.account-tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--fc-orange); }
+.account-tab:focus-visible { outline: 3px solid var(--fc-orange); outline-offset: -3px; }
+
+.account-panel { display: flex; flex-direction: column; gap: 18px; }
+.account-panel:focus-visible { outline: 3px solid var(--fc-orange); outline-offset: 6px; }
+.account-panel .table { min-width: 460px; }
+.account-status { text-transform: capitalize; }
+.account-row-focus td { background: color-mix(in srgb, var(--fc-orange) 18%, transparent); }
+.account-empty { padding-block: 40px; }
+
+.account-profile { margin: 0; display: flex; flex-direction: column; max-width: 560px; }
+.account-profile > div { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+.account-profile > div:first-child { border-top: 0; padding-top: 0; }
+.account-profile dt { font-weight: 700; }
+.account-profile dd { margin: 0; text-align: right; overflow-wrap: anywhere; }

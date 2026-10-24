@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ThemeContext } from "./contexts";
+import { isKampalaDay } from "../lib/skyClock";
 
 // Day and night paper editions. index.html sets data-theme before first paint so there's no flash;
 // this context keeps React in step with it. The visitor's choice is remembered; until they choose,
-// the site follows their system setting.
+// the edition follows Kampala's clock (day 06:45–18:55 EAT), switching on its own at dusk and dawn.
 const KEY = "fc-theme";
 
 const readSaved = () => {
@@ -15,20 +16,16 @@ const readSaved = () => {
     }
 };
 
-const systemTheme = () =>
-    typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "night" : "day";
+const clockTheme = () => (isKampalaDay() ? "day" : "night");
 
 export const ThemeProvider = ({ children }) => {
     const [saved, setSaved] = useState(readSaved);
-    const [system, setSystem] = useState(systemTheme);
-    const theme = saved ?? system;
+    const [clock, setClock] = useState(clockTheme);
+    const theme = saved ?? clock;
 
     useEffect(() => {
-        const media = window.matchMedia?.("(prefers-color-scheme: dark)");
-        if (!media) return undefined;
-        const onChange = (event) => setSystem(event.matches ? "night" : "day");
-        media.addEventListener("change", onChange);
-        return () => media.removeEventListener("change", onChange);
+        const id = setInterval(() => setClock(clockTheme()), 60 * 1000);
+        return () => clearInterval(id);
     }, []);
 
     useEffect(() => {

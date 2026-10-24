@@ -1,0 +1,17 @@
+.invest-targets dt { margin: 0; overflow-wrap: anywhere; }
+.invest-targets dd { margin: 0; }
+.invest-markets-intro { margin-bottom: 20px; }
+.invest-markets { list-style: none; padding: 0; margin: 0; }
+.invest-note { margin-top: 20px; }
+.invest-roadmap { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 0; border-top: 2px solid var(--line); }
+.invest-roadmap li { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 28px 20px 8px 0; }
+.invest-roadmap li::before { content: ""; position: absolute; top: -8px; left: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--fc-rust); }
+.invest-roadmap li.is-target::before { background: var(--fc-orange); width: 18px; height: 18px; top: -10px; }
+.invest-roadmap-year { font: 600 clamp(26px, 3vw, 36px)/1 var(--fc-font-display); }
+.invest-roadmap .is-target .invest-roadmap-year { color: var(--fc-orange); }
+@media (max-width: 600px) {
+  .invest-roadmap { border-top: 0; border-left: 2px solid var(--line); }
+  .invest-roadmap li { padding: 0 0 22px 24px; }
+  .invest-roadmap li::before { top: 4px; left: -8px; }
+  .invest-roadmap li.is-target::before { left: -10px; top: 2px; }
+}

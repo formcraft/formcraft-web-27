@@ -17,19 +17,23 @@ export function createHotelScene(canvas, env) {
   var setTimeout = function (fn, ms) { var id = window.setTimeout(function () { if (alive) fn(); }, ms); cleanup.push(function () { window.clearTimeout(id); }); return id; };
 
   var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var smallScreen = Math.min(innerWidth, innerHeight) < 700;
   var root = document.documentElement;
   var R;
-  try { R = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, powerPreference: 'high-performance' }); }
+  try { R = new THREE.WebGLRenderer({ canvas: canvas, antialias: !smallScreen, powerPreference: 'high-performance' }); }
   catch (e) { root.classList.add('nogl'); return null; }
   if (!R.getContext()) { root.classList.add('nogl'); return null; }
 
   var small = Math.min(innerWidth, innerHeight) < 700;
-  R.setPixelRatio(Math.min(window.devicePixelRatio || 1, small ? 1.5 : 2));
+  // performance: fewer pixels on phones, and the ratio drops further if frames run slow (see frame())
+  var maxRatio = Math.min(window.devicePixelRatio || 1, small ? 1.25 : 1.5), ratio = maxRatio;
+  R.setPixelRatio(ratio);
   R.outputColorSpace = THREE.SRGBColorSpace;
   R.toneMapping = THREE.ACESFilmicToneMapping;
   R.toneMappingExposure = 0.96;
   R.shadowMap.enabled = true;
   R.shadowMap.type = THREE.PCFShadowMap;
+  R.shadowMap.autoUpdate = false; // refreshed every third frame in frame()
   var ANISO = R.capabilities.getMaxAnisotropy();
   var lin = function (h) { return new THREE.Color(h).convertSRGBToLinear(); };
 
@@ -628,7 +632,7 @@ export function createHotelScene(canvas, env) {
   var hemi = new THREE.HemisphereLight(lin('#7f95b8'), lin('#1a2028'), 0.32); scene.add(hemi);
   var key = new THREE.DirectionalLight(lin('#a8c0ff'), 0.85);
   key.position.set(-34, 44, 18); key.castShadow = true;
-  var SM = small ? 2048 : 4096; key.shadow.mapSize.set(SM, SM);
+  var SM = small ? 1024 : 2048; key.shadow.mapSize.set(SM, SM);
   var kc = key.shadow.camera; kc.left = -75; kc.right = 75; kc.top = 70; kc.bottom = -45; kc.near = 5; kc.far = 160;
   key.shadow.bias = -0.0004; key.shadow.normalBias = 0.03; key.shadow.radius = 4;
   scene.add(key);
@@ -961,7 +965,21 @@ export function createHotelScene(canvas, env) {
   addEventListener('pointermove', function (e) { if (e.pointerType === 'mouse' && !drag) { tmx = e.clientX / vw * 2 - 1; tmy = e.clientY / vh * 2 - 1; } }, { passive: true });
 
   var clock = new THREE.Timer(), lastHw = 1; clock.connect(document); cleanup.push(function () { clock.dispose(); });
+  // only draw while a see-through section of the page shows the model
+  var visible = true, frameNo = 0, slow = 0;
+  var windows = document.querySelectorAll('.home-window');
+  if (windows.length && 'IntersectionObserver' in window) {
+    var seen = new Set();
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) seen.add(en.target); else seen.delete(en.target); });
+      var was = visible; visible = seen.size > 0;
+      if (visible && !was) { clock.update(); requestAnimationFrame(frame); }
+    });
+    windows.forEach(function (w) { io.observe(w); });
+    cleanup.push(function () { io.disconnect(); });
+  }
   function frame() {
+    if (!visible) return; // resumes from the observer
     clock.update(); var dt = Math.min(0.05, clock.getDelta()), t = clock.getElapsed();
     var s = sample(scrollY + vh * 0.5), k = s.k;
     for (var i = 0; i < 3; i++) { sCam[i].t = k.cam[i]; sTgt[i].t = k.tgt[i]; sCam[i].step(dt); sTgt[i].step(dt); }
@@ -1008,6 +1026,10 @@ export function createHotelScene(canvas, env) {
 
     placeTags(s.hw);
     if (hint) hint.style.opacity = dragged ? '0' : (s.hw * 1).toFixed(3);
+    if (frameNo++ % 3 === 0) R.shadowMap.needsUpdate = true;
+    // adaptive resolution: if frames keep running slower than ~40 fps, draw fewer pixels
+    if (dt > 0.025) slow++; else slow = Math.max(0, slow - 1);
+    if (slow > 45 && ratio > 0.75) { ratio = Math.max(0.75, ratio - 0.25); R.setPixelRatio(ratio); R.setSize(vw, vh, false); slow = 0; }
     R.render(scene, camera);
     requestAnimationFrame(frame);
   }

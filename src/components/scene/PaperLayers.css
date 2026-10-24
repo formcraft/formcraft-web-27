@@ -3,7 +3,15 @@
 .pl-band, .pl-cloud, .pl-far, .pl-mid, .pl-city, .pl-near, .pl-front {
   filter: drop-shadow(0 -2px 3px var(--sh-2)) drop-shadow(0 -9px 16px var(--sh-2));
 }
-.pl-sun { filter: drop-shadow(0 2px 3px var(--sh-2)) drop-shadow(0 10px 22px var(--sh-2)); }
+/* sun / moon on Kampala's clock (positions set inline from useSky) */
+.pl-sky { position: absolute; left: var(--sky-x); top: var(--sky-y); width: calc(var(--sky-r) * 200 / 44); aspect-ratio: 1; translate: -50% -50%; transition: left 60s linear, top 60s linear; animation: pl-lay 1.15s var(--fc-ease) both; animation-delay: .12s; }
+.pl-sky-body { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 2px 3px var(--sh-2)) drop-shadow(0 10px 22px var(--sh-2)); }
+.pl-sky-birds { position: absolute; width: 70%; right: 105%; top: 20%; overflow: visible; animation: pl-bob 5s ease-in-out infinite; }
+.pl-sky.is-low[data-body="sun"] .pl-f-sun { fill: var(--fc-rust); }
+.pl-sky.is-low[data-body="moon"] { opacity: .75; }
+.pl-sky.is-low .pl-rings { opacity: .5; }
+.pl-moon-crater { fill: var(--sc-ring); opacity: .9; }
+[data-theme="night"] .pl-moon-crater { fill: color-mix(in srgb, var(--fc-navy) 12%, transparent); }
 .pl-f-band { fill: var(--sc-band); }
 .pl-f-sun { fill: var(--sc-sun); }
 .pl-f-ring { fill: var(--sc-ring); }
@@ -18,6 +26,10 @@
 .pl-accent .pl-f-near { fill: var(--fc-div); }
 [data-theme="night"] .pl-accent .pl-f-near { fill: color-mix(in oklab, var(--fc-div) 45%, var(--fc-night)); }
 .pl-f-front { fill: var(--sc-front); }
+/* trees: paper greens matching the 3D model's trees */
+.pl-tree-far { fill: var(--sc-tree-far); } .pl-tree-far.alt { fill: var(--sc-tree-far-2); }
+.pl-tree-mid { fill: var(--sc-tree-mid); } .pl-tree-mid.alt { fill: var(--sc-tree-mid-2); }
+.pl-tree-near { fill: var(--sc-tree-near); } .pl-tree-near.alt { fill: var(--sc-tree-near-2); }
 .pl-f-beam { fill: color-mix(in srgb, var(--fc-orange) 16%, transparent); }
 .pl-f-lamp { fill: var(--fc-rust); }
 .pl-quill { fill: none; stroke-width: 1.4; }
@@ -29,14 +41,14 @@
 [data-theme="night"] .pl-outline { stroke: var(--fc-orange); opacity: .7; }
 .pl-puffs circle { fill: var(--sc-cloud); transform-box: fill-box; transform-origin: center; }
 [data-theme="night"] .pl-puffs circle { fill: var(--sc-far); }
-.pl-birds path { fill: none; stroke: var(--ink-2); stroke-width: 2; stroke-linecap: round; }
+.pl-sky-birds path { fill: none; stroke: var(--ink-2); stroke-width: 2; stroke-linecap: round; }
 
 [data-theme="night"] .pl-q-band { stroke: color-mix(in srgb, var(--fc-orange) 22%, transparent); }
 [data-theme="night"] .pl-q-mid { stroke: color-mix(in srgb, var(--fc-white) 5%, transparent); }
 [data-theme="night"] .pl-q-near { stroke: color-mix(in srgb, var(--fc-studio) 30%, transparent); }
 [data-theme="day"] .pl-stars, [data-theme="day"] .pl-f-off, [data-theme="day"] .pl-f-beam,
 :root:not([data-theme]) .pl-stars { display: none; }
-[data-theme="night"] .pl-birds { display: none; }
+
 
 /* motion */
 @keyframes pl-lay { from { opacity: 0; translate: 0 60px; } to { opacity: 1; translate: 0 0; } }
@@ -50,7 +62,6 @@
 .pl-layer { animation: pl-lay 1.15s var(--fc-ease) both; animation-delay: calc(var(--depth) * 1.6s); }
 .pl-cloud-a path { animation: pl-drift 22s ease-in-out infinite alternate; }
 .pl-cloud-b path { animation: pl-drift 30s ease-in-out infinite alternate-reverse; }
-.pl-birds { animation: pl-bob 5s ease-in-out infinite; }
 .pl-stars circle { animation: pl-twinkle var(--tw, 3s) ease-in-out var(--td, 0s) infinite; }
 .pl-f-lamp { animation: pl-blink 2.4s steps(1) infinite; }
 .pl-f-off { animation: pl-flick var(--fd, 5s) ease-in-out infinite; }
