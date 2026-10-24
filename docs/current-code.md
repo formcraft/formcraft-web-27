@@ -157,6 +157,7 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 
 | # | Problem | Fix | Task | Status |
 | --- | --- | --- | --- | --- |
+| 2026-10-24 | local check | Round 3 checks of `f651610`: lint, build, all routes, forms, admin (claim via `scripts/set-admin.js`, page switches, product import/edit/upload), service worker and offline. No code changes; findings in `docs/handoff.md`. | docs |
 | 1 | Home, Services, About, Portfolio describe a form-builder SaaS | Rewrite from the Company Profile; `TODO:` where facts are missing (full rewrite in Phase 1) | P0.9 | Done (2026-10-24) |
 | 2 | Terracotta + Inter (shop) and `#4285F4` (Home) break the Brand Guide | `tokens.css` + fonts; replace hard-coded colours and inline styles | P0.3 | Done (2026-10-24) |
 | 3 | Emoji logo, Vite favicon | Formcraft SVG logo and FC mark from `public/logos/` | P0.6 | Done (2026-10-24) |

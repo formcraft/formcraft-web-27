@@ -67,37 +67,46 @@ Phase 0 finished plus Phase 1 pages, in the new **paper-cut** design:
 | --- | --- | --- |
 | 1 Install | ☑ 2026-10-24 | three 0.184.0, firebase 12.19.0. `npm audit fix` (patch/minor only). Left: 4 high in `@grpc/grpc-js` (Node-only, via firebase) and 2 moderate in react-router 6 (fix needs v7). npm skipped the postinstall scripts of `@firebase/util` and `protobufjs`; not needed for the Vite build. |
 | 2 Firebase env | ☑ 2026-10-24 | `.env.local` from the old `fromcraft-2026` config. `VITE_FUNCTIONS_REGION` left empty (TODO: region open question). |
-| 3 Lint | ☑ 2026-10-24 (re-run) | Passes; 1 warning: `Header.jsx:12` exports something beside the component (`only-export-components`, hot reload only). |
-| 4 Build | ☑ 2026-10-24 (re-run) | Passes. Main JS **97.4 kB** gzipped (was 220.7). First visit: main + `Logo` chunk 12.8 kB + CSS 7.2 kB. three.js (`compat-*.js`, 141.7 kB gz) and Firestore (164.6 kB gz) are separate lazy chunks. |
-| 5 Check by eye | ☑ 2026-10-24 | All routes at 360/768/1440, day and night: no sideways scroll, titles and h1 set, no page errors. Menu, cart drawer and plant-a-tree drawer open and close with Escape, focus returns. Theme choice persists. Cart survives navigation. Old URLs redirect. Issues listed below. |
-| 6 three.js | ☑ 2026-10-24 (partial) | Hotel scene renders in day and night. Reduced motion: no canvas, SVG fallback, three.js not downloaded. Not tested: pointer follow, pause when hidden/scrolled out (needs a real browser). |
-| 7 Emulators | ☑ 2026-10-24 | Contact → `messages` doc and Studio quote → `quotes` doc in the emulator, `createdAt` set by the server. Firestore on port 8081. |
+| 3 Lint | ☑ 2026-10-24 (round 3) | Passes; 2 warnings (`only-export-components`): `admin/InboxPanel.jsx:14`, `page/Photo.jsx:6`. |
+| 4 Build | ☑ 2026-10-24 (round 3) | Passes. Main JS **81 kB** gz; first visit ≈ 126 kB JS (main + Auth 22 + app core 9.5 + `usePageMeta` 13). Firestore SDK (162 kB) and three.js (142 kB) are lazy, not preloaded; main only has the REST URL. |
+| 5 Check by eye | ☑ 2026-10-24 (round 3) | All 27 routes at 360/768/1440 in both editions: no sideways scroll, one h1, meta description, no JS errors. Every form field labelled. Admin and Account usable by keyboard. Findings below. |
+| 6 three.js | ☑ 2026-10-24 (partial) | Renders day and night; reduced motion → SVG, no three.js download. Home main thread blocked ~12 s with one 8 s task (headless, software WebGL — real phone needed). |
+| 7 Emulators | ☑ 2026-10-24 (round 3) | Forms write `messages`/`quotes`. Admin claim set with `set-admin.js`; page switch, product import, edit and photo upload work. Snapshot in `emulator-data/` (git-ignored). |
 | 8 Docs | ☑ 2026-10-24 | `current-code.md` status line, known issues, change log. |
 | 9 PR | ☑ 2026-10-24 | Opened as a draft (branch still being written). Not merged or deployed. |
 
 ## From the local machine (for the cloud session)
 
-Latest: 2026-10-24, round 2 (checked everything up to `87d5901`). Draft PR: https://github.com/formcraft/formcraft-web-27/pull/1
+Latest: 2026-10-24, **round 3** (checked `f651610`). Draft PR: https://github.com/formcraft/formcraft-web-27/pull/1
+Rounds 1–2 are done and your round-2 fixes check out (drag hint, Studio table, Header lint, prices).
 
-Round 1 (install, `.env.local`, tools, Firestore emulator on 8081) is done; your bundle, lint and
-line-ending fixes all check out. Results are in the status table above.
+**Round 3 results**
+- Lint and build pass (see status table). `firebase/firestore` is not in the main chunk.
+- 27 routes × 3 widths × 2 editions: no overflow, one h1 each, meta descriptions, no JS errors.
+  `settings/site` and `stats/public` 404 on an empty emulator (expected; defaults used).
+- Admin (emulator, `formcraftinc@gmail.com` via `set-admin.js`): turning Academy off removes all
+  3 links for a signed-out visitor and `/academy` shows "opens soon"; back on restores them.
+  "Import the starter list" imported 6 products; edit + photo upload to Storage + Save → a fresh
+  signed-out browser sees the new title on `/stores` and the product page.
+- Service worker registers on `npm run preview` (static 31, pages 1, media 7 cached); `/about` and
+  `/stores` reload offline.
 
-**Fixed locally in this round**
-- **Keyboard focus on first load.** `Layout.jsx` moved focus to `<main>` on every page load, so the
-  first Tab skipped the skip link and the whole header. It now moves focus only after navigating
-  (compares the previous address, so StrictMode's double effect doesn't trigger it). First Tab now
-  goes: Skip to content → logo → Hire us → Shop.
+**Please fix**
+1. **Home freezes after it paints.** Text is up at 1.3 s, but one task blocks the main thread for
+   8.1 s (12.3 s total) while the hotel scene starts; nothing is clickable meanwhile. Headless Edge
+   uses software WebGL, so a real GPU will be faster, but please split the scene build into chunks
+   (yield between floors/meshes, or build in a worker) and measure on a real mid-range phone.
+2. **Offline Home is a blank page.** After one visit, going offline and reloading `/` shows nothing:
+   the service worker doesn't have `/assets/index-*.js` because the first page load wasn't
+   controlled. Precache the entry bundle and CSS at install (read them from `index.html` or a build
+   manifest), and make sure Home renders without the 3D chunks. Even after three visits, `/` stayed
+   blank offline while `/about` and `/stores` worked.
+3. **Extra product photos never show.** Firestore holds `images: ["chair", "<storage url>"]`, but
+   `/stores/:slug` renders only `images[0]`. Show a gallery (or thumbnails) for the rest.
+4. **Lint warnings** in `admin/InboxPanel.jsx:14` and `page/Photo.jsx:6` (`only-export-components`).
 
-**Please handle in your next commits**
-1. **Home at 360 px:** the "Drag to turn the model" badge sits on top of the
-   "Design & construction · Kampala, Uganda" eyebrow. Move it into the model area or hide it on small
-   screens.
-2. **Studio at 360 px:** the process table is 603 px wide. The page doesn't scroll sideways, so it's
-   inside a scroll box; check that box is obvious (shadow or hint) and reachable by keyboard
-   (`tabIndex={0}`, `role="region"`, `aria-label`).
-3. **Lint warning:** `components/layout/Header.jsx:12` exports a non-component beside `Header`.
-4. **Prices:** products show `UGX [price]` — fine as a placeholder, just confirming it's intended until
-   the real prices arrive.
+**Not done here:** a real mid-range phone (step 5 of round 3). Pointer-follow and pause-when-hidden on
+the 3D scene still need a person in a real browser.
 
 ## From the cloud session (reply)
 
