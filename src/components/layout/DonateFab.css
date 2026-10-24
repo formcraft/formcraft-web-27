@@ -8,8 +8,9 @@
   transition: translate .25s var(--fc-ease);
 }
 .donate-fab:hover, .donate-fab:focus-visible { translate: 0 -2px; }
+.donate-fab:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
 .donate-fab svg { transition: rotate .4s var(--fc-ease); }
-.donate-fab:hover svg { rotate: -14deg; }
+.donate-fab:hover svg, .donate-fab[aria-expanded="true"] svg { rotate: -14deg; }
 .donate-fab-label {
   position: absolute; right: calc(100% + 10px); top: 50%; translate: 4px -50%;
   padding: 6px 10px; border-radius: var(--fc-radius); white-space: nowrap;
@@ -17,11 +18,20 @@
   opacity: 0; pointer-events: none; transition: opacity .2s, translate .2s var(--fc-ease);
 }
 .donate-fab:hover .donate-fab-label, .donate-fab:focus-visible .donate-fab-label { opacity: 1; translate: 0 -50%; }
+/* no tooltip while the card is open (it would sit over the card's corner) */
+.donate-fab[aria-expanded="true"] .donate-fab-label { opacity: 0; }
 @media (hover: none) { .donate-fab-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); padding: 0; } }
-.donate-count { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: var(--fc-radius); }
-.donate-count b { font: 600 30px/1 var(--fc-font-display); color: var(--fc-orange); }
-.donate-count .bar { background: var(--line-2); height: 6px; margin: 6px 0 4px; }
-.donate-set { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-.donate-set legend { padding: 0; margin-bottom: 8px; font-weight: 700; }
-.donate-species { padding: 12px 14px; }
-.donate-species em { font-weight: 400; color: var(--ink-3); }
+
+/* the pop-up card's contents */
+.donate-fab-count { display: flex; align-items: baseline; gap: 10px; padding: 12px 14px; border-radius: var(--fc-radius); margin-bottom: 14px; }
+.donate-fab-count b { font: 600 28px/1 var(--fc-font-display); color: var(--fc-orange); }
+.donate-fab-count span { font-weight: 700; font-size: 14px; }
+.donate-fab-set { border: 0; margin: 0; padding: 0; }
+.donate-fab-set legend { padding: 0; margin-bottom: 8px; font-weight: 700; font-size: 14px; }
+.donate-fab-picks { display: flex; flex-wrap: wrap; gap: 8px; }
+.donate-fab-picks .chip { min-height: 44px; }
+.donate-fab-price { margin: 12px 0 0; font-weight: 600; font-size: 15px; }
+.donate-fab-price .fine { display: block; font-weight: 400; margin-top: 2px; }
+.donate-fab-actions { display: flex; flex-direction: column; gap: 8px; }
+.donate-fab-actions .fine { margin: 0; }
+.donate-fab-more { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; font-weight: 700; font-size: 14px; }

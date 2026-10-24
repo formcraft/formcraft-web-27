@@ -1,5 +1,21 @@
 .product-page-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 72px); padding-block: clamp(32px, 5vw, 72px) clamp(64px, 8vw, 112px); align-items: start; }
-.product-page-photo { position: sticky; top: calc(var(--fc-header-h) + 20px); }
+.product-page-gallery { position: sticky; top: calc(var(--fc-header-h) + 20px); display: flex; flex-direction: column; gap: 12px; }
+.product-page-photo { position: relative; touch-action: pan-y; user-select: none; }
+.product-page-photo img { animation: product-page-in .3s ease both; }
+.product-page-photo .product-page-count {
+  position: absolute; right: 18px; bottom: 18px; display: block; padding: 5px 10px; border-radius: 999px;
+  font: 700 12px/1 var(--fc-font-body); letter-spacing: .06em; background: var(--ink); color: var(--ground);
+}
+.product-page-thumbs { list-style: none; margin: 0; padding: 2px; display: flex; gap: 10px; overflow-x: auto; scrollbar-width: thin; }
+.product-page-thumb {
+  display: block; width: 76px; height: 76px; padding: 0; border: 2px solid transparent; border-radius: var(--fc-radius);
+  background: var(--sheet-2); cursor: pointer; overflow: hidden; opacity: .72; transition: opacity .2s, border-color .2s;
+}
+.product-page-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.product-page-thumb:hover { opacity: 1; }
+.product-page-thumb[aria-pressed="true"] { opacity: 1; border-color: var(--ink); }
+.product-page-thumb:focus-visible { outline: 3px solid var(--fc-orange); outline-offset: 2px; opacity: 1; }
+@keyframes product-page-in { from { opacity: .4; } to { opacity: 1; } }
 .product-page-info { display: flex; flex-direction: column; gap: 18px; }
 .product-page-price { font: 600 26px/1 var(--fc-font-display); }
 .product-page-set { border: 0; margin: 0; padding: 0; }
@@ -13,6 +29,7 @@
 .product-page-related { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
 @media (max-width: 900px) {
   .product-page-grid { grid-template-columns: 1fr; }
-  .product-page-photo { position: static; }
+  .product-page-gallery { position: static; }
+  .product-page-thumb { width: 64px; height: 64px; }
 }
 @media (max-width: 700px) { .product-page-related { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 12px; } }

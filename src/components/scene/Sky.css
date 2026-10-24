@@ -1,0 +1,56 @@
+/* Page-hero sky: a translucent wash over the hero's paper, warm where the hills meet it.
+   --sky-horizon is set inline (px above the hero's bottom at desktop width) and scales with the
+   paper scene, which is shown at 66 % height up to 900 px wide and 50 % up to 600 px. */
+.sky {
+  --sky-h: var(--sky-horizon, 180px);
+  position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  background: linear-gradient(to top,
+    var(--sky-glow) 0,
+    var(--sky-glow) var(--sky-h),
+    var(--sky-glow-2) calc(var(--sky-h) + 90px),
+    var(--sky-mid) calc(var(--sky-h) + 40%),
+    var(--sky-top) 100%);
+}
+@media (max-width: 900px) { .sky { --sky-h: calc(var(--sky-horizon, 180px) * .66); } }
+@media (max-width: 600px) { .sky { --sky-h: calc(var(--sky-horizon, 180px) * .5); } }
+
+/* stars fade out towards the horizon glow */
+.sky-stars {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  -webkit-mask-image: linear-gradient(to top, transparent var(--sky-h), var(--fc-black) calc(var(--sky-h) + 140px));
+  mask-image: linear-gradient(to top, transparent var(--sky-h), var(--fc-black) calc(var(--sky-h) + 140px));
+  animation: sky-fade 1.6s ease both;
+}
+.sky-star, .sky-twinkle circle { fill: var(--sky-star); }
+.sky-star-0 { opacity: .34; }
+.sky-star-1 { opacity: .56; }
+.sky-star-2 { opacity: .85; }
+.sky-twinkle circle { opacity: .7; animation: sky-twinkle var(--tw, 7s) ease-in-out var(--td, 0s) infinite; }
+@keyframes sky-twinkle { 0%, 100% { opacity: .22; } 50% { opacity: .95; } }
+@keyframes sky-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* sun / moon on Kampala's clock (positions set inline from useSky) */
+.sky-body {
+  position: absolute; left: var(--sky-x); top: var(--sky-y); width: calc(var(--sky-r) * 200 / 44); aspect-ratio: 1;
+  translate: calc(var(--sky-t, .5) * -100%) 0; transition: left 60s linear, top 60s linear, translate 60s linear;
+  animation: sky-rise 1.15s var(--fc-ease) both; animation-delay: .12s;
+}
+.sky-body-svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 2px 3px var(--sh-2)) drop-shadow(0 10px 22px var(--sh-2)); }
+.sky-body-disc { fill: var(--sc-sun); }
+.sky-body-ring { fill: var(--sc-ring); }
+.sky-body-ring-3 { opacity: .45; }
+.sky-body-ring-2 { opacity: .7; }
+.sky-body-rings { transform-box: fill-box; transform-origin: center; animation: sky-pulse 9s ease-in-out infinite; }
+.sky-body-crater { fill: var(--sc-ring); opacity: .9; }
+[data-theme="night"] .sky-body-crater { fill: color-mix(in srgb, var(--fc-navy) 12%, transparent); }
+.sky-body.is-low[data-body="sun"] .sky-body-disc { fill: var(--fc-rust); }
+.sky-body.is-low[data-body="moon"] { opacity: .75; }
+.sky-body.is-low .sky-body-rings { opacity: .5; }
+@keyframes sky-rise { from { opacity: 0; transform: translateY(60px); } to { opacity: 1; transform: none; } }
+@keyframes sky-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+/* phones: the scene is half height, so the sun or moon shrinks with it */
+@media (max-width: 600px) { .sky-body { width: calc(var(--sky-r) * 200 / 44 * .7); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .sky-twinkle circle, .sky-body-rings, .sky-stars, .sky-body { animation: none; }
+}

@@ -28,7 +28,10 @@ export async function createHotelScene(canvas, env) {
   try { R = new THREE.WebGLRenderer({ canvas: canvas, antialias: ultra || (!smallScreen && !standard), powerPreference: 'high-performance' }); }
   catch (e) { root.classList.add('nogl'); return null; }
   if (!R.getContext()) { root.classList.add('nogl'); return null; }
+  var lastMark = performance.now(), marks = [];
   var pause = function () {
+    var now = performance.now(); marks.push(Math.round(now - lastMark)); lastMark = now;
+    if (env.debug) console.log('[hotel] step', marks.length, marks[marks.length - 1] + 'ms');
     return new Promise(function (r) { if (window.scheduler && window.scheduler.yield) window.scheduler.yield().then(r); else window.setTimeout(r, 0); });
   };
   var stopped = function () {
@@ -905,6 +908,7 @@ export async function createHotelScene(canvas, env) {
   var layoutObserver = new ResizeObserver(function () { measure(); });
   layoutObserver.observe(document.body);
   cleanup.push(function () { layoutObserver.disconnect(); });
+  if (env.debug) window.__hotelDebug = { camera: camera, keys: KEYS, sample: function () { return { anchors: anchors.map(function (a) { return a.y; }), vh: vh, vw: vw, fit: fit, scrollY: scrollY }; } };
   if (R.compileAsync) { try { await R.compileAsync(scene, camera); } catch (err) {} }
   if (stopped()) return null;
   requestAnimationFrame(frame);

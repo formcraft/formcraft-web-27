@@ -1,12 +1,13 @@
 import { useId, useMemo } from "react";
-import { useSky } from "../../hooks/useSky";
-import { useTheme } from "../../hooks/useTheme";
+import { SkyBody } from "./Sky";
 import { W, random, ridgePath, rectPath, roofPath, framePath, cranePath, cloudCircles, cloudPath, landscape, motifShapes, plantTrees } from "./sceneGeometry";
 import "./PaperLayers.css";
 
 // The paper-cut landscape as stacked SVG sheets: each layer casts a soft shadow on the one
 // behind it, lays itself down on load, and drifts at its own speed as the page scrolls.
 // Colours come from the --sc-* tokens, so the same markup is the day or the night edition.
+// The sky behind it (gradient + night stars) is the shared <Sky> that PageHero lays under the
+// whole hero; PaperLayers only adds the sun or moon (<SkyBody>) and, by day, two paper clouds.
 
 const Quill = ({ id, d, seed, h, n, className }) => {
     const r = random(seed);
@@ -30,55 +31,6 @@ const Quill = ({ id, d, seed, h, n, className }) => {
     );
 };
 
-// The sun (day edition) or moon (night edition) follows Kampala's clock across the sky:
-// up on the left after rising, overhead at noon/midnight, down on the right before setting.
-// It's placed in screen space (not inside the cropped landscape drawing), so it's always in view.
-const Sky = ({ r, id }) => {
-    const { theme } = useTheme();
-    const sky = useSky();
-    const night = theme === "night";
-    // the body that belongs to this edition; if it's below the horizon, rest it low on the side
-    const raw = night ? sky.moon : sky.sun;
-    const t = Math.min(0.94, Math.max(0.06, raw));
-    const below = raw < 0 || raw > 1;
-    const lift = Math.sin(Math.PI * t); // 0 at the horizons, 1 overhead
-    const style = { "--sky-x": `${6 + t * 88}%`, "--sky-y": `${(1 - lift) * 17 + 4}%`, "--sky-r": `${r}px` };
-    const label = night ? "moon" : "sun";
-    return (
-        <div className={`pl-sky ${below ? "is-low" : ""}`} style={style} data-body={label}>
-            <svg className="pl-sky-body" viewBox="-100 -100 200 200" aria-hidden="true" focusable="false">
-                <defs>
-                    <mask id={id}>
-                        <rect x="-100" y="-100" width="200" height="200" fill="white" />
-                        <circle cx="26" cy="-14" r="40" fill="black" />
-                    </mask>
-                </defs>
-                <g className="pl-rings">
-                    {[3, 2, 1].map((k) => (
-                        <circle key={k} className={`pl-f-ring pl-ring-${k}`} r={44 + 16 * k} />
-                    ))}
-                </g>
-                {night ? (
-                    <g mask={`url(#${id})`}>
-                        <circle className="pl-f-sun" r="44" />
-                        <circle className="pl-moon-crater" cx="-16" cy="12" r="7" />
-                        <circle className="pl-moon-crater" cx="-4" cy="-20" r="4.5" />
-                    </g>
-                ) : (
-                    <circle className="pl-f-sun" r="44" />
-                )}
-            </svg>
-            {!night && (
-                <svg className="pl-sky-birds" viewBox="0 0 160 70" aria-hidden="true" focusable="false">
-                    {[[10, 30], [34, 14], [58, 36], [110, 8], [128, 44]].map(([x, y]) => (
-                        <path key={`${x}${y}`} d={`M${x},${y} q6,-6 12,0 q6,-6 12,0`} />
-                    ))}
-                </svg>
-            )}
-        </div>
-    );
-};
-
 export const PaperLayers = ({ seed = 7, height = 560, city = true, motif = "city", tall = 1, sun = { x: 1110, y: 120, r: 64 }, accent = false, className = "" }) => {
     const uid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
     const L = useMemo(() => landscape({ seed, h: height, city: city && motif === "city", tall }), [seed, height, city, motif, tall]);
@@ -96,8 +48,9 @@ export const PaperLayers = ({ seed = 7, height = 560, city = true, motif = "city
         const mid = ridgePath(L.mid, h);
         const near = ridgePath(L.near, h);
         const front = ridgePath(L.front, h);
-        const c1 = cloudPath(cloudCircles(sun.x - 120, sun.y + 18, 1.1, seed + 2));
-        const c2 = cloudPath(cloudCircles(280, h * 0.2, 0.8, seed + 3));
+        // two paper clouds at most, on the right, away from the hero copy (day edition only)
+        const c1 = cloudPath(cloudCircles(W * 0.7, h * 0.14, 1, seed + 2));
+        const c2 = cloudPath(cloudCircles(W * 0.92, h * 0.3, 0.75, seed + 3));
         let cityD = "";
         let glowD = "";
         let craneD = "";
@@ -117,12 +70,7 @@ export const PaperLayers = ({ seed = 7, height = 560, city = true, motif = "city
         const nearTrees = plantTrees({ pts: L.near, seed: seed + 22, ranges: [[-30, 600], [W - 70, W + 30]], every: 58, scale: 0.95 * Math.max(0.8, h / 560) });
         const frontTrees = plantTrees({ pts: L.front, seed: seed + 23, ranges: [[-10, 90]], every: 80, scale: 1.7 * Math.max(0.7, h / 560), kinds: ["acacia", "broadleaf", "banana"] });
         return { band, far, mid, near, front, c1, c2, cityD, glowD, craneD, midTrees: split(midTrees), nearTrees: split(nearTrees), frontTrees: split(frontTrees) };
-    }, [L, h, seed, sun.x, sun.y]);
-
-    const stars = useMemo(() => {
-        const r = random(seed + 5);
-        return Array.from({ length: 46 }, () => ({ x: r() * W, y: r() * h * 0.45, r: 0.8 + r() * 1.4, d: 2 + r() * 4, o: r() * 3 }));
-    }, [seed, h]);
+    }, [L, h, seed]);
 
     const layer = (name, depth, children) => (
         <svg className={`pl-layer pl-${name}`} style={{ "--depth": depth }} viewBox={vb} preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
@@ -136,12 +84,7 @@ export const PaperLayers = ({ seed = 7, height = 560, city = true, motif = "city
                 <path className="pl-f-band" d={paths.band} />
                 <Quill id={`${uid}q0`} d={paths.band} seed={seed + 11} h={h} n={9} className="pl-q-band" />
             </>)}
-            {layer("stars", 0.06, <g className="pl-stars">
-                {stars.map((s, i) => (
-                    <circle key={i} cx={s.x} cy={s.y} r={s.r} style={{ "--tw": `${s.d}s`, "--td": `${s.o}s` }} />
-                ))}
-            </g>)}
-            <Sky id={`${uid}moon`} r={Math.round(sun.r * (h < 420 ? 0.9 : 1))} />
+            <SkyBody id={`${uid}moon`} r={Math.round(sun.r * (h < 420 ? 0.9 : 1))} />
             {layer("cloud pl-cloud-a", 0.12, <path className="pl-f-cloud" d={paths.c1} />)}
             {layer("cloud pl-cloud-b", 0.1, <path className="pl-f-cloud" d={paths.c2} />)}
             {layer("far", 0.16, <path className="pl-f-far" d={paths.far} />)}

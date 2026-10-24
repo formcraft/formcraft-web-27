@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { useCart } from "../hooks/useCart";
@@ -7,10 +7,88 @@ import { ProductCard } from "../components/shop/ProductCard";
 import { Icon } from "../components/ui/Icon";
 import { categoryLabel } from "../data/products";
 import { useContentItem } from "../hooks/useContent";
-import { imgProps } from "../lib/images";
+import { imgAlt, imgProps } from "../lib/images";
 import { formatUGX } from "../lib/money";
 import { NotFound } from "./NotFound";
 import "./ProductPage.css";
+
+// Main photo plus a row of thumbnails when a product has more than one image (public/images names
+// or Storage URLs uploaded from Admin). Thumbnails are buttons; arrow keys move between them and a
+// sideways swipe on the main photo shows the next or previous one.
+const ProductGallery = ({ images, title, firstAlt }) => {
+    const list = images.filter((img) => imgProps(img));
+    const [shown, setShown] = useState(0);
+    const thumbs = useRef([]);
+    const swipe = useRef(null);
+    const i = Math.min(shown, Math.max(0, list.length - 1));
+    const current = list[i];
+    const total = list.length;
+    const altFor = (img, k) => imgAlt(img, k === 0 ? firstAlt : `${title}, photo ${k + 1} of ${total}`);
+
+    const go = (k, focus = false) => {
+        const next = (k + total) % total;
+        setShown(next);
+        if (focus) thumbs.current[next]?.focus();
+    };
+    const onKeyDown = (e) => {
+        if (e.key === "ArrowRight" || e.key === "ArrowDown") go(i + 1, true);
+        else if (e.key === "ArrowLeft" || e.key === "ArrowUp") go(i - 1, true);
+        else if (e.key === "Home") go(0, true);
+        else if (e.key === "End") go(total - 1, true);
+        else return;
+        e.preventDefault();
+    };
+    const onPointerDown = (e) => {
+        if (total > 1 && e.isPrimary) swipe.current = { x: e.clientX, y: e.clientY };
+    };
+    const onPointerUp = (e) => {
+        const start = swipe.current;
+        swipe.current = null;
+        if (!start) return;
+        const dx = e.clientX - start.x;
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(e.clientY - start.y)) go(i + (dx < 0 ? 1 : -1));
+    };
+
+    return (
+        <div className="product-page-gallery">
+            <figure className="photo product-page-photo" style={{ "--ar": "1 / 1" }} onPointerDown={onPointerDown} onPointerUp={onPointerUp} onPointerCancel={() => {
+                swipe.current = null;
+            }}>
+                {current ? (
+                    <img key={i} {...imgProps(current)} sizes="(max-width: 900px) 100vw, 50vw" alt={altFor(current, i)} fetchPriority={i === 0 ? "high" : undefined} draggable="false" />
+                ) : (
+                    <div className="placeholder">[Photo]</div>
+                )}
+                {total > 1 && (
+                    <figcaption className="product-page-count" aria-live="polite">
+                        <span className="sr-only">Showing photo </span>
+                        {i + 1} / {total}
+                    </figcaption>
+                )}
+            </figure>
+            {total > 1 && (
+                <ul className="product-page-thumbs" aria-label={`Photos of ${title}`} onKeyDown={onKeyDown}>
+                    {list.map((img, k) => (
+                        <li key={k}>
+                            <button
+                                ref={(el) => {
+                                    thumbs.current[k] = el;
+                                }}
+                                type="button"
+                                className="product-page-thumb"
+                                aria-label={`Show photo ${k + 1} of ${total}`}
+                                aria-pressed={k === i}
+                                onClick={() => go(k)}
+                            >
+                                <img {...imgProps(img, { small: true })} sizes="96px" alt="" loading="lazy" decoding="async" draggable="false" />
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
+    );
+};
 
 export const ProductPage = () => {
     const { slug } = useParams();
@@ -37,9 +115,7 @@ export const ProductPage = () => {
     return (
         <div className="product-page" data-division="stores">
             <div className="wrap product-page-grid">
-                <figure className="photo product-page-photo" style={{ "--ar": "1 / 1" }}>
-                    {product.images?.[0] ? <img {...imgProps(product.images[0])} sizes="(max-width: 900px) 100vw, 50vw" alt={product.imageAlt || product.title} fetchPriority="high" /> : <div className="placeholder">[Photo]</div>}
-                </figure>
+                <ProductGallery key={product.id} images={product.images ?? []} title={product.title} firstAlt={product.imageAlt || product.title} />
                 <div className="product-page-info">
                     <nav className="crumbs" aria-label="Breadcrumb">
                         <Link to="/stores">Stores</Link> <span aria-hidden="true">/</span> <span>{categoryLabel(product.category)}</span> <span aria-hidden="true">/</span> <span aria-current="page">{product.title}</span>

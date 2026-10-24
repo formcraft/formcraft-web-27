@@ -145,6 +145,69 @@ screen tall.
 - The `Drawer` component stays for the cart. This is either a new `Popover` in `components/ui/` or a
   `side="corner"` variant: your call.
 
+## ▶ Owner decisions 2026-10-24 + branch `try/auto-live` (please review and merge first)
+
+The owner looked at Home on this PC and decided the following. **Answer B is settled: no "Tap to explore".**
+
+> Nobody should have to tap to see the 3D model. It has to come in by itself; on a slow device or
+> connection it may come later. The wow factor is opening the page and seeing it already moving a bit.
+> The still → 3D blend must be seamless: same angle, then it starts moving, fluidly. As I design on this
+> PC, I need to see the best quality, and switch between best and worst to see what every visitor gets.
+> The paper texture on the building should really pop, a concrete-paper feel you can almost touch.
+> I mostly use **Chrome** (test Chrome first, then Edge).
+
+**Why the owner kept seeing "Tap to explore" (measured):** in Chrome and Edge on Windows the browser uses the
+Intel UHD 630 unless told otherwise. The frame check counted every frame slower than 40 fps as slow, starting
+from the first frame while the page was still loading. After about 12 s it called `onSlow` and stored
+`lite` for 30 days, so every later visit showed "Tap to explore", although the Intel GPU draws the page at
+61 fps once the model is loaded.
+
+**Branch `try/auto-live` (commit `1a7d367`, 4 files, scene code only, built and linted).** Please review it
+and merge it into `paper-edition` (or redo it your way):
+1. **No tap level.** `guessLevel` never returns `lite`: reduced motion, Save-Data, 2G, ≤ 2 GB and software
+   GL all get `standard`. Old stored `lite` results are ignored. `onSlow` stores `standard` and steps
+   `full` down to `standard`. The model always comes in by itself. Reduced motion keeps the scene's own
+   `reduced` handling, so the model doesn't move.
+2. **Frame check:** it skips the first 180 frames and counts a frame as slow below about 30 fps
+   (`dt > 0.034`, was `0.025`).
+3. **Idle turn:** `Math.sin(t * 0.15) * 0.16` (was `sin(t * 0.06) * 0.06`). It starts at the still's
+   angle (sin 0) and moves at about 1.4°/s, ±9°. Measured in Chrome: 4–5 % screen change every 3 s after
+   the fade (was about 2 % in 3 s).
+4. **`env.still`** (capture mode) holds the idle turn and the scraps at their first frame, so the stills
+   equal the live first frame. **Re-render the stills after merging.** The ones on `paper-edition` were
+   captured 4.5 s in.
+5. **Dev-only preview switch** on Home (`HotelPreviewSwitch`, bottom-left, `import.meta.env.DEV` only,
+   absent from production builds): Auto · Ultra (this PC) · Best (desktops) · Mid-range phone · Slow phone
+   (model after 6 s) · No 3D, plus the GPU name. Stored in `fc-3d-preview`. Any preview sets `env.fixed`,
+   so there's no automatic step-down.
+6. **`ultra` quality** (dev preview for now): pixel ratio max(2, dpr), 4096 px shadow map, antialiasing,
+   paper drawn in code (uncompressed) instead of the baked WebP. Chrome on NVIDIA: 2880 × 1800 at 29 fps.
+   On the Intel GPU: 5 fps. Could become a real level for strong desktop GPUs later.
+
+Chrome, this PC, measured on the branch:
+
+| GPU | Preview | Canvas | fps | Model shown after still | Tap |
+| --- | --- | --- | --- | --- | --- |
+| Intel UHD 630 | Auto (full) | 1440 × 900 | 13 | 2.5 s | no |
+| Intel UHD 630 | Ultra | 2880 × 1800 | 5 | 1.8 s | no |
+| NVIDIA Quadro T1000 | Auto (full) | 1440 × 900 | 32 | 3.8 s | no |
+| NVIDIA Quadro T1000 | Ultra | 2880 × 1800 | 29 | 2.5 s | no |
+
+**Paper texture: needs your design work, not a setting.** Tried on the branch and reverted: bump ×1.8 and
+×4 on Ultra make no visible difference in a zoomed close-up, and 2× pixels smooth the grain further.
+Measured:
+- the baked `hotel-paper.webp` is 1024 px with a contrast of only about 9/255 (std dev); the 512 px phone
+  version is about 7;
+- `pulp` and `fibres` work in texture pixels, so the grain is tiny on screen.
+
+The owner wants a surface you can almost feel. Suggestions:
+- larger and stronger fibres and pulp clouds, at a fixed size in **world units** (repeat per metre of wall,
+  not per face);
+- a real **normal map** with visible strength, plus some roughness variation;
+- check the result at 360 px as well as on the Ultra preview.
+
+**Still open for the owner:** A (`.glb` models) and C (Performance Monitoring).
+
 ## From the local machine (for the cloud session)
 
 Latest: 2026-10-24, **round 4 on `a5c5955`** (your task list). Draft PR: https://github.com/formcraft/formcraft-web-27/pull/1

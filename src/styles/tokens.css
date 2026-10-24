@@ -98,6 +98,15 @@
   --sc-tree-mid-2: #74A24F;
   --sc-tree-near: #4F7D3A;
   --sc-tree-near-2: #3F6B35;
+
+  /* page-hero sky (components/scene/Sky): translucent washes laid over the hero's paper,
+     so the texture still shows. Day: clear and faintly cool above, warm at the horizon. */
+  --sky-top: rgba(127, 199, 190, .16);
+  --sky-mid: rgba(241, 241, 241, 0);
+  --sky-glow: rgba(255, 174, 97, .30);
+  --sky-glow-2: rgba(255, 174, 97, .12);
+  --sky-band: var(--sc-band);
+  --sky-star: var(--fc-white);
 }
 
 /* ---------- Night edition ---------- */
@@ -145,6 +154,14 @@
   --sc-tree-mid-2: #2B4A2F;
   --sc-tree-near: #1F3825;
   --sc-tree-near-2: #1A3020;
+
+  /* page-hero sky: deep navy above, a faint warm city glow at the horizon, pale stars */
+  --sky-top: rgba(9, 13, 18, .62);
+  --sky-mid: rgba(28, 37, 45, .28);
+  --sky-glow: rgba(209, 83, 52, .24);
+  --sky-glow-2: rgba(255, 174, 97, .07);
+  --sky-band: #6C3125;
+  --sky-star: #F4F1E8;
 }
 
 /* Surfaces that keep their own colours whatever the edition */

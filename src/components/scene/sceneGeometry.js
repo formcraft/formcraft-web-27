@@ -511,3 +511,43 @@ export const plantTrees = ({ pts, seed, ranges, every = 70, scale = 1, kinds = [
     });
     return out;
 };
+
+// ---------- sky: the night star field behind every page hero ----------
+// A 1440 × SKY_H drawing (shown with xMidYMin slice, so phones see the middle of it). Stars are
+// densest near the top and the edges and thin out over the hero copy (top left) and towards the
+// horizon, so text stays easy to read. Static stars come back as three paths (dim, mid, bright:
+// one DOM node each); a dozen twinklers come back as points for their own <circle>s.
+export const SKY_H = 720;
+
+const inBox = (x, y, [x0, y0, x1, y1]) => x > x0 && x < x1 && y > y0 && y < y1;
+
+export const starField = ({ seed = 7, n = 300, twinkle = 12, avoid = [70, 40, 860, 470] } = {}) => {
+    const r = random(seed);
+    const stars = [];
+    let guard = 0;
+    while (stars.length < n && guard++ < n * 30) {
+        const x = r() * W;
+        const y = r() * SKY_H * 0.82;
+        // keep more stars near the top and towards the edges, fewer near the horizon
+        const top = Math.pow(1 - y / (SKY_H * 0.82), 1.3);
+        const edge = Math.abs(x / W - 0.5) * 2; // 0 in the middle, 1 at the sides
+        let keep = 0.18 + 0.62 * top + 0.2 * edge;
+        if (inBox(x, y, avoid)) keep *= 0.16; // the hero copy
+        if (r() > keep) continue;
+        const big = r();
+        // most stars tiny, a few larger and brighter
+        const size = big > 0.97 ? 1.6 + r() * 0.5 : big > 0.85 ? 1.05 + r() * 0.4 : 0.45 + r() * 0.5;
+        stars.push({ x, y, r: size, b: big > 0.85 ? 2 : r() < 0.55 ? 0 : 1 });
+    }
+    // twinklers: picked from the stars away from the copy, slow and out of step
+    const pool = stars.filter((s) => !inBox(s.x, s.y, avoid) && s.b > 0);
+    const tw = [];
+    for (let i = 0; i < twinkle && pool.length; i++) {
+        const s = pool.splice(Math.floor(r() * pool.length), 1)[0];
+        tw.push({ x: f(s.x), y: f(s.y), r: f(Math.max(1, s.r * 1.1)), d: f(5 + r() * 5), o: f(-r() * 8) });
+        s.skip = true;
+    }
+    const dot = (s) => `M${f(s.x - s.r)},${f(s.y)}a${f(s.r)},${f(s.r)} 0 1,0 ${f(2 * s.r)},0a${f(s.r)},${f(s.r)} 0 1,0 ${f(-2 * s.r)},0`;
+    const paths = [0, 1, 2].map((b) => stars.filter((s) => s.b === b && !s.skip).map(dot).join(""));
+    return { paths, twinkle: tw, count: stars.length };
+};

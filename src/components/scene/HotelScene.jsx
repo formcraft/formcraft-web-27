@@ -78,8 +78,9 @@ const loaders = {
     night: () => import("./hotel/hotelNight"),
 };
 
-// Baked paper textures (see the scripts' imageTex): phones get small ones for both maps;
-// desktops get the full-size paper and draw the bump map themselves (it compresses badly).
+// Baked paper textures (see the scripts' imageTex), so no device draws a megapixel of noise on
+// start-up: phones get 512 px paper, desktops 1024 px; the bump map is 512 px everywhere (fine at
+// the scene's small bump scale, and it compresses badly at larger sizes).
 const loadImage = (src) =>
     new Promise((resolve) => {
         const img = new Image();
@@ -88,9 +89,10 @@ const loadImage = (src) =>
         img.src = src;
     });
 const loadTextures = () =>
-    smallScreen()
-        ? Promise.all([loadImage("/textures/hotel-paper-512.webp"), loadImage("/textures/hotel-bump-512.webp")]).then(([paper, bump]) => ({ paper, bump }))
-        : loadImage("/textures/hotel-paper.webp").then((paper) => ({ paper }));
+    Promise.all([
+        loadImage(smallScreen() ? "/textures/hotel-paper-512.webp" : "/textures/hotel-paper.webp"),
+        loadImage("/textures/hotel-bump-512.webp"),
+    ]).then(([paper, bump]) => ({ paper, bump }));
 
 // Ask the scene to start from anywhere on the page (the hero's "Tap to explore" button)
 export const exploreModel = () => window.dispatchEvent(new Event("fc:explore-model"));
@@ -165,6 +167,7 @@ export const HotelScene = () => {
                         still: stillCapture(), // capture mode: hold the idle turn and scraps at their first frame
                         fixed: Boolean(devPreview()), // dev preview: no automatic step-down
                         signal: controller.signal,
+                        debug: new URLSearchParams(window.location.search).has("hoteldebug"), // ?hoteldebug: step timings in the console
                         // fade in only once a frame has really been drawn
                         onReady: () =>
                             requestAnimationFrame(() =>
