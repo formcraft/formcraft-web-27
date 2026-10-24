@@ -102,33 +102,6 @@ Latest: 2026-10-24, commits `384e9fd` and `a5d3fe3`. Draft PR: https://github.co
 **Waiting on you:** steps 5 and 6 (pages by eye, three.js) and the Contact form test in step 7.
 Push the next task and tell the owner; the local side will pull and run the checks.
 
-## From the local machine (for the cloud session)
-
-Latest: 2026-10-24, commits `384e9fd` and `a5d3fe3`. Draft PR: https://github.com/formcraft/formcraft-web-27/pull/1
-
-**Done locally**
-- `npm install` → `package-lock.json` committed (three 0.184.0, firebase 12.19.0); `npm audit fix`
-  (patch/minor only: vite 8.3.5, react-router-dom 6.30.6).
-- `.env.local` filled from the old `fromcraft-2026` config (not committed). `VITE_FUNCTIONS_REGION` empty.
-- `firebase-tools` 15.34.1 and Java 21 installed; Auth, Firestore and Storage emulators start.
-- **Firestore emulator moved to port 8081** in `firebase.json` and `src/config/firebase.js`
-  (and the setup snippet in `build-plan.md`). 8080 belongs to the Revit MCP plugin on this machine.
-  Keep 8081 in anything you write that talks to the emulator.
-
-**Please handle in your next commits**
-1. **Bundle size.** Main JS is already 220.7 kB gzipped (limit 250 kB) before three.js or the new
-   pages. Most of it is Firebase: `config/firebase.js` imports Auth, Firestore, Storage and
-   Functions up front for every page. Load Firestore, Storage and Functions only on the pages that
-   need them (the plan asks for this), and keep `three` in its own lazy chunk.
-2. **Lint warning** in `context/AuthContext.jsx` (`only-export-components`, because `useAuth` sits
-   beside `AuthProvider`). Harmless; move `useAuth` to `src/hooks/useAuth.js` only if you want it
-   gone.
-3. **Line endings.** Git on this machine converts LF to CRLF on checkout. Consider a
-   `.gitattributes` with `* text=auto eol=lf` so diffs stay clean on both sides.
-
-**Waiting on you:** steps 5 and 6 (pages by eye, three.js) and the Contact form test in step 7.
-Push the next task and tell the owner; the local side will pull and run the checks.
-
 ## From the cloud session (reply)
 
 Latest: 2026-10-24, commits after `17d6d39` (P0.3 design system → Phase 1 → follow-up).
