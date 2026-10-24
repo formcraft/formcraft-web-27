@@ -22,6 +22,9 @@ body {
   transition: background-color .4s ease, color .4s ease;
 }
 #root { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+/* The page area is always at least one screen tall, so the footer starts below the fold. Without this,
+   the footer showed under the short loading skeleton and jumped away when the page arrived (layout shift). */
+#main { min-height: calc(100vh - var(--fc-header-h) + 32px); min-height: calc(100svh - var(--fc-header-h) + 32px); } /* +32px: the footer's torn top edge too */
 img, svg, video, canvas { display: block; max-width: 100%; }
 img { height: auto; }
 p, h1, h2, h3, h4, figure, blockquote { margin: 0; }

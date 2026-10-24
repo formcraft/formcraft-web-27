@@ -7,6 +7,8 @@
     <meta name="description" content="Formcraft Design and Construction, Kampala: BIM-led design, construction, precast concrete and workshop-made furniture, in one value chain with local artisans." />
     <meta name="theme-color" content="#F1F1F1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- public pages read their content from Firestore over REST: open that connection early -->
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />
     <link rel="preload" href="/fonts/Satoshi-Variable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/ClashGrotesk-Variable.woff2" as="font" type="font/woff2" crossorigin />
     <meta property="og:title" content="Formcraft" />
@@ -42,12 +44,15 @@
             ls.setItem("fc-intro-seen", "1");
           }
         } catch (e) { mode = "none"; }
-        if (mode !== "none") {
-          d.classList.add("fci-run", "fci-" + mode, "fci-hold");
+        if (mode !== "none") d.classList.add("fci-run", "fci-" + mode, "fci-hold");
+        // Always fetch this edition's paper textures straight away: they're the backgrounds of the
+        // first sections (often the page's largest element), and the browser would otherwise only
+        // discover them once the CSS has loaded.
+        (t === "night" ? ["/textures/black.webp?v=2", "/textures/navy.webp?v=2"] : ["/textures/paper.webp?v=2"]).forEach(function (href) {
           var l = document.createElement("link");
-          l.rel = "preload"; l.as = "image"; l.href = t === "night" ? "/textures/navy.webp?v=2" : "/textures/paper.webp?v=2";
+          l.rel = "preload"; l.as = "image"; l.href = href; l.setAttribute("fetchpriority", "high");
           document.head.appendChild(l);
-        }
+        });
       })();
     </script>
     <style>

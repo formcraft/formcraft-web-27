@@ -3,7 +3,7 @@
 // Functions load only when a page first asks for them: await getDb(), getStorageService(),
 // getFunctionsService(). That keeps them out of the main bundle.
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { getAuth, initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, browserSessionPersistence, connectAuthEmulator } from "firebase/auth";
 
 const env = import.meta.env;
 
@@ -33,7 +33,12 @@ const config = firebaseConfigured
 const firstLoad = getApps().length === 0; // guards against hot reload initialising twice
 
 export const app = firstLoad ? initializeApp(config) : getApp();
-export const auth = getAuth(app);
+// Auth without the Google pop-up helper: getAuth() would load Google's sign-in script (gapi) on every
+// page at start-up. AuthContext passes the helper only when someone actually signs in. The same
+// storage as getAuth(), so signed-in sessions are kept as before.
+export const auth = firstLoad
+  ? initializeAuth(app, { persistence: [indexedDBLocalPersistence, browserLocalPersistence, browserSessionPersistence] })
+  : getAuth(app);
 const useEmulators = env.DEV && env.VITE_USE_EMULATORS === "true";
 
 if (firstLoad && useEmulators) {

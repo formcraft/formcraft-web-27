@@ -12,7 +12,8 @@
     "emulators": "firebase emulators:start",
     "check": "node scripts/check/index.mjs",
     "check:fast": "node scripts/check/index.mjs --fast",
-    "check:speed": "node scripts/check/speed.mjs"
+    "check:speed": "node scripts/check/speed.mjs",
+    "check:smooth": "node scripts/check/smooth.mjs"
   },
   "dependencies": {
     "firebase": "^12.0.0",

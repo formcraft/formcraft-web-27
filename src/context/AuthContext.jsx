@@ -8,7 +8,7 @@
 // - The sign-in dialog only opens when asked (openSignIn()); the site never forces anyone to sign in.
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AuthContext } from "./contexts";
-import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut, GoogleAuthProvider } from "firebase/auth";
+import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut, GoogleAuthProvider, browserPopupRedirectResolver } from "firebase/auth";
 import { auth, getFunctionsService } from "../config/firebase";
 import { SignInDialog } from "../components/auth/SignInDialog";
 
@@ -66,7 +66,8 @@ export const AuthProvider = ({ children }) => {
     // Returns null on success or when the visitor closes the popup; a message they can read otherwise
     const signIn = useCallback(async () => {
         try {
-            await signInWithPopup(auth, new GoogleAuthProvider());
+            // the pop-up helper is passed here, so it only loads when someone signs in (see config/firebase.js)
+            await signInWithPopup(auth, new GoogleAuthProvider(), browserPopupRedirectResolver);
             return null;
         } catch (error) {
             if (CANCELLED.includes(error.code)) return null;

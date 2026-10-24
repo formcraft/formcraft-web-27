@@ -9,6 +9,28 @@ import "./PaperLayers.css";
 // The sky behind it (gradient + night stars) is the shared <Sky> that PageHero lays under the
 // whole hero; PaperLayers only adds the sun or moon (<SkyBody>) and, by day, two paper clouds.
 
+/**
+ * A row of trees as two paths, one per shade (every third tree is the alternate shade). Same-colour
+ * solid shapes look identical merged, and the browser handles 2 elements instead of dozens.
+ * @param {{ list: string[], kind: string }} props  list: one SVG path per tree; kind: "far", "mid" or "near"
+ */
+const Trees = ({ list, kind }) => {
+    if (!list?.length) return null;
+    const main = list.filter((_, i) => i % 3).join(" ");
+    const alt = list.filter((_, i) => !(i % 3)).join(" ");
+    return (
+        <>
+            {main && <path className={`pl-tree pl-tree-${kind}`} d={main} />}
+            {alt && <path className={`pl-tree pl-tree-${kind} alt`} d={alt} />}
+        </>
+    );
+};
+
+/**
+ * Quilled paper: rings of thin paper coiled on a hill, clipped to the hill's shape.
+ * @param {{ id: string, d: string, seed: number, h: number, n: number, className: string }} props
+ *   d: the hill's outline (rings outside it are hidden); n: how many coils
+ */
 const Quill = ({ id, d, seed, h, n, className }) => {
     const r = random(seed);
     const groups = Array.from({ length: n }, () => {
@@ -19,13 +41,18 @@ const Quill = ({ id, d, seed, h, n, className }) => {
         for (let k = 6; k < max; k += 6) rings.push(k);
         return { cx, cy, rings };
     });
+    // Every ring as two arcs in ONE path: it looks the same as separate circles, but the browser builds
+    // and paints a single element instead of hundreds (this was ~330 elements per hero; check:smooth).
+    const rings = groups
+        .flatMap((g) => g.rings.map((k) => `M${(g.cx - k).toFixed(1)},${g.cy.toFixed(1)}a${k},${k} 0 1,0 ${2 * k},0a${k},${k} 0 1,0 ${-2 * k},0`))
+        .join("");
     return (
         <>
             <clipPath id={id}>
                 <path d={d} />
             </clipPath>
             <g clipPath={`url(#${id})`} className={`pl-quill ${className}`}>
-                {groups.map((g, i) => g.rings.map((k) => <circle key={`${i}-${k}`} cx={g.cx} cy={g.cy} r={k} />))}
+                <path d={rings} />
             </g>
         </>
     );
@@ -90,7 +117,7 @@ export const PaperLayers = ({ seed = 7, height = 560, city = true, motif = "city
             {layer("far", 0.16, <path className="pl-f-far" d={paths.far} />)}
             {layer("mid", 0.22, <>
                 <path className="pl-f-mid" d={paths.mid} />
-                {paths.midTrees.map((d, i) => <path key={i} className={`pl-tree pl-tree-far ${i % 3 ? "" : "alt"}`} d={d} />)}
+                <Trees list={paths.midTrees} kind="far" />
                 <Quill id={`${uid}qm`} d={paths.mid} seed={seed + 13} h={h} n={5} className="pl-q-mid" />
             </>)}
             {L.city && layer("glow", 0.3, <>
@@ -112,7 +139,7 @@ export const PaperLayers = ({ seed = 7, height = 560, city = true, motif = "city
             {M && layer("glow", 0.3, <path className="pl-f-glow" d={M.glow} />)}
             {M && layer("city", 0.3, <>
                 <path className="pl-f-city" fillRule="evenodd" d={M.solid} />
-                {(M.trees ?? []).map((d, i) => <path key={i} className={`pl-tree pl-tree-near ${i % 3 ? "" : "alt"}`} d={d} />)}
+                <Trees list={M.trees} kind="near" />
                 {M.outline && <path className="pl-outline" d={M.outline} />}
             </>)}
             {M && M.puffs.length > 0 && layer("puffs", 0.31, <g className="pl-puffs">
@@ -120,12 +147,12 @@ export const PaperLayers = ({ seed = 7, height = 560, city = true, motif = "city
             </g>)}
             {layer("near", 0.36, <>
                 <path className="pl-f-near" d={paths.near} />
-                {paths.nearTrees.map((d, i) => <path key={i} className={`pl-tree pl-tree-mid ${i % 3 ? "" : "alt"}`} d={d} />)}
+                <Trees list={paths.nearTrees} kind="mid" />
                 <Quill id={`${uid}qn`} d={paths.near} seed={seed + 14} h={h} n={8} className="pl-q-near" />
             </>)}
             {layer("front", 0.42, <>
                 <path className="pl-f-front" d={paths.front} />
-                {paths.frontTrees.map((d, i) => <path key={i} className={`pl-tree pl-tree-near ${i % 3 ? "" : "alt"}`} d={d} />)}
+                <Trees list={paths.frontTrees} kind="near" />
             </>)}
         </div>
     );
