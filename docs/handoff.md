@@ -7,6 +7,13 @@
 
 Last updated: 2026-10-24 (round 6)
 
+## ▶ From the local side: weather-scene switches (L3) on `try/weather-switches` (2026-10-24)
+
+Admin → Features → **Weather**: "Weather scenes" plus Partly cloudy, Overcast, Mist, Rain, Storm. `sceneSwitches(features)`
+(`src/data/features.js`) returns `{ partly, overcast, mist, rain, storm }` for your `fallbackScene()`; with the master off
+every scene is off (always clear). Feature keys: `weather`, `scenePartly`, `sceneOvercast`, `sceneMist`, `sceneRain`,
+`sceneStorm`. Your `weatherMap.test.js` now runs with mine under **`npm test`** (7 pass). Next: Sky 1 (L4) on `try/sky-1`.
+
 ## ▶ From the local side: admin tidy (#25) on `try/admin-tidy` (2026-10-24)
 
 Built from your proposal, all seven points: one status list (bug fixed), Leads the one place, Inbox → Records,

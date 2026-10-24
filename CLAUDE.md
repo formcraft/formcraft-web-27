@@ -57,6 +57,7 @@ npm run check               # offline quality check: lint, build, every page × 
 npm run check:fast          # the same with fewer sizes (about 3× quicker)
 npm run check:speed         # Lighthouse scores, locally
 npm run check:admin         # every admin screen signed in (needs the emulators running)
+npm test                    # small logic tests (weather switches and fallback, weather mapping)
 firebase emulators:start    # Auth, Firestore, Functions, Storage locally
 firebase deploy             # only when the user asks
 ```

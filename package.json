@@ -14,7 +14,8 @@
     "check:fast": "node scripts/check/index.mjs --fast",
     "check:speed": "node scripts/check/speed.mjs",
     "check:smooth": "node scripts/check/smooth.mjs",
-    "check:admin": "node scripts/check/admin-checks.mjs"
+    "check:admin": "node scripts/check/admin-checks.mjs",
+    "test": "node --test scripts/check/scene-switches.test.mjs functions/weatherMap.test.js"
   },
   "dependencies": {
     "firebase": "^12.0.0",

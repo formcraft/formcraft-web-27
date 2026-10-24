@@ -79,3 +79,9 @@ Firebase project is never touched. On each screen it fails when:
 - there's a script error or an accessibility error (axe);
 - a lead's status menu offers a value outside the one list (`src/data/leads.js`).
 Screenshots and `results.json` go to `check-report/admin/`.
+
+## Logic tests: `npm test`
+
+Small, fast tests of pure logic with Node's built-in test runner (no browser): the weather switches and the
+sky's fallback (`scripts/check/scene-switches.test.mjs`) and the cloud's MET Norway mapping
+(`functions/weatherMap.test.js`). Add a `*.test.mjs` next to the code it tests and list it in the `test` script.
