@@ -1,0 +1,33 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() { return request.auth != null; }
+    function isAdmin()  { return signedIn() && request.auth.token.admin == true; }
+
+    // Product and project images: anyone reads, only admin uploads
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Drawings attached to quote requests: anyone may upload one file (PDF/image, < 20 MB); only admin reads
+    match /quotes/{quoteId}/{fileName} {
+      allow create: if request.resource.size < 20 * 1024 * 1024
+        && request.resource.contentType.matches('application/pdf|image/.*');
+      allow read: if isAdmin();
+    }
+
+    // Member portfolio uploads: owner writes, public reads (profiles are approved before they're listed)
+    match /members/{uid}/{allPaths=**} {
+      allow read: if true;
+      allow write: if signedIn() && request.auth.uid == uid
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // Investor pack: admin only (sent as a signed link by a Cloud Function)
+    match /private/{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

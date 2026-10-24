@@ -1,0 +1,74 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function signedIn() { return request.auth != null; }
+    function isAdmin()  { return signedIn() && request.auth.token.admin == true; }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+    function str(field, max) { return request.resource.data[field] is string
+                                 && request.resource.data[field].size() > 0
+                                 && request.resource.data[field].size() <= max; }
+
+    // Public catalogue: anyone reads, only admin writes
+    match /products/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /projects/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /events/{id}   { allow read: if true; allow write: if isAdmin(); }
+    match /courses/{id}  { allow read: if true; allow write: if isAdmin(); }
+    match /stats/{id}    { allow read: if true; allow write: if false; } // functions only
+
+    // Users and their carts
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create, update: if isOwner(uid)
+        && !request.resource.data.diff(resource == null ? {} : resource.data)
+             .affectedKeys().hasAny(['roles']);
+      match /cart/{item} { allow read, write: if isOwner(uid); }
+    }
+
+    // Community profiles: public once approved
+    match /members/{uid} {
+      allow read: if resource.data.approved == true || isOwner(uid) || isAdmin();
+      allow create, update: if isOwner(uid)
+        && request.resource.data.approved == (resource == null ? false : resource.data.approved);
+      allow delete: if isAdmin();
+    }
+
+    // Money: written only by Cloud Functions (Admin SDK bypasses rules)
+    match /orders/{id}      { allow read: if isOwner(resource.data.uid) || isAdmin(); allow write: if false; }
+    match /enrolments/{id}  { allow read: if isOwner(resource.data.uid) || isAdmin(); allow write: if false; }
+    match /donations/{id}   { allow read: if resource.data.showOnWall == true || isAdmin(); allow write: if false; }
+
+    // Forms: anyone submits (checked fields only), only admin reads
+    match /messages/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['name', 'email', 'subject', 'body', 'createdAt'])
+        && str('name', 120) && str('email', 200) && str('body', 5000)
+        && request.resource.data.createdAt == request.time;
+      allow read: if isAdmin();
+    }
+    match /quotes/{id} {
+      allow create: if !('status' in request.resource.data)
+        && str('name', 120) && str('contact', 200)
+        && request.resource.data.createdAt == request.time;
+      allow read, update: if isAdmin();
+    }
+    match /investorLeads/{id} {
+      allow create: if str('name', 120) && str('email', 200)
+        && request.resource.data.createdAt == request.time;
+      allow read: if isAdmin();
+    }
+
+    // Jobs board: approved members post
+    match /jobs/{id} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.postedBy == request.auth.uid
+        && get(/databases/$(db)/documents/members/$(request.auth.uid)).data.approved == true;
+      allow update: if isAdmin()
+        || (isOwner(resource.data.postedBy)
+            && request.resource.data.postedBy == resource.data.postedBy);
+      allow delete: if isAdmin() || isOwner(resource.data.postedBy);
+    }
+
+    // Journal (only if kept)
+    match /posts/{id} { allow read: if true; allow write: if isAdmin(); }
+  }
+}
