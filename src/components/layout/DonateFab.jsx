@@ -1,109 +1,83 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Icon } from "../ui/Icon";
-import { Drawer } from "../ui/Drawer";
+import { Popover } from "../ui/Popover";
+import { usePublicDoc } from "../../hooks/usePublicDoc";
+import { useShowLink } from "../../hooks/useSite";
+import { formatUGX } from "../../lib/money";
 import "./DonateFab.css";
 
-// Floating plant-a-tree button on every page. Payments stay off until a planting
-// partner and the price per tree are agreed (open question in the build plan).
-const SPECIES = [
-    { id: "mvule", name: "Mvule", latin: "Milicia excelsa", note: "Native hardwood that lives for generations." },
-    { id: "musizi", name: "Musizi", latin: "Maesopsis eminii", note: "Fast-growing native for shade and soil cover." },
-    { id: "ffene", name: "Ffene", latin: "Jackfruit", note: "A fruit tree that feeds a household." },
-];
+// Floating plant-a-tree button on every page. It opens a small card just above itself (the page
+// stays visible): the live count, quick picks and one Plant button; species, the donor-wall name
+// and the rest live on /donate. Payments stay off until a planting partner and the price per tree
+// are agreed (open question in the build plan); only the webhook will ever add trees to the count.
 const AMOUNTS = [1, 5, 10];
+const count = (n) => (Number.isInteger(n) ? new Intl.NumberFormat("en-UG").format(n) : "[n]");
 
 export const DonateFab = () => {
     const [open, setOpen] = useState(false);
-    const [species, setSpecies] = useState("mvule");
     const [amount, setAmount] = useState(5);
-    const [custom, setCustom] = useState("");
+    const button = useRef(null);
+    const showLink = useShowLink();
+    const { data: stats } = usePublicDoc("stats/public");
+    const trees = `${amount} ${amount === 1 ? "tree" : "trees"}`;
 
     return (
         <>
-            <button type="button" className="donate-fab" onClick={() => setOpen(true)} aria-haspopup="dialog">
+            <button
+                ref={button}
+                type="button"
+                className="donate-fab"
+                onClick={() => setOpen((o) => !o)}
+                aria-haspopup="dialog"
+                aria-expanded={open}
+            >
                 <Icon name="leaf" />
                 <span className="donate-fab-label">Plant a tree</span>
             </button>
 
-            <Drawer
+            <Popover
                 open={open}
                 onClose={() => setOpen(false)}
-                title="Plant a tree with us"
-                side="center"
+                anchorRef={button}
+                title="Plant a tree"
+                className="donate-fab-pop"
                 footer={
-                    <div className="stack" style={{ "--gap": "10px" }}>
-                        <button type="button" className="btn btn-primary btn-block" disabled>
-                            Pay by mobile money or card · coming soon
+                    <div className="donate-fab-actions">
+                        <button type="button" className="btn btn-primary btn-block" disabled aria-describedby="donate-fab-note">
+                            Plant {trees}
                         </button>
-                        <p className="fine">
-                            TODO: planting partner and price per tree to confirm. <Link to="/donate">How it will work</Link>
+                        <p id="donate-fab-note" className="fine">
+                            Payments open once our planting partner is confirmed.
                         </p>
+                        {showLink("/donate") && (
+                            <Link to="/donate" className="link donate-fab-more" onClick={() => setOpen(false)}>
+                                More options <Icon name="arrow" size={16} />
+                            </Link>
+                        )}
                     </div>
                 }
             >
-                <div className="stack" style={{ "--gap": "18px" }}>
-                    <p className="small">Give back some of what building takes.</p>
-                    <div className="donate-count paper-dark">
-                        <b>[n]</b>
-                        <div style={{ flex: 1 }}>
-                            <span style={{ fontWeight: 700 }}>trees planted so far</span>
-                            <div className="bar" aria-hidden="true">
-                                <i style={{ "--value": "38%" }} />
-                            </div>
-                            <span className="fine">Goal: [n] trees by [year]</span>
-                        </div>
-                    </div>
-                    <fieldset className="donate-set">
-                        <legend>Choose a tree</legend>
-                        {SPECIES.map((s) => (
-                            <label key={s.id} className="option donate-species">
-                                <input type="radio" name="tree" value={s.id} checked={species === s.id} onChange={() => setSpecies(s.id)} />
-                                <span>
-                                    <strong>{s.name}</strong> <em>{s.latin}</em>
-                                </span>
-                                <span className="fine">{s.note}</span>
+                <div className="donate-fab-count paper-dark">
+                    <b>{count(stats?.treesPlanted)}</b>
+                    <span>trees planted so far</span>
+                </div>
+                <fieldset className="donate-fab-set">
+                    <legend>How many trees?</legend>
+                    <div className="donate-fab-picks">
+                        {AMOUNTS.map((n) => (
+                            <label key={n} className="chip">
+                                <input type="radio" name="donate-fab-trees" checked={amount === n} onChange={() => setAmount(n)} />
+                                {n} {n === 1 ? "tree" : "trees"}
                             </label>
                         ))}
-                    </fieldset>
-                    <fieldset className="donate-set">
-                        <legend>How many trees?</legend>
-                        <div className="row" style={{ "--gap": "8px" }}>
-                            {AMOUNTS.map((n) => (
-                                <label key={n} className="chip">
-                                    <input
-                                        type="radio"
-                                        name="trees"
-                                        checked={amount === n && !custom}
-                                        onChange={() => {
-                                            setAmount(n);
-                                            setCustom("");
-                                        }}
-                                    />
-                                    {n} {n === 1 ? "tree" : "trees"}
-                                </label>
-                            ))}
-                            <div className="field" style={{ width: 120 }}>
-                                <label htmlFor="trees-custom" className="sr-only">
-                                    Another number of trees
-                                </label>
-                                <input
-                                    id="trees-custom"
-                                    inputMode="numeric"
-                                    placeholder="Other"
-                                    value={custom}
-                                    onChange={(e) => setCustom(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                                    style={{ minHeight: 42 }}
-                                />
-                            </div>
-                        </div>
-                    </fieldset>
-                    <div className="field">
-                        <label htmlFor="donor-name">Name for the donor wall (optional)</label>
-                        <input id="donor-name" autoComplete="name" />
                     </div>
-                </div>
-            </Drawer>
+                </fieldset>
+                <p className="donate-fab-price">
+                    {trees} · <span className="todo">{formatUGX(null)}</span>
+                    <span className="fine"> TODO: price per tree to confirm.</span>
+                </p>
+            </Popover>
         </>
     );
 };
