@@ -19,8 +19,8 @@ OUT = sys.argv[1] if len(sys.argv) > 1 else "public/textures"
 N = 1024
 # The two dials (owner, 2026-10-24: the first pass at RELIEF 1.4 / CONTRAST 1.0 was too much; the old paper
 # at about RELIEF 0 / CONTRAST 0.5 didn't show at all; aim for "a little more than before").
-RELIEF = 0.6     # how strongly light catches the tooth (normal-map strength)
-CONTRAST = 0.7   # how much the paper's colour varies (mottling, shading, fibres)
+RELIEF = 0.4     # how strongly light catches the tooth (normal-map strength)
+CONTRAST = 0.6   # how much the paper's colour varies (mottling, shading, fibres)
 
 
 def spectral(beta, seed, lo=0.0, hi=1.0):

@@ -106,7 +106,7 @@ const loadImage = (src) =>
         img.src = src;
     });
 // Bump TEX_V whenever scripts/make-hotel-textures.py writes new files, so browsers fetch them again.
-const TEX_V = 4;
+const TEX_V = 5;
 const loadTextures = () =>
     Promise.all([
         loadImage(`/textures/${smallScreen() ? "hotel-paper-512" : "hotel-paper"}.webp?v=${TEX_V}`),
