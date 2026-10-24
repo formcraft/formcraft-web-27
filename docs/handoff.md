@@ -22,6 +22,15 @@ Sky 1 (drag + fluid stars/clouds + real moon phase) → pre-rendering (after cop
 repaints the whole SVG in Chrome), and the moon stays a secret (neutral key `skyBodies` in the public
 `settings/site`).
 
+## ▶ Work split (owner, 2026-10-24): read `docs/work-split.md` first
+
+The owner asked the two sessions to split the work. **`docs/work-split.md`** has your list (L1–L10), the cloud's
+(C1–C6) and who owns which files. Short version: the cloud writes design and self-contained modules; you wire,
+check and run the owner's click-throughs. **C2 has landed:** `src/components/scene/sky/skyPhysics.js` and
+`moonPhase.js`, with the contract in the work-split file. Wire them in on `try/sky-1` (L4) once L1–L3 are done.
+The owner is tuning the numbers on a private tuner page. If the numbers change, the cloud updates
+`SKY_DEFAULTS` and tells you here.
+
 ## ▶ Cloud review of `try/features` and `try/copy-pilot` + Admin tidy proposal (ideas #25), 2026-10-24
 
 **Reviewed, no objections.** Owner claim (only `set-admin.js`, `claimsFor` never touches it, the owner keeps full
