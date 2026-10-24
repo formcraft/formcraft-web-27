@@ -1,0 +1,158 @@
+/* Formcraft design tokens: the only file allowed to hold colour values.
+   Brand values from Brand Guide v01. Two paper editions share one set of names:
+   day (light paper) and night (navy paper), switched by data-theme on <html>. */
+
+:root {
+  /* Brand */
+  --fc-navy: #1C252D;
+  --fc-black: #171D1A;
+  --fc-orange: #FFAE61;
+  --fc-rust: #D15334;
+  --fc-white: #F1F1F1;
+  --fc-studio: #7FC7BE;
+  --fc-stores: #00B3E4; /* TODO: brand guide gives Stores the same value as Studio; confirm a blue */
+  --fc-construction: #A85522;
+  --fc-concrete: #94989B;
+
+  /* Derived brand helpers (shades and tints of the values above) */
+  --fc-orange-edge: #C8742F;   /* the paper edge under orange buttons */
+  --fc-rust-text: #C24A2C;     /* rust darkened to pass 4.5:1 on paper for small text */
+  --fc-navy-2: #25313B;
+  --fc-navy-3: #2C3943;
+  --fc-night: #141A1F;
+  --fc-night-2: #10151A;
+  --fc-night-deep: #0D1115;
+  --fc-night-sheet: #1E2830;
+  --fc-night-sheet-2: #26313A;
+  --fc-paper-sheet: #F8F8F5;
+  --fc-paper-sheet-2: #E9EAE6;
+  --fc-paper-2: #E8E9E6;
+
+  /* Type */
+  --fc-font-body: "Satoshi", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --fc-font-display: "Clash Grotesk", "Satoshi", "Arial Narrow", sans-serif;
+
+  /* Motion and shape */
+  --fc-ease: cubic-bezier(.2, .7, .2, 1);
+  --fc-radius: 4px;
+  --fc-wrap: 1296px;
+  --fc-header-h: 74px;
+
+  /* Division accent: pages set data-division to change it */
+  --fc-div: var(--fc-orange);
+}
+
+[data-division="studio"] { --fc-div: var(--fc-studio); }
+[data-division="construction"] { --fc-div: var(--fc-construction); }
+[data-division="concrete"] { --fc-div: var(--fc-concrete); }
+[data-division="stores"] { --fc-div: var(--fc-stores); }
+
+/* ---------- Day edition ---------- */
+:root,
+[data-theme="day"] {
+  color-scheme: light;
+  --ground: var(--fc-white);
+  --ground-2: var(--fc-paper-2);
+  --sheet: var(--fc-paper-sheet);
+  --sheet-2: var(--fc-paper-sheet-2);
+  --ink: var(--fc-navy);
+  --ink-2: rgba(28, 37, 45, .76);
+  --ink-3: rgba(28, 37, 45, .62);
+  --line: rgba(28, 37, 45, .14);
+  --line-2: rgba(28, 37, 45, .3);
+  --acc-ink: var(--fc-rust-text);
+  --sh: rgba(28, 37, 45, .22);
+  --sh-2: rgba(28, 37, 45, .12);
+  --hl: rgba(241, 241, 241, .8);
+  --dark: var(--fc-navy);
+  --dark-2: var(--fc-navy-2);
+  --head-bg: rgba(241, 241, 241, .84);
+  --scrim: rgba(23, 29, 26, .45);
+  --tex-ground: linear-gradient(rgba(241, 241, 241, .64), rgba(241, 241, 241, .64)), url("/textures/paper.webp") center / 600px, var(--fc-white);
+  --tex-sheet: linear-gradient(rgba(248, 248, 245, .84), rgba(248, 248, 245, .84)), url("/textures/paper.webp") center / 600px, var(--fc-paper-sheet);
+  --tex-dark: url("/textures/navy.webp") center / 600px, var(--fc-navy);
+  --edge-ground: #EDEDEB;
+  --edge-sheet: #F6F6F3;
+
+  /* scene colours (SVG fallback and three.js read these) */
+  --sc-sky: var(--fc-white);
+  --sc-band: #E5EAE8;
+  --sc-sun: var(--fc-orange);
+  --sc-ring: #FFD3A6;
+  --sc-cloud: #FAFAF8;
+  --sc-far: #D5E6E2;
+  --sc-mid: #A7D5CE;
+  --sc-city: var(--fc-navy);
+  --sc-window: #E8EEEC;
+  --sc-near: var(--fc-studio);
+  --sc-front: #EDEDEB;
+  --sc-light: #FFF6EC;
+  --sc-shadow: #8FA7A9;
+}
+
+/* ---------- Night edition ---------- */
+[data-theme="night"] {
+  color-scheme: dark;
+  --ground: var(--fc-night);
+  --ground-2: var(--fc-night-2);
+  --sheet: var(--fc-night-sheet);
+  --sheet-2: var(--fc-night-sheet-2);
+  --ink: var(--fc-white);
+  --ink-2: rgba(241, 241, 241, .78);
+  --ink-3: rgba(241, 241, 241, .62);
+  --line: rgba(241, 241, 241, .13);
+  --line-2: rgba(241, 241, 241, .28);
+  --acc-ink: var(--fc-orange);
+  --sh: rgba(0, 0, 0, .6);
+  --sh-2: rgba(0, 0, 0, .38);
+  --hl: rgba(241, 241, 241, .05);
+  --dark: var(--fc-night-deep);
+  --dark-2: #161D23;
+  --head-bg: rgba(20, 26, 31, .82);
+  --scrim: rgba(0, 0, 0, .6);
+  --tex-ground: linear-gradient(rgba(20, 26, 31, .5), rgba(20, 26, 31, .5)), url("/textures/black.webp") center / 600px, var(--fc-night);
+  --tex-sheet: linear-gradient(rgba(30, 40, 48, .45), rgba(30, 40, 48, .45)), url("/textures/navy.webp") center / 600px, var(--fc-night-sheet);
+  --tex-dark: linear-gradient(rgba(10, 13, 16, .45), rgba(10, 13, 16, .45)), url("/textures/black.webp") center / 600px, var(--fc-night-deep);
+  --edge-ground: #151B20;
+  --edge-sheet: var(--fc-night-sheet);
+
+  --sc-sky: #161D23;
+  --sc-band: #B4432A;
+  --sc-sun: #ECE8DD;
+  --sc-ring: rgba(241, 241, 241, .08);
+  --sc-cloud: #2A3540;
+  --sc-far: #27323C;
+  --sc-mid: #1D262E;
+  --sc-city: #0E1317;
+  --sc-window: var(--fc-orange);
+  --sc-near: #2C6762;
+  --sc-front: #151B20;
+  --sc-light: #9DB4D6;
+  --sc-shadow: #05080A;
+}
+
+/* Surfaces that keep their own colours whatever the edition */
+.paper-dark {
+  --ink: var(--fc-white);
+  --ink-2: rgba(241, 241, 241, .78);
+  --ink-3: rgba(241, 241, 241, .62);
+  --line: rgba(241, 241, 241, .14);
+  --line-2: rgba(241, 241, 241, .3);
+  --acc-ink: var(--fc-orange);
+  --sheet: var(--dark-2);
+  --sheet-2: var(--fc-navy-3);
+  --tex-sheet: linear-gradient(rgba(37, 49, 59, .5), rgba(37, 49, 59, .5)), url("/textures/navy.webp") center / 600px, var(--fc-navy-2);
+  --hl: rgba(241, 241, 241, .05);
+  --sh: rgba(0, 0, 0, .5);
+  --sh-2: rgba(0, 0, 0, .3);
+  --edge-ground: var(--dark);
+}
+.paper-orange {
+  --ink: var(--fc-navy);
+  --ink-2: rgba(28, 37, 45, .82);
+  --ink-3: rgba(28, 37, 45, .7);
+  --line: rgba(28, 37, 45, .2);
+  --line-2: rgba(28, 37, 45, .4);
+  --acc-ink: var(--fc-navy);
+  --edge-ground: var(--fc-orange);
+}

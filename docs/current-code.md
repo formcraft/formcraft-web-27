@@ -8,8 +8,8 @@
 > - Claude Code updates this file **in the same commit** as any code change (see
 >   "How to keep this file up to date").
 >
-> Baseline written: 2026-10-09 from a full read of the code · Last updated: 2026-10-24
-> · Phase: **0, in progress** (3 of 10 tasks done: P0.1, P0.2, P0.4)
+> Baseline written: 2026-10-09 from a full read of the code · Last updated: 2026-10-09
+> · Phase: **0, in progress** (2 of 10 tasks done)
 
 ---
 
@@ -178,7 +178,7 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 | # | Problem | Fix | Task | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Home, Services, About, Portfolio describe a form-builder SaaS | Rewrite from the Company Profile; `TODO:` where facts are missing (full rewrite in Phase 1) | P0.9 | To do |
-| 2 | Terracotta + Inter (shop) and `#4285F4` (Home) break the Brand Guide | `tokens.css` + fonts; replace hard-coded colours and inline styles | P0.3 | To do |
+| 2 | Terracotta + Inter (shop) and `#4285F4` (Home) break the Brand Guide | `tokens.css` + fonts; replace hard-coded colours and inline styles | P0.3 | Done (2026-10-24) |
 | 3 | Emoji logo, Vite favicon | Formcraft SVG logo and FC mark from `public/logos/` | P0.6 | To do |
 | 4 | Invented testimonials, "Trusted by" logos, collection makers, blog posts | Remove; `TODO:` placeholders | P0.9 | To do |
 | 5 | Prices in dollars | Whole UGX integers, `formatUGX` → "UGX 120,000" | P0.7 | To do |
@@ -192,7 +192,7 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 | 13 | Header links have no `href`; current page removed; no mobile menu | `<NavLink>`, active state, four doors, mobile menu | P0.6 | To do |
 | 14 | Clickable `<div>`/`<article>`, unlabeled icon buttons, modal without focus trap/Escape | `<button>`/`<Link>`, `aria-label`, focus trap + Escape | P0.10 | To do |
 | 15 | Vite template leftovers; title "formcraft" | Delete; title "Formcraft" | P0.1 | Done (2026-10-09) |
-| 16 | `Shop.css` `:root`, global `.container`/`.section`/`.btn` leak | Move to `src/styles/`; prefix component classes | P0.3 | To do |
+| 16 | `Shop.css` `:root`, global `.container`/`.section`/`.btn` leak | Move to `src/styles/`; prefix component classes | P0.3 | Done (2026-10-24) |
 | 17 | Firebase config inline, Analytics at load, `.jsx` extension | `firebase.js`, env vars, emulators in dev, Analytics in prod only | P0.2 | Done (2026-10-24) |
 | 18 | Firebase SDK ^11 | Update to current major | P0.2 | Done (2026-10-24) |
 | 19 | External placeholder images (Unsplash, via.placeholder.com, pravatar.cc) | Formcraft photos or `TODO:`; WebP, `loading="lazy"` | P0.9 | To do |
@@ -202,7 +202,7 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 | --- | --- |
 | P0.1 Clean out | Done (2026-10-09) |
 | P0.2 Firebase config | Done (2026-10-24) |
-| P0.3 Brand base | To do |
+| P0.3 Brand base | Done (2026-10-24) |
 | P0.4 Auth | Done (2026-10-09) |
 | P0.5 Layout and routing | To do |
 | P0.6 Header and footer | To do |
@@ -218,11 +218,9 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 - Firebase project id is `fromcraft-2026` (misspelled). Decide before real data goes in; ids can't be renamed (open question in the plan).
 - The Firebase web API key is in the repo history. It isn't a secret, but restrict it to the site's domains in Google Cloud console.
 - No tests. Rules tests arrive in Phase 3.
-- `npm run lint` passes with one warning: `context/AuthContext.jsx` exports `useAuth()` next to the provider (`only-export-components`; affects hot reload only). Kept, since the plan puts `useAuth()` there.
-- Main JS bundle is 220.7 kB gzipped (limit 250 kB), mostly Firebase: `config/firebase.js` imports Auth, Firestore, Storage and Functions eagerly for every page. Load Firestore/Storage/Functions only on the pages that use them before three.js and the new pages land.
-- `npm audit`: 4 high in `@grpc/grpc-js` (pulled in by `firebase`, Node-only, not in the browser build; npm's "fix" is a downgrade to firebase 9, ignored) and 2 moderate in `react-router` 6 (fixed only in v7, which is a later task).
-- The Firestore emulator runs on port **8081**, not the default 8080, because the Revit MCP plugin uses 8080 on the owner's machine. Keep `firebase.json` and `config/firebase.js` in step.
+- `npm run lint` fails before linting anything: `.oxlintrc.json` uses `settings.react.version: "detect"` and `parserOptions`, which the installed oxlint rejects. Fix the config (e.g. version `"19.2"`, drop `parserOptions`) in P0.2 or as its own small commit.
 - P0.4 was tested in Edge for opening, closing (×, Escape, backdrop), focus and no auto-popup. A real Google sign-in wasn't tested; try it once in the browser.
+- Logos and fonts aren't in `public/` yet; P0.3 and P0.6 need the files copied in from the brand assets.
 
 ---
 
@@ -232,8 +230,7 @@ Newest first. One row per commit or task.
 
 | Date | Task | What changed | Files |
 | --- | --- | --- | --- |
-| 2026-10-24 | — | Firestore emulator moved from port 8080 to 8081 (Revit MCP plugin uses 8080). Installed firebase-tools and Java 21 locally; emulators start. | `firebase.json`, `src/config/firebase.js`, docs |
-| 2026-10-24 | handoff | Local install on the owner's machine: `npm install` (three 0.184.0, firebase 12.19.0), `npm audit fix` (patch/minor only: vite 8.3.5, react-router-dom 6.30.6). Lint and build pass. `.env.local` filled from the old `fromcraft-2026` config (not committed). | `package-lock.json`, docs |
+| 2026-10-24 | P0.3 | Paper design system with **day and night editions**: `src/styles/tokens.css` (brand colours + every derived value; theme variables switch on `data-theme` on `<html>`), `fonts.css` (self-hosted Satoshi and Clash Grotesk variable `.woff2`), `base.css` (reset, layout helpers, type scale, motion, reduced motion), `components.css` (buttons, paper cards, photos, tags, forms, tables, torn edges). `ThemeContext` (`useTheme()`), theme picked before paint in `index.html`. UI pieces in `components/ui/`: `Icon`, `Logo`, `TornEdge`, `Reveal`/`Kinetic`, `Drawer` (native `<dialog>`). Hooks `useReveal`, `usePageMeta`; `lib/money.js` (`formatUGX`), `lib/storage.js`. Assets in `public/` (fonts, logos, textures, WebP renders); favicon is the FC mark. | `src/styles/*`, `src/context/ThemeContext.jsx`, `src/components/ui/*`, `src/hooks/*`, `src/lib/*`, `index.html`, `src/main.jsx`, `public/*` |
 | 2026-10-24 | P0.2 | `config/firebase.jsx` → `config/firebase.js`: config from `VITE_FIREBASE_*` env vars (falls back to a `demo-` project with a console warning), exports `app`, `auth`, `db`, `storage`, `functions`, connects to the emulators when `VITE_USE_EMULATORS=true`, Analytics only in production. Added `.env.example`, `firebase.json` (SPA rewrite, cache headers, emulator ports), `.firebaserc`, `firestore.rules` (plan starter), `storage.rules`, `firestore.indexes.json`. `firebase` → ^12, added `three` ^0.184. Fixed `.oxlintrc.json` (react version "19.2", no `parserOptions`). | `src/config/firebase.js`, `package.json`, Firebase files, `.oxlintrc.json` |
 | 2026-10-09 | — | Moved to the new repo `formcraft/formcraft-web-27` (private). Flattened: the app moved from `formcraftwebsite2026/website/` to the repo root, history kept. One root `.gitignore` covering deps, builds, all `.env*` except `.env.example`, Firebase/service-account keys, emulator data, logs and editor files. | `.gitignore`, all paths, docs |
 | 2026-10-09 | P0.4 | Added `AuthContext` + `useAuth()`. Removed the forced sign-in overlay and the blank screen while auth loads. `auth.jsx` became `auth/SignInDialog.jsx`: native `<dialog>`, closes with ×/Escape/backdrop, shows errors. Header gets a "Sign in" button and uses `useAuth()`. Pages no longer take a `user` prop; Home reads `useAuth()`. | `App.jsx`, `context/AuthContext.jsx`, `components/auth/SignInDialog.*`, `components/Header.*`, `pages/*.jsx` |

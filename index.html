@@ -1,13 +1,32 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-UG">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Formcraft · Designing spaces. Empowering communities.</title>
+    <meta name="description" content="Formcraft Design and Construction, Kampala: BIM-led design, construction, precast concrete and workshop-made furniture, in one value chain with local artisans." />
+    <meta name="theme-color" content="#F1F1F1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Formcraft</title>
+    <link rel="preload" href="/fonts/Satoshi-Variable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/ClashGrotesk-Variable.woff2" as="font" type="font/woff2" crossorigin />
+    <meta property="og:title" content="Formcraft" />
+    <meta property="og:description" content="Designing spaces. Empowering communities." />
+    <meta property="og:image" content="/images/bwebajja-night-800.webp" />
+    <script>
+      // Pick the paper edition before first paint: saved choice, else the system setting.
+      (function () {
+        var t = null;
+        try { t = localStorage.getItem("fc-theme"); } catch (e) {}
+        if (t !== "day" && t !== "night") {
+          t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "night" : "day";
+        }
+        document.documentElement.setAttribute("data-theme", t);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript><p style="padding:24px;font-family:system-ui">Formcraft needs JavaScript to show this site. Call +256 753 929 921 or email formcraftdesign@gmail.com.</p></noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
