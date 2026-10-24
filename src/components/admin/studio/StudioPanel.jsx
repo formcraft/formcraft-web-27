@@ -109,24 +109,24 @@ export const StudioPanel = () => {
                 </p>
             )}
 
-            <div className="studio-tabs" role="tablist" aria-label="Studio sections">
+            <div className="mkt-tabs" role="tablist" aria-label="Studio sections">
                 {tabs.map((t) => (
                     <button
                         key={t.key}
-                        id={`studio-tab-${t.key}`}
+                        id={`mkt-tab-${t.key}`}
                         type="button"
                         role="tab"
                         aria-selected={current === t.key}
-                        aria-controls="studio-tabpanel"
+                        aria-controls="mkt-tabpanel"
                         tabIndex={current === t.key ? 0 : -1}
-                        className="studio-tab"
+                        className="mkt-tab"
                         onClick={() => setTab(t.key)}
                         onKeyDown={(e) => {
                             if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
                             const i = tabs.findIndex((x) => x.key === current);
                             const next = tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
                             setTab(next.key);
-                            document.getElementById(`studio-tab-${next.key}`)?.focus();
+                            document.getElementById(`mkt-tab-${next.key}`)?.focus();
                         }}
                     >
                         {t.label}
@@ -134,7 +134,7 @@ export const StudioPanel = () => {
                 ))}
             </div>
 
-            <div id="studio-tabpanel" role="tabpanel" aria-labelledby={`studio-tab-${current}`}>
+            <div id="mkt-tabpanel" role="tabpanel" aria-labelledby={`mkt-tab-${current}`}>
                 {current === "calendar" && <CalendarView studio={studio} />}
                 {current === "queue" && <QueueView studio={studio} />}
                 {current === "generate" && <GenerateView studio={studio} />}

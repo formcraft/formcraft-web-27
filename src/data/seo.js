@@ -287,7 +287,11 @@ export const metaText = (text, max = 155) => {
 
 // Is a starter item a placeholder (sample data, or a "[name]" title)? Those pages stay out of search.
 export const isPlaceholderItem = (item) =>
-    !item || /\[[^\]]*\]/.test(String(item.title ?? "")) || String(item.slug ?? "").startsWith("sample-") || (item.tags ?? []).includes("sample");
+    !item ||
+    /\[[^\]]*\]/.test(String(item.title ?? "")) ||
+    String(item.slug ?? "").startsWith("sample-") ||
+    (item.tags ?? []).includes("sample") ||
+    /^\s*TODO\b/.test(String(item.body ?? "")); // a Journal post that's planned but not written yet
 
 // An images[] entry → preview image path. Public image names use their 800 px copy.
 export const imagePath = (img) => {

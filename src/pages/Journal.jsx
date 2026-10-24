@@ -8,6 +8,8 @@ import { imgName } from "../lib/images";
 import { Reveal } from "../components/ui/Reveal";
 import { Icon } from "../components/ui/Icon";
 import { SubscribeForm } from "../components/forms/SubscribeForm";
+import { useSeesTodos } from "../hooks/useSeesTodos";
+import { Todo } from "../components/ui/Todo";
 import "./Journal.css";
 
 // Category values come from CONTENT.posts (admin select); shown with a capital letter.
@@ -41,15 +43,18 @@ const Cover = ({ post, big = false, eager = false }) => {
             decoding="async"
         />
     ) : (
-        <div className="placeholder journal-cover">[Cover photo]</div>
+        <div className="placeholder journal-cover">Cover photo coming soon</div>
     );
 };
 
 const Byline = ({ post }) => {
-    const state = postState(post);
+    const seesTodos = useSeesTodos();
+    const state = seesTodos ? postState(post) : null;
     return (
         <p className="fine journal-byline">
-            {post.author ?? <span className="todo">[author]</span>} · {formatDate(post.publishedAt) ?? <span className="todo">[date]</span>}
+            {/* "By Formcraft" until a named author is set; the date only once the post has one */}
+            {post.author || "Formcraft"}
+            {formatDate(post.publishedAt) && <> · {formatDate(post.publishedAt)}</>}
             {state && <span className="tag journal-state">{state}</span>}
             {post.hidden && <span className="tag">Hidden</span>}
         </p>
@@ -58,7 +63,10 @@ const Byline = ({ post }) => {
 
 export const Journal = () => {
     usePageMeta("Journal", "The Formcraft Journal: notes on construction, BIM and craft from real projects in Kampala, written by the team.");
-    const { items: posts, loading } = useContent("posts");
+    const { items: all, loading } = useContent("posts");
+    const seesTodos = useSeesTodos();
+    // Visitors see written posts only; topics that are still planned ("TODO" body) are for the team.
+    const posts = seesTodos ? all : all.filter((p) => postState(p) !== "Planned");
     const [category, setCategory] = useState("all");
 
     const inUse = CATEGORIES.filter((c) => posts.some((p) => p.category === c));
@@ -97,7 +105,7 @@ export const Journal = () => {
                         <div className="grid-3">{[0, 1, 2].map((i) => <div key={i} className="skeleton journal-skel" />)}</div>
                     </div>
                 ) : !featured ? (
-                    <p className="body">No posts here yet. <span className="todo">TODO: first published post.</span></p>
+                    <p className="body">No posts here yet. <Todo>TODO: first published post.</Todo></p>
                 ) : (
                     <>
                         <Reveal>
@@ -139,7 +147,7 @@ export const Journal = () => {
                         <p className="eyebrow">Newsletter</p>
                         <h2 className="h2">The Journal, in your inbox.</h2>
                         <p className="body">New posts, workshop dates and projects as they finish. Pick what you care about. Unsubscribe any time.</p>
-                        <p className="fine todo">TODO: how often we send, and which email service we use.</p>
+                        <Todo as="p">TODO: how often we send, and which email service we use.</Todo>
                     </Reveal>
                     <SubscribeForm variant="card" defaultInterests={["Journal"]} />
                 </div>

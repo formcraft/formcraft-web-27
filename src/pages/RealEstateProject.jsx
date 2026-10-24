@@ -12,6 +12,9 @@ import { formatUGX } from "../lib/money";
 import { sendInvestorLead } from "../lib/forms";
 import { Honeypot } from "../components/forms/Honeypot";
 import { devStatusLabel, isSampleDev } from "../data/developments";
+import { Todo, PartFact } from "../components/ui/Todo";
+import { useSeesTodos } from "../hooks/useSeesTodos";
+import { known } from "../lib/pending";
 import "./RealEstateProject.css";
 
 // Placeholder views until a development has images uploaded in Admin
@@ -32,9 +35,9 @@ const DOCUMENTS = [
 ];
 
 const LEVELS = ["Community investor", "Verified investor", "Partner investor"];
-const TICKETS = ["Prefer not to say", "Up to the community limit (UGX [limit])", "UGX [n] – [n]", "A whole phase or the whole project"];
+const TICKETS = ["Prefer not to say", "Up to the community limit", "A larger amount", "A whole phase or the whole project"];
 
-const money = (v, fallback = "UGX [n]") => (Number.isInteger(v) ? formatUGX(v) : fallback);
+const money = (v) => (Number.isInteger(v) ? formatUGX(v) : null);
 
 const InterestForm = ({ dev }) => {
     const [status, setStatus] = useState("idle");
@@ -64,7 +67,7 @@ const InterestForm = ({ dev }) => {
         return (
             <div className="card card-pad stack" role="status" style={{ "--gap": "12px" }}>
                 <h3 className="h3">Interest registered.</h3>
-                <p className="body">The Real Estate team will contact you about this development. Nothing is reserved or paid yet. <span className="todo">TODO: confirm reply time.</span></p>
+                <p className="body">The Real Estate team will contact you about this development. Nothing is reserved or paid yet. <Todo>TODO: confirm reply time.</Todo></p>
                 <button type="button" className="btn btn-ink btn-sm" style={{ alignSelf: "flex-start" }} onClick={() => setStatus("idle")}>Send another</button>
             </div>
         );
@@ -109,22 +112,27 @@ const InterestForm = ({ dev }) => {
                 <textarea id="real-estate-project-message" name="message" maxLength={4500} />
             </div>
             <dl className="real-estate-project-terms">
-                <div><dt className="small">Units of the development</dt><dd className="small">{dev.units ?? "[n]"} units at {money(dev.unitFromUGX, "UGX [unit price]")}</dd></div>
-                <div><dt className="small">Target return</dt><dd className="small">[x]% a year</dd></div>
-                <div><dt className="small">Platform fee</dt><dd className="small todo">TODO</dd></div>
+                {Number.isInteger(dev.units) && (
+                    <div><dt className="small">Units of the development</dt><dd className="small">{dev.units} units{money(dev.unitFromUGX) ? ` from ${money(dev.unitFromUGX)}` : ""}</dd></div>
+                )}
+                <Todo as="div">TODO: target return (% a year) and platform fee, once terms are approved</Todo>
             </dl>
             {error && <p className="alert alert-error" role="alert">{error}</p>}
             <button type="submit" className="btn btn-primary" disabled={status === "sending"}>{status === "sending" ? "Sending…" : "Register my interest"}</button>
-            <p className="fine">Your capital is at risk and returns aren't guaranteed. Read the risk statement before investing. <span className="todo">TODO: regulatory status and final wording.</span></p>
+            <p className="fine">Your capital is at risk and returns aren't guaranteed. Read the risk statement before investing. <Todo>TODO: regulatory status and final wording.</Todo></p>
         </form>
     );
 };
 
 export const RealEstateProject = () => {
     const { slug } = useParams();
-    const { item: dev, loading, items } = useContentItem("developments", slug);
+    const { item: found, loading, items: all } = useContentItem("developments", slug);
+    const seesTodos = useSeesTodos();
+    // Sample listings are for the team: visitors get the "can't find that development" page instead.
+    const dev = found && (seesTodos || !isSampleDev(found)) ? found : null;
+    const items = seesTodos ? all : all.filter((d) => !isSampleDev(d));
     const [view, setView] = useState(0);
-    usePageMeta(dev ? `${dev.title} · Real estate` : loading ? "Real estate" : "Development not found", dev?.summary, { noindex: (!dev && !loading) || (dev && isSampleDev(dev)) });
+    usePageMeta(dev ? `${dev.title} · Real estate` : loading ? "Real estate" : "Development not found", known(dev?.summary) ?? undefined, { noindex: (!dev && !loading) || (dev && isSampleDev(dev)) });
 
     if (!dev && loading) {
         return (
@@ -152,17 +160,11 @@ export const RealEstateProject = () => {
     const current = gallery[Math.min(view, gallery.length - 1)];
     const others = items.filter((d) => d.slug !== dev.slug).slice(0, 3);
     const facts = [
-        ["Raised", "UGX [n] of UGX [target]"],
-        ["Investors", "[n]"],
-        ["Closes", "[date]"],
-        ["Target return", "[x]% a year"],
-        ["Term", "[n] years"],
-        ["Returns paid", "[quarterly]"],
-        ["Units", dev.units ?? "[n]"],
+        ["Units", Number.isInteger(dev.units) ? dev.units : null],
         ["Units from", money(dev.unitFromUGX)],
         ["Minimum investment", money(dev.minInvestUGX)],
-        ["Expected completion", dev.completion || "[date]"],
-    ];
+        ["Expected completion", known(dev.completion)],
+    ].filter(([, v]) => v !== null);
 
     return (
         <div className="real-estate-project">
@@ -186,7 +188,7 @@ export const RealEstateProject = () => {
                             {dev.hidden && <span className="tag">Hidden</span>}
                         </div>
                         <h1 className="h1-s">{dev.title}</h1>
-                        <p className="small">{dev.kind ? `${dev.kind} · ` : ""}{dev.location || "[location]"}</p>
+                        <p className="small">{[known(dev.kind), known(dev.location)].filter(Boolean).join(" · ")}</p>
                         {dev.summary && <p className="lead">{dev.summary}</p>}
                         <div className="stack" style={{ "--gap": "6px" }}>
                             <div className="bar" role="img" aria-label="Amount raised: not published yet"><i style={{ "--value": "0%" }} /></div>
@@ -206,16 +208,20 @@ export const RealEstateProject = () => {
                         </div>
                     ))}
                 </dl>
+                <Todo as="p">TODO: amount raised and target, number of investors, closing date, target return, term and how often returns are paid, once terms are approved.</Todo>
             </Section>
 
             <Section tone="ground" seed={4} id="project">
                 <div className="grid-2">
                     <Reveal className="stack" style={{ "--gap": "28px" }}>
+                        {seesTodos && (
                         <div className="stack" style={{ "--gap": "12px" }}>
                             <p className="eyebrow">The project</p>
                             <h2 className="h2">Why this development.</h2>
-                            <p className="body todo">TODO: the site, who the units are for, expected rent, and why the location works.</p>
+                            <Todo as="p">TODO: the site, who the units are for, expected rent, and why the location works.</Todo>
                         </div>
+                        )}
+                        {seesTodos && (
                         <div className="stack" style={{ "--gap": "12px" }}>
                             <h2 className="h3">Timeline</h2>
                             <ol className="real-estate-project-timeline">
@@ -224,13 +230,14 @@ export const RealEstateProject = () => {
                                 ))}
                             </ol>
                         </div>
+                        )}
                         <div className="stack" style={{ "--gap": "12px" }}>
                             <h2 className="h3">Documents</h2>
                             <ul className="checklist">
                                 {DOCUMENTS.map(([a, b]) => (
                                     <li key={a}>
                                         <span className="tick"><Icon name="file" size={14} /></span>
-                                        <span className="between real-estate-project-doc"><span>{a}</span><span className={`fine ${b.includes("TODO") ? "todo" : ""}`}>{b}</span></span>
+                                        <span className="between real-estate-project-doc"><span>{a}</span><span className="fine"><PartFact text={b} /></span></span>
                                     </li>
                                 ))}
                             </ul>
@@ -252,11 +259,11 @@ export const RealEstateProject = () => {
                         {others.map((o, i) => (
                             <Reveal as="li" key={o.slug} delay={i * 0.06}>
                                 <Link to={`/real-estate/${o.slug}`} className="card real-estate-project-other-card">
-                                    <Photo name={imgName(o.images?.[0])} alt={o.images?.[0]?.alt || "[Render]"} ratio="16 / 10" />
+                                    <Photo name={imgName(o.images?.[0])} alt={o.images?.[0]?.alt || `${o.title}, render`} ratio="16 / 10" />
                                     <span className="stack" style={{ "--gap": "6px", padding: "16px 18px 20px" }}>
                                         <span className="tag" style={{ alignSelf: "flex-start" }}>{devStatusLabel(o.status)}</span>
                                         <strong className="h4">{o.title}</strong>
-                                        <span className="small">{o.kind || o.location || "[location]"}</span>
+                                        <span className="small">{known(o.kind) || known(o.location) || "Formcraft development"}</span>
                                     </span>
                                 </Link>
                             </Reveal>

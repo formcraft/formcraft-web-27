@@ -61,7 +61,7 @@
   --sheet-2: var(--fc-paper-sheet-2);
   --ink: var(--fc-navy);
   --ink-2: rgba(28, 37, 45, .76);
-  --ink-3: rgba(28, 37, 45, .62);
+  --ink-3: rgba(28, 37, 45, .68); /* .68 keeps small grey text at 4.9:1 or more on every light paper (WCAG AA 4.5:1); .62 was 4.2–4.4 */
   --line: rgba(28, 37, 45, .14);
   --line-2: rgba(28, 37, 45, .3);
   --acc-ink: var(--fc-rust-text);

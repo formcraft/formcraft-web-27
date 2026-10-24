@@ -9,6 +9,7 @@ import { Reveal } from "../components/ui/Reveal";
 import { Icon } from "../components/ui/Icon";
 import { sendInvestorLead } from "../lib/forms";
 import { Honeypot } from "../components/forms/Honeypot";
+import { Todo } from "../components/ui/Todo";
 import "./Invest.css";
 
 const TARGETS = [
@@ -156,7 +157,7 @@ export const Invest = () => {
                         </Reveal>
                     ))}
                 </ul>
-                <p className="fine todo invest-note">TODO: market size, revenue to date and unit economics (in the investor pack).</p>
+                <Todo as="p">TODO: market size, revenue to date and unit economics (in the investor pack).</Todo>
             </Section>
 
             <Section tone="dark" seed={6} id="roadmap">
@@ -177,7 +178,7 @@ export const Invest = () => {
                         <p className="eyebrow">Real estate</p>
                         <h2 className="h2">Or invest in a single development.</h2>
                         <p className="body">Formcraft plans rental apartments, hostels and homes that investors can back one development at a time — from community crowdfunding to partner investment.</p>
-                        <p className="small">Member property schemes let people in the Formcraft community take part too. <span className="todo">TODO: scheme terms (in the investor pack).</span></p>
+                        <p className="small">Member property schemes let people in the Formcraft community take part too. <Todo>TODO: scheme terms (in the investor pack).</Todo></p>
                         {show("/real-estate") && (
                             <Link to="/real-estate" className="btn btn-ink" style={{ alignSelf: "flex-start" }}>See the developments <Icon name="arrow" size={18} /></Link>
                         )}
@@ -194,7 +195,7 @@ export const Invest = () => {
                         <p className="eyebrow">Investor pack</p>
                         <h2 className="h2">Get the full picture.</h2>
                         <p className="body">Financials, the pipeline and the scheme terms are in the investor pack. Tell us who you are and we'll send a private link.</p>
-                        <p className="fine">Nothing on this page is an offer to sell securities. <span className="todo">TODO: final disclaimer from a lawyer.</span></p>
+                        <p className="fine">Nothing on this page is an offer to sell securities. <Todo>TODO: final disclaimer from a lawyer.</Todo></p>
                     </Reveal>
                     <PackForm show={show} />
                 </div>

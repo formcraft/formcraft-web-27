@@ -4,6 +4,7 @@ import { Section, SectionHead } from "../components/page/Section";
 import { QuoteForm } from "../components/forms/QuoteForm";
 import { Reveal } from "../components/ui/Reveal";
 import { Icon } from "../components/ui/Icon";
+import { Todo } from "../components/ui/Todo";
 import "./Concrete.css";
 
 const PRODUCTS = [
@@ -64,7 +65,7 @@ export const Concrete = () => {
                             <div className="card-pad stack" style={{ "--gap": "8px" }}>
                                 <h3 className="h4">{title}</h3>
                                 <p className="small">{text}</p>
-                                <p className="fine todo">TODO: sizes, strength class, price per unit</p>
+                                <Todo as="p">TODO: sizes, strength class, price per unit</Todo>
                             </div>
                         </Reveal>
                     ))}
@@ -78,7 +79,7 @@ export const Concrete = () => {
                         <h2 className="h2">Lower-carbon mixes from local aggregates.</h2>
                         <p className="body">Formulations that reduce the carbon footprint of concrete and use locally sourced raw aggregates.</p>
                     </div>
-                    <p className="fine todo">TODO: mix names, carbon figures and test certificates</p>
+                    <Todo as="p">TODO: mix names, carbon figures and test certificates</Todo>
                 </div>
             </Section>
 
@@ -90,7 +91,7 @@ export const Concrete = () => {
                         <p className="body">Direct supply for civil engineering firms, estate developers and commercial contractors. List what you need and we'll come back with prices and lead times.</p>
                         <ul className="checklist">
                             <li><span className="tick"><Icon name="check" size={14} /></span>Prices worked out by our team for each order</li>
-                            <li><span className="tick"><Icon name="check" size={14} /></span>Delivery to site in Kampala and beyond — <span className="todo">TODO: areas</span></li>
+                            <li><span className="tick"><Icon name="check" size={14} /></span>Delivery to site in Kampala and beyond — <Todo>TODO: areas</Todo></li>
                             <li><span className="tick"><Icon name="check" size={14} /></span>Drawings and BIM families on request</li>
                         </ul>
                     </Reveal>

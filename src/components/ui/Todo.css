@@ -1,0 +1,7 @@
+/* The team-only "To fill in: …" note (Todo.jsx). Visitors never see it.
+   A dashed outline in the brand rust so it stands out on every paper, day and night. */
+.todo-note {
+  display: inline-block; padding: 2px 8px; border: 1px dashed var(--fc-rust); border-radius: 4px;
+  font: italic 500 13px/1.45 var(--fc-font-body); color: var(--ink-2); background: color-mix(in srgb, var(--fc-rust) 8%, transparent);
+}
+p.todo-note, div.todo-note { display: block; }

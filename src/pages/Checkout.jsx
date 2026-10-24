@@ -9,6 +9,7 @@ import { PageHero } from "../components/page/PageHero";
 import { Section } from "../components/page/Section";
 import { imgName } from "../lib/images";
 import { Icon } from "../components/ui/Icon";
+import { Todo } from "../components/ui/Todo";
 import "./Checkout.css";
 
 // Checkout, built ahead of Phase 3. Prices on this page are for display only: the browser will send
@@ -103,10 +104,10 @@ export const Checkout = () => {
                                         {form.how === "deliver" && (
                                             <div className="field">
                                                 <label htmlFor="co-area">Area</label>
-                                                <select id="co-area" value={form.area} onChange={set("area")} aria-describedby="co-area-hint">
+                                                <select id="co-area" value={form.area} onChange={set("area")}>
                                                     {AREAS.map((a) => <option key={a}>{a}</option>)}
                                                 </select>
-                                                <span id="co-area-hint" className="hint todo">TODO: areas served and delivery prices</span>
+                                                <Todo>TODO: areas served and delivery prices</Todo>
                                             </div>
                                         )}
                                     </div>
@@ -116,7 +117,7 @@ export const Checkout = () => {
                                             <input id="co-street" autoComplete="street-address" value={form.street} onChange={set("street")} />
                                         </div>
                                     ) : (
-                                        <p className="small">Collect from the Formcraft workshop, Kampala. <span className="todo">TODO: workshop address and opening hours.</span></p>
+                                        <p className="small">Collect from the Formcraft workshop, Kampala. <Todo>TODO: workshop address and opening hours.</Todo></p>
                                     )}
                                     <div className="field">
                                         <label htmlFor="co-notes">Notes for the driver (optional)</label>
@@ -172,8 +173,9 @@ export const Checkout = () => {
                                 )}
                                 <dl className="checkout-totals">
                                     <div><dt>Subtotal</dt><dd>{formatUGX(subtotal)}</dd></div>
-                                    <div><dt>Delivery</dt><dd className="todo">{form.how === "collect" ? "Free to collect · TODO confirm" : "TODO"}</dd></div>
-                                    <div className="checkout-total"><dt>Total</dt><dd>{subtotal === null ? "UGX [total]" : `${formatUGX(subtotal)} + delivery`}</dd></div>
+                                    {/* Delivery prices aren't set yet: the line says so plainly, and the team sees the note */}
+                                    <div><dt>Delivery</dt><dd>Agreed when we call you <Todo>TODO: {form.how === "collect" ? "confirm collecting is free" : "delivery prices by area"}</Todo></dd></div>
+                                    <div className="checkout-total"><dt>Total</dt><dd>{subtotal === null ? "Price on request" : `${formatUGX(subtotal)} + delivery`}</dd></div>
                                 </dl>
                                 <button type="button" className="btn btn-primary btn-block" disabled aria-describedby="co-pay-note">
                                     Pay with {chosen.short}

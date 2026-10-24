@@ -1,6 +1,6 @@
 // Stores catalogue until Phase 3, when scripts/seed-products.js copies it into Firestore `products`.
 // Shape matches the Firestore model in docs/build-plan.md. Prices are whole UGX integers;
-// null means "not set yet" and shows as "UGX [price]". Never put made-up prices here.
+// null means "not set yet" and shows as "Price on request". Never put made-up prices here.
 export const products = [
     {
         id: "oak-armchair",

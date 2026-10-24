@@ -27,3 +27,5 @@
   flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
   background: var(--fc-orange); color: var(--fc-navy); font: 700 15px/1 var(--fc-font-display);
 }
+/* honest empty state for visitors while the directory and jobs board have no real entries */
+.community-empty { max-width: 640px; }

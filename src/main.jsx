@@ -1,5 +1,10 @@
+// The site's starting point. The browser runs this file first (index.html points to it).
+// It loads the shared styles once (fonts, colours, layout helpers, shared components), draws the
+// whole app into <div id="root"> in index.html, and, on the live site only, switches on the
+// service worker (public/sw.js) that keeps a copy of the site for fast repeat visits and offline use.
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+// The shared styles come first, so every component stylesheet (loaded with the app below) can build on them.
 import "./styles/fonts.css";
 import "./styles/tokens.css";
 import "./styles/base.css";

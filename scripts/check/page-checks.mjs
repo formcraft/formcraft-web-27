@@ -77,6 +77,7 @@ function measurePage({ fixedOnly = false } = {}) {
 
     // ---- collect every visible line of text, line by line ----
     const pieces = [];
+    const placeholders = new Set(); // raw "TODO" notes or [bracket] placeholders a visitor can see
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
         acceptNode: (t) => (t.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT),
     });
@@ -84,6 +85,8 @@ function measurePage({ fixedOnly = false } = {}) {
         const el = t.parentElement;
         if (!el || el.closest("script,style,noscript,template,title,.hotel-preview")) continue;
         if (shownAmount(el) < 0.05 || isScreenReaderOnly(el)) continue;
+        const raw = t.nodeValue.trim();
+        if (/\bTODO\b/.test(raw) || /\[[A-Za-z][^\]]{0,40}\]/.test(raw)) placeholders.add(`"${raw.slice(0, 70)}" (${describe(el)})`);
         const range = document.createRange();
         range.selectNodeContents(t);
         const layer = floatingLayer(el);
@@ -157,6 +160,8 @@ function measurePage({ fixedOnly = false } = {}) {
     }
     const coverSeen = new Set();
     for (const f of floating) {
+        // notices that float over the page on purpose until the visitor answers them (cookie, email prompt)
+        if (f.matches(".consent, .subscribe-prompt")) continue;
         const r = f.getBoundingClientRect();
         for (const p of pieces) {
             if (p.layer || f.contains(p.el)) continue;
@@ -184,6 +189,7 @@ function measurePage({ fixedOnly = false } = {}) {
         title: document.title,
         description: meta("description"),
         brokenImages,
+        placeholders: [...placeholders],
         height: document.documentElement.scrollHeight,
     };
 }
@@ -199,6 +205,13 @@ export async function checkPage(context, url, { axe = false, screenshot = null, 
     const page = await context.newPage();
     const issues = [];
     const add = (severity, kind, detail) => issues.push({ severity, kind, detail });
+    // How long each step took, in ms (shown in the report, so slow pages stand out).
+    const timings = {};
+    let last = Date.now();
+    const lap = (name) => {
+        timings[name] = Date.now() - last;
+        last = Date.now();
+    };
     page.on("pageerror", (e) => add("error", "Script error", e.message.split("\n")[0]));
     page.on("console", (m) => {
         if (m.type() === "error" && !isExpectedOfflineNoise(m.text())) add("error", "Console error", m.text().slice(0, 200));
@@ -206,30 +219,44 @@ export async function checkPage(context, url, { axe = false, screenshot = null, 
     try {
         const res = await page.goto(url, { waitUntil: "load", timeout: 45000 });
         if (res && res.status() >= 400) add("error", "HTTP status", `${res.status()} for ${url}`);
+        lap("load");
         // Wait for the page's own content (not just the loading skeleton).
         await page.waitForFunction(() => document.querySelector("main h1, main [role=heading]") && !document.querySelector('main [aria-busy="true"]'), null, { timeout: 15000 }).catch(() => add("warning", "Slow to settle", "the page's heading didn't appear within 15 s"));
         await wait(400);
-        // Scroll down like a visitor, so scroll animations and lazy images run, then back to the top.
-        const height = await page.evaluate(() => document.documentElement.scrollHeight);
-        const step = Math.round((page.viewportSize()?.height ?? 800) * 0.8);
-        for (let y = 0; y < height; y += step) {
-            await page.evaluate((yy) => window.scrollTo(0, yy), y);
-            await wait(90);
-        }
+        lap("settle");
+        // Scroll down like a visitor, so scroll animations and lazy images run. Done inside the page in
+        // one go (each round trip to a busy page is slow), jumping instead of the site's smooth scroll.
+        await page.evaluate(async () => {
+            const step = Math.round(innerHeight * 0.8);
+            for (let y = 0; y < document.documentElement.scrollHeight; y += step) {
+                window.scrollTo({ top: y, behavior: "instant" });
+                await new Promise((r) => setTimeout(r, 90));
+            }
+        });
         await wait(700);
-        // Floating pieces at three scroll positions: middle, bottom, then top.
-        const floatingAt = {};
-        for (const [name, frac] of [["middle", 0.5], ["bottom", 1], ["top", 0]]) {
-            await page.evaluate((f) => window.scrollTo(0, f * (document.documentElement.scrollHeight - innerHeight)), frac);
-            await wait(250);
-            floatingAt[name] = await page.evaluate(measurePage, { fixedOnly: true });
-        }
+        lap("scroll");
+        // Floating pieces at three scroll positions (middle, bottom, then top), measured in one go.
+        await page.addScriptTag({ content: `window.__fcMeasure = ${measurePage.toString()};` });
+        const floatingAt = await page.evaluate(async () => {
+            const out = {};
+            for (const [name, frac] of [["middle", 0.5], ["bottom", 1], ["top", 0]]) {
+                window.scrollTo({ top: frac * (document.documentElement.scrollHeight - innerHeight), behavior: "instant" });
+                await new Promise((r) => setTimeout(r, 250));
+                out[name] = window.__fcMeasure({ fixedOnly: true });
+            }
+            return out;
+        });
+        lap("floating");
         const m = await page.evaluate(measurePage, {});
+        lap("measure");
 
         if (m.sidewaysScroll > 1) add("error", "Sideways scroll", `the page is ${m.sidewaysScroll}px wider than the screen`);
         if (m.h1.length !== 1) add("error", "Main heading", m.h1.length ? `${m.h1.length} visible h1 headings: ${m.h1.join(" | ")}` : "no visible h1 heading");
         if (!m.title || /^formcraft$/i.test(m.title.trim())) add("warning", "Page title", `generic or missing title: "${m.title}"`);
         if (!m.description) add("warning", "Description", "no meta description");
+        // Visitors must never see raw placeholders (the team sees them via <Todo>; these checks run signed out)
+        for (const p of m.placeholders) add("error", "Placeholder visible", p);
+        if (/\bTODO\b|\[[A-Za-z][^\]]*\]/.test(m.title + " " + m.description)) add("error", "Placeholder visible", `in the page title or description: "${(m.title + " | " + m.description).slice(0, 120)}"`);
         for (const src of m.brokenImages) add(/^https?:/.test(src) ? "warning" : "error", "Broken image", src);
         for (const o of m.overlaps) add("error", "Text on text", `${o.a} overlaps ${o.b} (${o.at}px from the top)`);
         for (const o of m.offscreen) add("error", "Text off screen", `${o.text} runs past the edge of the screen (${o.at}px from the top)`);
@@ -260,11 +287,13 @@ export async function checkPage(context, url, { axe = false, screenshot = null, 
                 add(severity, `Accessibility: ${v.id}`, `${v.help} — ${v.nodes.length} place(s): ${where}`);
             }
         }
+        lap("axe");
         if (screenshot) await page.screenshot({ path: screenshot, fullPage: true });
-        return { label, url, issues, screenshot, h1: m.h1 };
+        lap("screenshot");
+        return { label, url, issues, screenshot, h1: m.h1, timings };
     } catch (e) {
         add("error", "Check failed", e.message.split("\n")[0]);
-        return { label, url, issues, screenshot: null, h1: [] };
+        return { label, url, issues, screenshot: null, h1: [], timings };
     } finally {
         await page.close();
     }

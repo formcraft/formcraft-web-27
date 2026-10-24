@@ -228,11 +228,11 @@ export const Composer = ({ studio, post, draft, onClose }) => {
     );
 
     return (
-        <Drawer open onClose={onClose} title={isNew ? "New post" : "Edit post"} footer={footer} labelledBy="studio-composer-title">
-            <form className="form studio-composer" onSubmit={(e) => e.preventDefault()} aria-label="Post">
+        <Drawer open onClose={onClose} title={isNew ? "New post" : "Edit post"} footer={footer} labelledBy="mkt-composer-title">
+            <form className="form mkt-composer" onSubmit={(e) => e.preventDefault()} aria-label="Post">
                 <div className="row" style={{ "--gap": "8px" }}>
                     <StatusTag status={status} />
-                    {form.confirmDate && <span className="studio-flag">Confirm the date before posting</span>}
+                    {form.confirmDate && <span className="mkt-flag">Confirm the date before posting</span>}
                     {post?.approvedBy && <span className="fine">Approved by {post.approvedBy}</span>}
                 </div>
 
@@ -266,14 +266,14 @@ export const Composer = ({ studio, post, draft, onClose }) => {
                     {field("templateCode", "Template code", { placeholder: "e.g. FMC-MKT-HOL-10-09" })}
                 </div>
                 {occasion && (
-                    <div className="card card-pad stack studio-occasion" style={{ "--gap": "8px" }}>
+                    <div className="card card-pad stack mkt-occasion" style={{ "--gap": "8px" }}>
                         <p className="small"><strong>Angle:</strong> {occasion.postAngle || "—"}{occasion.ribbonColour ? ` · Ribbon: ${occasion.ribbonColour}` : ""}</p>
                         <p className="fine">{PREP_NOTE}{day ? ` Prepare by ${formatDay(addDays(day, -3))}.` : ""}</p>
                         {care.length > 0 && (
-                            <fieldset className="studio-care">
+                            <fieldset className="mkt-care">
                                 <legend className="label">Care notes — tick each before approval</legend>
                                 {care.map((n, i) => (
-                                    <label key={i} className="admin-check studio-care-item">
+                                    <label key={i} className="admin-check mkt-care-item">
                                         <input
                                             type="checkbox"
                                             checked={form.careChecked?.includes(n) ?? false}
@@ -303,9 +303,9 @@ export const Composer = ({ studio, post, draft, onClose }) => {
                 <div className="field">
                     <label htmlFor="cmp-caption">Caption</label>
                     <textarea id="cmp-caption" rows={6} value={form.caption ?? ""} onChange={(e) => set("caption", e.target.value)} disabled={!editable} aria-describedby="cmp-counters" />
-                    <ul className="studio-counters" id="cmp-counters" aria-live="polite">
+                    <ul className="mkt-counters" id="cmp-counters" aria-live="polite">
                         {counters.map(({ cid, c, n, limit, over }) => (
-                            <li key={cid} className={over ? "studio-over" : ""}>
+                            <li key={cid} className={over ? "mkt-over" : ""}>
                                 {channelLabel(c)}: {n}{limit ? ` / ${limit}` : ""}{over ? " — over the limit" : ""}
                             </li>
                         ))}
@@ -316,7 +316,7 @@ export const Composer = ({ studio, post, draft, onClose }) => {
                 <div className="field">
                     <label htmlFor="cmp-hashtags">Hashtags</label>
                     <input id="cmp-hashtags" value={form.hashtags ?? ""} onChange={(e) => set("hashtags", e.target.value)} disabled={!editable} placeholder="#Formcraft #Kampala" aria-describedby="cmp-tag-advice" />
-                    <ul className="hint studio-advice" id="cmp-tag-advice">
+                    <ul className="hint mkt-advice" id="cmp-tag-advice">
                         {[...new Set(enabled.map((cid) => channelsById[cid]?.platform))].filter(Boolean).map((p) => {
                             const pl = platformOf({ platform: p });
                             return pl.hashtags ? <li key={p}>{pl.label}: {pl.hashtags}</li> : null;
@@ -329,13 +329,13 @@ export const Composer = ({ studio, post, draft, onClose }) => {
                     {field("campaign", "Campaign (optional)", { placeholder: campaignOf(postNow, settings) })}
                 </div>
                 {form.link && enabled.length > 0 && (
-                    <ul className="studio-links">
+                    <ul className="mkt-links">
                         {enabled.map((cid) => {
                             const url = trackedUrl(postNow, channelsById[cid], settings);
                             return (
                                 <li key={cid}>
                                     <span className="fine">{channelLabel(channelsById[cid])}</span>
-                                    <code className="studio-url">{url}</code>
+                                    <code className="mkt-url">{url}</code>
                                     <CopyButton text={url} label="Copy link" className="btn btn-line btn-sm" />
                                 </li>
                             );
@@ -343,7 +343,7 @@ export const Composer = ({ studio, post, draft, onClose }) => {
                     </ul>
                 )}
 
-                <fieldset className="studio-channels">
+                <fieldset className="mkt-channels">
                     <legend className="label">Channels</legend>
                     {shownChannels.length === 0 && <p className="small">No channels yet.</p>}
                     {shownChannels.map((c) => {
@@ -351,14 +351,14 @@ export const Composer = ({ studio, post, draft, onClose }) => {
                         const counter = counters.find((x) => x.cid === c.id);
                         const sizes = sizesFor(c, pc.format);
                         return (
-                            <div key={c.id} className={`studio-channel ${pc.enabled ? "" : "studio-channel-off"}`}>
+                            <div key={c.id} className={`mkt-channel ${pc.enabled ? "" : "mkt-channel-off"}`}>
                                 <div className="row" style={{ "--gap": "10px" }}>
                                     <label className="admin-check">
                                         <input type="checkbox" checked={Boolean(pc.enabled)} onChange={(e) => setChannel(c.id, { enabled: e.target.checked })} disabled={!editable} />
                                         <span>{channelLabel(c)}{c.handle ? ` · @${c.handle.replace(/^@/, "")}` : ""}</span>
                                     </label>
                                     {pc.enabled && (
-                                        <div className="field studio-inline">
+                                        <div className="field mkt-inline">
                                             <label htmlFor={`fmt-${c.id}`} className="sr-only">Format on {channelLabel(c)}</label>
                                             <select id={`fmt-${c.id}`} value={pc.format} onChange={(e) => setChannel(c.id, { format: e.target.value })} disabled={!editable}>
                                                 {platformOf(c).formats.map((f) => <option key={f} value={f}>{FORMATS[f]}</option>)}
@@ -375,11 +375,11 @@ export const Composer = ({ studio, post, draft, onClose }) => {
                                             <div className="field">
                                                 <label htmlFor={`cap-${c.id}`}>Caption on {channelLabel(c)} (leave empty to use the main one)</label>
                                                 <textarea id={`cap-${c.id}`} rows={4} value={pc.caption ?? ""} onChange={(e) => setChannel(c.id, { caption: e.target.value })} disabled={!editable} />
-                                                {counter && <span className={`hint ${counter.over ? "studio-over" : ""}`}>{counter.n}{counter.limit ? ` / ${counter.limit}` : ""} characters</span>}
+                                                {counter && <span className={`hint ${counter.over ? "mkt-over" : ""}`}>{counter.n}{counter.limit ? ` / ${counter.limit}` : ""} characters</span>}
                                             </div>
                                         </details>
                                         {post && isMarketing && ["approved", "scheduled", "published", "failed"].includes(status) && (
-                                            <div className="studio-posted">
+                                            <div className="mkt-posted">
                                                 {post.results?.[c.id]?.status === "published" ? (
                                                     <p className="small">Posted{post.results[c.id].url ? <> · <a className="link" href={post.results[c.id].url} target="_blank" rel="noreferrer">live post</a></> : ""}</p>
                                                 ) : (
@@ -402,17 +402,17 @@ export const Composer = ({ studio, post, draft, onClose }) => {
                     })}
                 </fieldset>
 
-                <fieldset className="studio-media">
+                <fieldset className="mkt-media">
                     <legend className="label">Pictures and video</legend>
                     {(form.media ?? []).length > 0 && (
-                        <ul className="studio-thumbs">
+                        <ul className="mkt-thumbs">
                             {form.media.map((m, i) => {
                                 const misfit = enabled.filter((cid) => !ratioFits(m, sizesFor(channelsById[cid], form.perChannel[cid]?.format)));
                                 return (
-                                    <li key={`${m.url}-${i}`} className="studio-thumb">
+                                    <li key={`${m.url}-${i}`} className="mkt-thumb">
                                         {m.kind === "video" ? <video src={m.url} muted preload="metadata" aria-label={m.name} /> : <img src={m.url} alt={m.name} loading="lazy" />}
                                         <span className="fine">{m.name}{m.width ? ` · ${m.width} × ${m.height}` : ""}</span>
-                                        {misfit.length > 0 && <span className="fine studio-over">Shape doesn’t match {misfit.map((cid) => channelLabel(channelsById[cid])).join(", ")}</span>}
+                                        {misfit.length > 0 && <span className="fine mkt-over">Shape doesn’t match {misfit.map((cid) => channelLabel(channelsById[cid])).join(", ")}</span>}
                                         {editable && (
                                             <button type="button" className="btn btn-line btn-sm" onClick={() => set("media", form.media.filter((_, k) => k !== i))} aria-label={`Remove ${m.name}`}>Remove</button>
                                         )}

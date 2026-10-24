@@ -1,3 +1,4 @@
+// CartContext: the shopping cart, shared with the whole app (read it with useCart()).
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CartContext } from "./contexts";
 import { readJSON, writeJSON } from "../lib/storage";
@@ -8,11 +9,23 @@ import { productById } from "../data/products";
 // Kept in localStorage so it survives navigation and reloads; synced to users/{uid}/cart in Phase 3.
 const KEY = "fc-cart";
 
+/** True when two cart lines are the same product in the same colour and size (they merge). */
 const sameLine = (a, b) => a.productId === b.productId && a.color === b.color && a.size === b.size;
 
+// A product id is known if it's in the starter list or in the store's latest product list from
+// Admin → Content (Firestore), which useContent saves on the device as "fc-content-products".
+// (Checking only the starter list used to drop Admin-added products from carts on reload.)
+const knownProduct = (id) => {
+    if (typeof id !== "string" || !id) return false;
+    if (productById(id)) return true;
+    const latest = readJSON("fc-content-products", []);
+    return Array.isArray(latest) && latest.some((p) => p?.id === id || p?.slug === id);
+};
+
+/** Keeps only well-formed lines for products we know, with quantities 1–99. */
 const clean = (items) =>
     Array.isArray(items)
-        ? items.filter((i) => i && productById(i.productId) && Number.isInteger(i.qty) && i.qty > 0).map((i) => ({
+        ? items.filter((i) => i && knownProduct(i.productId) && Number.isInteger(i.qty) && i.qty > 0).map((i) => ({
               productId: i.productId,
               color: i.color ?? null,
               size: i.size ?? null,
@@ -20,6 +33,10 @@ const clean = (items) =>
           }))
         : [];
 
+/**
+ * Wraps the app (see App.jsx). Provides: items, count, add(productId, {color, size, qty}),
+ * update(line, +1/-1), remove(line), clear(), open, openCart(), closeCart().
+ */
 export const CartProvider = ({ children }) => {
     const [items, setItems] = useState(() => clean(readJSON(KEY, [])));
     const [open, setOpen] = useState(false);

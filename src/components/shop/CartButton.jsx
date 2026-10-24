@@ -2,7 +2,8 @@ import { useCart } from "../../hooks/useCart";
 import { Icon } from "../ui/Icon";
 import "./CartButton.css";
 
-// Fixed in the header: touch-friendly, no dragging. Opens the cart drawer.
+// CartButton: the cart icon in the header, with a small badge showing how many items are in the cart.
+// It opens the cart drawer (CartDrawer). Screen readers hear "Cart, 2 items" or "Cart, empty".
 export const CartButton = () => {
     const { count, openCart } = useCart();
     return (

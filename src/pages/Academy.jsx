@@ -11,6 +11,8 @@ import { Icon } from "../components/ui/Icon";
 import { sendInterest } from "../lib/forms";
 import { Honeypot } from "../components/forms/Honeypot";
 import { formatUGX } from "../lib/money";
+import { Todo } from "../components/ui/Todo";
+import { known } from "../lib/pending";
 import "./Academy.css";
 
 const LEVELS = [
@@ -104,7 +106,7 @@ export const Academy = () => {
                             ))}
                         </div>
                     ) : (
-                        <p className="fine todo">TODO: set a level on each course in Admin to filter by level.</p>
+                        <Todo as="p">TODO: set a level on each course in Admin to filter by level.</Todo>
                     )}
                     <p className="fine" aria-live="polite">{shown.length} course{shown.length === 1 ? "" : "s"}</p>
                 </div>
@@ -129,8 +131,9 @@ export const Academy = () => {
                                     <h3 className="h4">{c.title}</h3>
                                     {c.summary && <p className="small">{c.summary}</p>}
                                     <dl className="academy-facts">
-                                        <div><dt className="fine">Length</dt><dd className={/^\[/.test(c.duration ?? "") || !c.duration ? "todo" : ""}>{c.duration || "[length]"}</dd></div>
-                                        <div><dt className="fine">Next start</dt><dd className={c.starts ? "" : "todo"}>{formatDate(c.starts) ?? "[date]"}</dd></div>
+                                        {/* Each fact shows once it's set in Admin → Content; until then only the team sees it */}
+                                        {known(c.duration) ? <div><dt className="fine">Length</dt><dd>{c.duration}</dd></div> : <Todo as="div">TODO: course length</Todo>}
+                                        {formatDate(c.starts) ? <div><dt className="fine">Next start</dt><dd>{formatDate(c.starts)}</dd></div> : <Todo as="div">TODO: next start date</Todo>}
                                         <div><dt className="fine">Price</dt><dd>{priceText(c.priceUGX)}</dd></div>
                                     </dl>
                                     <button type="button" className={`btn btn-sm ${isSel ? "btn-ink" : "btn-line"} academy-choose`} aria-pressed={isSel} onClick={() => choose(c.slug)}>
@@ -141,7 +144,7 @@ export const Academy = () => {
                         })}
                     </ul>
                 )}
-                <p className="fine todo academy-note">TODO: confirm which courses are open to students, their levels, dates and prices.</p>
+                <Todo as="p">TODO: confirm which courses are open to students, their levels, dates and prices.</Todo>
             </Section>
 
             <Section tone="ground" seed={3} id="workshops">
@@ -151,14 +154,14 @@ export const Academy = () => {
                         <Icon name="hammer" size={28} />
                         <h3 className="h3">Workshop sessions</h3>
                         <p className="body">Joinery, finishing and machine skills in the Formcraft workshop, alongside the artisans who make for Stores and our projects.</p>
-                        <p className="fine todo">TODO: session dates, length and places.</p>
+                        <Todo as="p">TODO: session dates, length and places.</Todo>
                         {show("/community") && <Link to="/community#events" className="link academy-link">See upcoming workshops <Icon name="arrow" size={16} /></Link>}
                     </Reveal>
                     <Reveal delay={0.08} className="card card-pad stack" style={{ "--gap": "14px" }}>
                         <Icon name="layers" size={28} />
                         <h3 className="h3">Internships</h3>
                         <p className="body">Work on live projects with Formcraft Studio and the workshop — modelling, drawings and time on site.</p>
-                        <p className="fine todo">TODO: intake dates, length and how places are chosen.</p>
+                        <Todo as="p">TODO: intake dates, length and how places are chosen.</Todo>
                         <a href="#enrol" className="link academy-link">Ask about an internship <Icon name="arrow" size={16} /></a>
                     </Reveal>
                 </div>

@@ -12,6 +12,9 @@ import { Icon } from "../components/ui/Icon";
 import { SubscribeForm } from "../components/forms/SubscribeForm";
 import { formatUGX } from "../lib/money";
 import { TEMPLATE_KINDS, templateKind, templateKindName, templateSpec, templateArea, isSample } from "../data/templates";
+import { Todo, Fact, PartFact } from "../components/ui/Todo";
+import { useSeesTodos } from "../hooks/useSeesTodos";
+import { isPending } from "../lib/pending";
 import "./Templates.css";
 
 const BEDROOMS = [
@@ -71,7 +74,7 @@ const TemplateCard = ({ t }) => {
     const img = t.images?.[0];
     return (
         <article className="card templates-card">
-            <Photo name={imgName(img)} alt={img?.alt || `[Render and floor plan: ${t.title}]`} ratio="16 / 10" />
+            <Photo name={imgName(img)} alt={img?.alt || `${t.title}: render and floor plan`} ratio="16 / 10" />
             <div className="templates-card-body">
                 <div className="between templates-card-top">
                     <span className="row" style={{ "--gap": "6px" }}>
@@ -79,16 +82,18 @@ const TemplateCard = ({ t }) => {
                         {t.hidden && <span className="tag">Hidden</span>}
                         <span className="tag tag-div">{templateKindName(t)}</span>
                     </span>
-                    <span className="fine">Release {t.release || "[release]"}</span>
+                    {t.release && !isPending(t.release) && <span className="fine">Release {t.release}</span>}
                 </div>
                 <h3 className="h4">
                     <Link to={`/templates/${t.slug}`} className="templates-card-link">{t.title}</Link>
                 </h3>
-                <p className="small">{templateSpec(t)} · fits a {t.plot || "50 × 100 ft"} plot · {templateArea(t)}</p>
-                <p className="fine">Designed by {t.architect || "[architect's name]"} with Formcraft Studio</p>
+                <p className="small">{[templateSpec(t), `fits a ${t.plot || "50 × 100 ft"} plot`, templateArea(t)].filter(Boolean).join(" · ")}</p>
+                <p className="fine">
+                    {t.architect && !isPending(t.architect) ? `Designed by ${t.architect} with Formcraft Studio` : "From the Formcraft Studio home library"}
+                </p>
                 <dl className="templates-card-prices">
                     <div><dt className="fine">Plans</dt><dd className="h4">{formatUGX(t.plansPriceUGX)}</dd></div>
-                    <div><dt className="fine">Build from</dt><dd className="h4">{Number.isInteger(t.buildFromUGX) ? formatUGX(t.buildFromUGX) : "UGX [estimate]"}</dd></div>
+                    <div><dt className="fine">Build from</dt><dd className="h4">{formatUGX(t.buildFromUGX)}</dd></div>
                 </dl>
                 <div className="row" style={{ "--gap": "10px" }}>
                     <Link to={`/templates/${t.slug}`} className="btn btn-ink btn-sm">See the design</Link>
@@ -102,7 +107,10 @@ const TemplateCard = ({ t }) => {
 export const Templates = () => {
     usePageMeta("Template builds", "Ready-to-build, permit-ready home designs for 50 × 100 ft plots. Buy the plans, or have Formcraft adapt the design to your plot and build it.");
     const show = useShowLink();
-    const { items, loading } = useContent("templates");
+    const { items: all, loading } = useContent("templates");
+    const seesTodos = useSeesTodos(); // the team also sees sample listings and rows that are still "TODO"
+    // Visitors see real designs only; the sample listings are for the team until the first release.
+    const items = seesTodos ? all : all.filter((t) => !isSample(t));
     const [kind, setKind] = useState("all");
     const [beds, setBeds] = useState("any");
     const shown = items.filter((t) => (kind === "all" || templateKind(t) === kind) && matchesBeds(t, beds));
@@ -138,13 +146,19 @@ export const Templates = () => {
                         ))}
                     </div>
                     <p className="fine" aria-live="polite">
-                        {shown.length} design{shown.length === 1 ? "" : "s"}{samples ? " · sample listings until the first designs are released" : ""}
+                        {shown.length} design{shown.length === 1 ? "" : "s"}{samples && seesTodos ? " · sample listings until the first designs are released" : ""}
                     </p>
                 </div>
 
                 {loading ? (
                     <div className="templates-grid" aria-busy="true">
                         {[0, 1, 2].map((i) => <div key={i} className="skeleton" style={{ height: 380 }} />)}
+                    </div>
+                ) : items.length === 0 ? (
+                    <div className="templates-empty stack" style={{ "--gap": "14px" }}>
+                        <h3 className="h4">The first designs are being prepared.</h3>
+                        <p className="body">They'll be released here as a numbered release. Get the catalogue by email when it's ready, below.</p>
+                        <a href="#catalogue" className="btn btn-line btn-sm" style={{ alignSelf: "flex-start" }}>Get the catalogue</a>
                     </div>
                 ) : shown.length === 0 ? (
                     <div className="templates-empty stack" style={{ "--gap": "14px" }}>
@@ -170,17 +184,17 @@ export const Templates = () => {
                         <p className="body">Each design is modelled to the Formcraft standard by Formcraft Studio, so the drawings, quantities and renders all come from one model and agree with each other.</p>
                         <div className="card card-pad stack" style={{ "--gap": "8px" }}>
                             <h3 className="h4">Every plot is different</h3>
-                            <p className="small">Before you build, we adapt the design to your plot: site survey, soil test, foundations checked against the results, and the council submission. <span className="todo">TODO: price for adapting a library design.</span></p>
+                            <p className="small">Before you build, we adapt the design to your plot: site survey, soil test, foundations checked against the results, and the council submission. <Todo>TODO: price for adapting a library design.</Todo></p>
                         </div>
                     </Reveal>
                     <Reveal delay={0.1}>
                         <ul className="checklist">
-                            {INCLUDED.map(([a, b]) => (
+                            {INCLUDED.filter(([, b]) => seesTodos || !isPending(b)).map(([a, b]) => (
                                 <li key={a}>
                                     <span className="tick"><Icon name="check" size={14} /></span>
                                     <span className="stack" style={{ "--gap": "2px" }}>
                                         <strong>{a}</strong>
-                                        <span className={`small ${b.startsWith("TODO") ? "todo" : ""}`}>{b}</span>
+                                        <Fact as="span" className="small" text={b} />
                                     </span>
                                 </li>
                             ))}
@@ -212,7 +226,7 @@ export const Templates = () => {
                         <Reveal as="li" key={r.label} delay={i * 0.06} className="card card-pad stack" style={{ "--gap": "8px" }}>
                             <span className="tag">{r.label}</span>
                             <h3 className="h4">{r.title}</h3>
-                            <p className="small">{r.text.split("TODO")[0]}{r.text.includes("TODO") && <span className="todo">TODO{r.text.split("TODO")[1]}</span>}</p>
+                            <p className="small"><PartFact text={r.text} /></p>
                         </Reveal>
                     ))}
                 </ul>
@@ -224,9 +238,7 @@ export const Templates = () => {
                         <p className="eyebrow">Free download</p>
                         <h2 className="h2">{catalogue?.title || "Template home catalogue"}.</h2>
                         <p className="body">The designs in the home library in one file, to keep, print and share with your family before you decide.</p>
-                        {catalogueText && (
-                            <p className={`small ${/^\s*TODO/.test(catalogueText) ? "todo" : ""}`}>{catalogueText}</p>
-                        )}
+                        <Fact as="p" className="small" text={catalogueText} />
                     </Reveal>
                     <SubscribeForm variant="card" heading="Send me the catalogue" download="template-catalogue" defaultInterests={["Template homes"]} button="Send me the catalogue" />
                 </div>
@@ -248,22 +260,25 @@ export const Templates = () => {
                         </ol>
                     </Reveal>
                     <Reveal delay={0.1} className="stack" style={{ "--gap": "18px" }}>
+                        {/* The terms are all still to be decided: visitors don't see an empty table */}
+                        {(seesTodos || TERMS.some(([, v]) => !isPending(v))) && (
                         <div className="card card-pad">
                             <h3 className="h4">The terms</h3>
                             <dl className="templates-terms">
                                 {TERMS.map(([k, v]) => (
                                     <div key={k}>
                                         <dt className="small">{k}</dt>
-                                        <dd className="todo">{v}</dd>
+                                        <dd><Fact text={v} /></dd>
                                     </div>
                                 ))}
                             </dl>
                         </div>
+                        )}
                         <div className="row">
                             <Link to="/contact" className="btn btn-primary">Send us your concept <Icon name="arrow" size={18} /></Link>
                             {show("/academy") && <Link to="/academy" className="btn btn-line">See the Academy</Link>}
                         </div>
-                        <p className="fine">Send plans, sketches or a portfolio link through the contact form. <span className="todo">TODO: how often submissions are reviewed.</span></p>
+                        <p className="fine">Send plans, sketches or a portfolio link through the contact form. <Todo>TODO: how often submissions are reviewed.</Todo></p>
                     </Reveal>
                 </div>
             </Section>

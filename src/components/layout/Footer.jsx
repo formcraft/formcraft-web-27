@@ -1,3 +1,8 @@
+// The footer at the bottom of every page.
+// It's styled like the title block of a construction drawing: every page has a sheet number and name
+// (from src/data/sheets.js), like a set of drawings. It also holds the site links (grouped like the
+// header), contact details from Admin → Site details, social links, the email sign-up, the privacy
+// link and the cookie settings button. Links to pages the admin has switched off are hidden.
 import { Link, useLocation } from "react-router-dom";
 import { useTheme } from "../../hooks/useTheme";
 import { sheetFor } from "../../data/sheets";
@@ -10,13 +15,13 @@ import { Logo, LogoMark } from "../ui/Logo";
 import { TornEdge } from "../ui/TornEdge";
 import "./Footer.css";
 
-// A footer link that disappears when the admin turns its page off
+/** A footer link that disappears when the admin turns its page off. */
 const L = ({ to, children }) => {
     const show = useShowLink();
     return show(to) ? <Link to={to}>{children}</Link> : null;
 };
 
-// Drawing title block: every page has a sheet number, like a set of construction drawings.
+/** The site footer. Rendered once by Layout.jsx under every page. */
 export const Footer = () => {
     const { pathname } = useLocation();
     const { theme } = useTheme();
@@ -102,7 +107,7 @@ export const Footer = () => {
                         <span key={n}>{n}</span>
                     ))}
                 </div>
-                <div className="footer-tb" aria-label="Title block">
+                <div className="footer-tb" role="group" aria-label="Title block">
                     <div>
                         <small>Practice</small>
                         <span className="footer-tb-mark">

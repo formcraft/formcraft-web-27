@@ -8,6 +8,7 @@ import { sendMessage } from "../lib/forms";
 import { useSite } from "../hooks/useSite";
 import { socialLinks, telHref, waHref } from "../data/contact";
 import { Honeypot } from "../components/forms/Honeypot";
+import { Todo } from "../components/ui/Todo";
 import "./Contact.css";
 
 const SUBJECTS = [
@@ -47,12 +48,12 @@ export const Contact = () => {
     return (
         <div className="contact">
             <PageHero eyebrow="Contact" title="Talk to us." sheet="A304" seed={81} crumbs={[["/", "Home"], [null, "Contact"]]}
-                lead="Tell us what you're planning — a home, a building, a piece of furniture or a partnership. We reply on the next working day.">
+                lead="Tell us what you're planning — a home, a building, a piece of furniture or a partnership. We'll get back to you.">
                 {tel && <a href={tel} className="btn btn-primary"><Icon name="phone" size={18} /> Call {details.phone}</a>}
                 {wa && <a href={wa} className="btn btn-line" target="_blank" rel="noreferrer"><Icon name="chat" size={18} /> WhatsApp us</a>}
                 {details.email && <a href={`mailto:${details.email}`} className="btn btn-line"><Icon name="mail" size={18} /> Email us</a>}
             </PageHero>
-            <p className="wrap fine contact-todo">TODO: confirm reply time{details.whatsapp ? "" : " and the WhatsApp number"}.</p>
+            <div className="wrap"><Todo as="p">TODO: confirm the reply time{details.whatsapp ? "" : " and the WhatsApp number"} (Admin → Site details).</Todo></div>
 
             <Section tone="sheet" seed={2}>
                 <div className="grid-2">
@@ -98,7 +99,7 @@ export const Contact = () => {
                     )}
 
                     <div className="stack" style={{ "--gap": "18px" }}>
-                        <div className="card contact-map" role="img" aria-label="Map of the Formcraft office in Kampala (placeholder)">
+                        <div className="card contact-map" role="img" aria-label="Illustration: Formcraft is in Kampala">
                             <svg viewBox="0 0 400 240" aria-hidden="true">
                                 <path className="contact-map-land" d="M0 150 C60 120 110 160 170 130 S280 90 400 120 V240 H0Z" />
                                 <path className="contact-map-land2" d="M0 190 C80 170 150 200 220 175 S330 160 400 180 V240 H0Z" />
@@ -106,16 +107,17 @@ export const Contact = () => {
                                 <path className="contact-map-road" d="M0 110 C120 120 260 140 400 200" />
                             </svg>
                             <span className="contact-map-pin"><Icon name="pin" size={28} /></span>
-                            <span className="tag contact-map-label">{details.address || "Kampala · TODO: street address"}</span>
+                            <span className="tag contact-map-label">{details.address || "Kampala, Uganda"}</span>
                         </div>
                         <dl className="contact-list">
-                            <div><dt>Phone</dt>{tel ? <dd><a href={tel}>{details.phone}</a></dd> : <dd className="todo">TODO</dd>}</div>
-                            <div><dt>WhatsApp</dt>{wa ? <dd><a href={wa} target="_blank" rel="noreferrer">{details.whatsapp}</a></dd> : <dd className="todo">TODO: confirm number</dd>}</div>
-                            <div><dt>Email</dt>{details.email ? <dd><a href={`mailto:${details.email}`}>{details.email}</a></dd> : <dd className="todo">TODO</dd>}</div>
+                            {/* Each row shows once its detail is set in Admin → Site details; until then only the team sees it */}
+                            {tel ? <div><dt>Phone</dt><dd><a href={tel}>{details.phone}</a></dd></div> : <Todo as="div">TODO: phone number</Todo>}
+                            {wa ? <div><dt>WhatsApp</dt><dd><a href={wa} target="_blank" rel="noreferrer">{details.whatsapp}</a></dd></div> : <Todo as="div">TODO: WhatsApp number</Todo>}
+                            {details.email ? <div><dt>Email</dt><dd><a href={`mailto:${details.email}`}>{details.email}</a></dd></div> : <Todo as="div">TODO: public email address</Todo>}
                             {socials.map((s) => (
                                 <div key={s.key}><dt>{s.label}</dt><dd><a href={s.href} target="_blank" rel="noreferrer">{s.text}</a></dd></div>
                             ))}
-                            <div><dt>Office hours</dt>{details.hours ? <dd>{details.hours}</dd> : <dd className="todo">TODO</dd>}</div>
+                            {details.hours ? <div><dt>Office hours</dt><dd>{details.hours}</dd></div> : <Todo as="div">TODO: office hours</Todo>}
                         </dl>
                     </div>
                 </div>

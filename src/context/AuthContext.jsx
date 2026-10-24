@@ -1,3 +1,11 @@
+// AuthContext: who is signed in, shared with the whole app (read it with useAuth()).
+//
+// - Listens to Firebase Auth and keeps `user` up to date (null when signed out).
+// - Reads the person's role from their Firebase "custom claims": admin: true for the Formcraft team's
+//   admins, or role "marketing" / "editor". Claims are set on the server (scripts/set-admin.js or the
+//   claimTeamRole Cloud Function), never in the browser, so nobody can make themselves an admin.
+// - signIn() opens Google sign-in in a pop-up and turns errors into plain messages.
+// - The sign-in dialog only opens when asked (openSignIn()); the site never forces anyone to sign in.
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AuthContext } from "./contexts";
 import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut, GoogleAuthProvider } from "firebase/auth";
@@ -19,6 +27,7 @@ const friendlyError = (error) => {
     }
 };
 
+/** Wraps the app (see App.jsx) and provides the sign-in state to every component inside it. */
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAdmin, setIsAdmin] = useState(false);

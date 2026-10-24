@@ -5,6 +5,8 @@ import { PageHero } from "../components/page/PageHero";
 import { Section, SectionHead } from "../components/page/Section";
 import { Reveal } from "../components/ui/Reveal";
 import { Icon } from "../components/ui/Icon";
+import { Todo } from "../components/ui/Todo";
+import { useSeesTodos } from "../hooks/useSeesTodos";
 import "./Donate.css";
 
 // Plant a tree. Payment stays off until the planting partner and price per tree are agreed
@@ -21,6 +23,7 @@ const PAY = [
     { id: "airtel", label: "Airtel Money" },
     { id: "card", label: "Card" },
 ];
+// Sample donor-wall cards, shown only to the team until real donations exist (Firestore donations).
 const WALL = [
     ["[Donor name]", "[n] trees · [date]"],
     ["[Donor name]", "[n] trees · [date]"],
@@ -28,9 +31,10 @@ const WALL = [
     ["Anonymous", "[n] trees · [date]"],
 ];
 
-const count = (n) => (Number.isInteger(n) ? new Intl.NumberFormat("en-UG").format(n) : "[n]");
+const count = (n) => new Intl.NumberFormat("en-UG").format(n);
 
 export const Donate = () => {
+    const seesTodos = useSeesTodos();
     usePageMeta("Plant a tree", "Give back some of what building takes: choose how many trees to plant with Formcraft and see the live count.");
     const { data: stats } = usePublicDoc("stats/public");
     const [species, setSpecies] = useState("mvule");
@@ -53,8 +57,15 @@ export const Donate = () => {
                 <a href="#choose" className="btn btn-primary">Choose your trees <Icon name="arrow" size={18} /></a>
                 <div className="donate-counter paper-dark" role="status" aria-live="polite">
                     <span className="fine">Trees planted so far</span>
-                    <b className="num">{count(stats?.treesPlanted)}</b>
-                    <span className="fine">Live from our records. <span className="todo">TODO: planting partner and first planting.</span></span>
+                    {Number.isInteger(stats?.treesPlanted) ? (
+                        <>
+                            <b className="num">{count(stats.treesPlanted)}</b>
+                            <span className="fine">Live from our records.</span>
+                        </>
+                    ) : (
+                        <span className="small">The count starts with the first planting.</span>
+                    )}
+                    <Todo>TODO: planting partner and first planting.</Todo>
                 </div>
             </PageHero>
 
@@ -69,7 +80,7 @@ export const Donate = () => {
                                     <label key={s.id} className="option">
                                         <input type="radio" name="species" value={s.id} checked={species === s.id} onChange={() => setSpecies(s.id)} />
                                         <span><strong>{s.name}</strong> <em className="dim">{s.latin}</em></span>
-                                        <span className="small">UGX [price]</span>
+                                        <Todo>TODO: price per tree</Todo>
                                         <span className="fine">{s.note}</span>
                                     </label>
                                 ))}
@@ -128,20 +139,19 @@ export const Donate = () => {
                         <p className="eyebrow" id="donate-summary">Your gift</p>
                         <p className="h3" aria-live="polite">{n > 0 ? trees : "Choose a number"}</p>
                         <p className="small">{chosen.name} · {summary}</p>
-                        <dl className="donate-totals">
-                            <div><dt>Price per tree ({chosen.name})</dt><dd>UGX [price]</dd></div>
-                            <div className="donate-total"><dt>Total</dt><dd>UGX [price] × {n || "[n]"}</dd></div>
-                        </dl>
+                        {/* Price and total appear once a price per tree is agreed */}
+                        <Todo as="p">TODO: price per tree ({chosen.name}) and the total for {n || "the chosen number of"} trees.</Todo>
                         <button type="button" className="btn btn-primary btn-block" disabled aria-describedby="donate-note">
                             <Icon name="leaf" size={18} /> Plant {n > 0 ? trees : "trees"} with Flutterwave
                         </button>
                         <p id="donate-note" className="alert small">
-                            <strong>Payment isn't open yet.</strong> It opens on Flutterwave's secure page once the planting partner and price per tree are agreed; the server confirms every payment. <span className="todo">TODO: planting partner and price per tree.</span>
+                            <strong>Payment isn't open yet.</strong> It opens on Flutterwave's secure page once the planting partner and price per tree are agreed; the server confirms every payment. <Todo>TODO: planting partner and price per tree.</Todo>
                         </p>
                     </aside>
                 </div>
             </Section>
 
+            {seesTodos && (
             <Section tone="ground" seed={4} id="wall">
                 <SectionHead eyebrow="Donor wall" title="Thank you.">
                     <p>Names appear when the donor chooses to show them.</p>
@@ -156,6 +166,7 @@ export const Donate = () => {
                     ))}
                 </ul>
             </Section>
+            )}
 
             <Section tone="dark" seed={6} id="why">
                 <div className="grid-2" style={{ alignItems: "center" }}>
@@ -163,7 +174,7 @@ export const Donate = () => {
                         <p className="eyebrow">Why trees</p>
                         <h2 className="h2">Give back some of what building takes.</h2>
                         <p className="body">Every building uses timber, clears ground and draws on the land around it. Planting native hardwoods, shade trees and fruit trees is a plain way to return some of that — and the count stays public, so you can see it grow.</p>
-                        <p className="fine todo">TODO: where the trees are planted, who looks after them, and how plantings are reported.</p>
+                        <Todo as="p">TODO: where the trees are planted, who looks after them, and how plantings are reported.</Todo>
                     </Reveal>
                     <Reveal delay={0.1} className="stack" style={{ "--gap": "14px" }}>
                         <h3 className="h3">Other causes, coming later</h3>

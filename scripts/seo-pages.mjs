@@ -91,7 +91,8 @@ const rewriteHead = (html, block) => {
     head = head.replace(/<(script|style)\b([^>]*)>[\s\S]*?<\/\1>/gi, (m, tag, attrs) => {
         if (/type\s*=\s*["']application\/ld\+json["']/i.test(attrs)) return m; // our own: removed below
         masked.push(m);
-        return `\u0000MASK${masked.length - 1}\u0000`;
+        // a private-use character marks the hidden block; it never appears in real HTML
+        return `MASK${masked.length - 1}`;
     });
 
     const drop = [
@@ -111,7 +112,7 @@ const rewriteHead = (html, block) => {
     } else {
         head = `\n${block}\n${head}`;
     }
-    head = head.replace(/\u0000MASK(\d+)\u0000/g, (_, i) => masked[Number(i)]);
+    head = head.replace(/MASK(\d+)/g, (_, i) => masked[Number(i)]);
     return html.slice(0, start + openLen) + head + html.slice(end);
 };
 

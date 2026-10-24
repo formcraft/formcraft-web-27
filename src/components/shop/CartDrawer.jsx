@@ -1,3 +1,8 @@
+// CartDrawer: the panel that slides in from the right with the cart's contents.
+// Each line shows the product, its options, a − / + quantity control, its price and a remove button;
+// below them the subtotal and the checkout button ("coming soon" until payments are switched on).
+// Prices shown here are for display only: the real total is always worked out on the server at
+// checkout (a project rule: the browser never decides what anyone pays).
 import { Link } from "react-router-dom";
 import { useCart } from "../../hooks/useCart";
 import { useContent } from "../../hooks/useContent";
@@ -6,9 +11,10 @@ import { imgProps } from "../../lib/images";
 import { formatUGX } from "../../lib/money";
 import { Drawer } from "../ui/Drawer";
 import { Icon } from "../ui/Icon";
+import { Todo } from "../ui/Todo";
 import "./CartDrawer.css";
 
-// Prices shown here are for display only; the order total is set server-side at checkout.
+/** Rendered once by Layout.jsx; opens when useCart().openCart() is called. */
 export const CartDrawer = () => {
     const { items, count, update, remove, open, closeCart } = useCart();
     const { items: products } = useContent("products");
@@ -39,7 +45,7 @@ export const CartDrawer = () => {
                                 Checkout · coming soon
                             </button>
                         )}
-                        <p className="fine">Pay by MTN or Airtel mobile money or card once checkout opens. Delivery: TODO areas and price.</p>
+                        <p className="fine">Pay by MTN or Airtel mobile money or card once checkout opens. <Todo>TODO: delivery areas and price.</Todo></p>
                     </div>
                 )
             }

@@ -1,3 +1,12 @@
+// The list of pages: which address shows which page, plus old addresses that redirect.
+//
+// - Each page lives in src/pages/<Name>.jsx and is downloaded only when someone visits it ("lazy"),
+//   so phones on slow data don't load the whole site up front.
+// - PageGate (around most pages) hides a page the admin has switched off in Admin → Pages.
+// - prefetchRoute() starts downloading a page's code when a visitor hovers over or touches a link,
+//   so the page usually appears instantly when they click.
+// To add a page: create src/pages/MyPage.jsx exporting `MyPage`, add a line to TABLE below, and
+// (if the admin should be able to switch it off) add it to src/data/pages.js. See docs/recipes.md.
 import { lazy } from "react";
 import { Navigate } from "react-router-dom";
 import { PageGate } from "./components/layout/PageGate";
@@ -55,6 +64,7 @@ const gated = (path, name) => {
 
 const NotFound = page("NotFound");
 
+/** Every route: { path, element }. App.jsx turns these into <Route>s. */
 export const routes = [
     ...TABLE.map(([path, name]) => ({ path, element: gated(path, name) })),
 
@@ -68,13 +78,18 @@ export const routes = [
     { path: "*", element: <NotFound /> },
 ];
 
-// Load a page's code before the visitor clicks (called on hover / focus / touch of a link)
+/** True when an address (e.g. "/stores/oak-armchair") fits a route pattern (e.g. "/stores/:slug"). */
 const matches = (pattern, path) => {
     const a = pattern.split("/").filter(Boolean);
     const b = path.split(/[?#]/)[0].split("/").filter(Boolean);
     return a.length === b.length && a.every((seg, i) => seg.startsWith(":") || seg === b[i]);
 };
 const prefetched = new Set();
+/**
+ * Starts downloading a page's code before the visitor clicks (called on hover, focus or touch of a link).
+ * Each page is fetched at most once; outside links and unknown addresses are ignored.
+ * @param {string} href  the link's address, e.g. "/studio"
+ */
 export const prefetchRoute = (href) => {
     if (!href?.startsWith("/")) return;
     const hit = TABLE.find(([pattern]) => matches(pattern, href));

@@ -8,24 +8,32 @@ import { DIVISIONS } from "../data/projects";
 import { useContentItem } from "../hooks/useContent";
 import { imgName, imgAlt } from "../lib/images";
 import { NotFound } from "./NotFound";
+import { Todo, Fact } from "../components/ui/Todo";
+import { useSeesTodos } from "../hooks/useSeesTodos";
+import { known } from "../lib/pending";
 import "./ProjectPage.css";
 
 export const ProjectPage = () => {
     const { slug } = useParams();
     const { item: project, items: projects, loading } = useContentItem("projects", slug);
-    usePageMeta(project ? project.title : "Project not found", project?.summary, { image: project?.images?.[0], noindex: !project });
+    const seesTodos = useSeesTodos();
+    // Search engines and link previews get the real summary, or a factual line built from the data
+    const divisionNames = (project?.divisions ?? []).map((d) => DIVISIONS.find((x) => x.id === d)?.label).filter(Boolean).join(" and ");
+    const description = known(project?.summary) ?? (project ? `${project.title}: a Formcraft ${divisionNames || "Studio"} project, with renders.` : undefined);
+    usePageMeta(project ? project.title : "Project not found", description, { image: project?.images?.[0], noindex: !project });
     if (!project && loading) return <div className="wrap section"><div className="skeleton" style={{ height: 480 }} /></div>;
     if (!project) return <NotFound />;
 
     const index = projects.indexOf(project);
     const next = projects[(index + 1) % projects.length];
     const [hero, ...gallery] = project.images ?? [];
+    // Facts that aren't known yet are left out for visitors; the team sees them as "To fill in"
     const facts = [
-        ["Client", project.client ?? "TODO (with permission)"],
-        ["Location", project.location ?? "TODO"],
-        ["Year", project.year ?? "TODO"],
+        ["Client", project.client, "TODO: client name (with their permission)"],
+        ["Location", project.location, "TODO: location"],
+        ["Year", project.year, "TODO: year"],
         ["Divisions", (project.divisions ?? []).map((d) => DIVISIONS.find((x) => x.id === d)?.label).join(", ")],
-    ];
+    ].filter(([, v]) => known(String(v ?? "")) || seesTodos);
 
     return (
         <div className="project-page">
@@ -35,7 +43,7 @@ export const ProjectPage = () => {
                 </nav>
                 <p className="eyebrow">Case study</p>
                 <h1 className="h1-s">{project.title}</h1>
-                <p className={`lead ${project.summary.startsWith("TODO") ? "todo" : ""}`}>{project.summary}</p>
+                <Fact as="p" className="lead" text={project.summary} />
                 <div className="row">
                     <Link to="/studio#quote" className="btn btn-primary">Plan a project like this <Icon name="arrow" size={18} /></Link>
                     <Link to="/projects" className="btn btn-line">All projects</Link>
@@ -47,23 +55,25 @@ export const ProjectPage = () => {
 
             <Section tone="sheet" seed={2} small>
                 <dl className="kpis project-page-facts">
-                    {facts.map(([k, v]) => (
+                    {facts.map(([k, v, note]) => (
                         <div key={k}>
                             <dt className="fine">{k}</dt>
-                            <dd className={`h4 ${String(v).startsWith("TODO") ? "todo" : ""}`}>{v}</dd>
+                            <dd className="h4">{known(String(v ?? "")) ? v : <Todo>{note}</Todo>}</dd>
                         </div>
                     ))}
                 </dl>
+                {(project.brief || project.work || seesTodos) && (
                 <div className="grid-2 project-page-text">
                     <div className="stack" style={{ "--gap": "12px" }}>
                         <p className="eyebrow">The brief</p>
-                        {project.brief ? <p className="body">{project.brief}</p> : <p className="body todo">TODO: the client's problem in two or three sentences; site, constraints, budget range (if the client agrees to share it).</p>}
+                        {project.brief ? <p className="body">{project.brief}</p> : <Todo as="p">TODO: the client's problem in two or three sentences; site, constraints, budget range (if the client agrees to share it).</Todo>}
                     </div>
                     <div className="stack" style={{ "--gap": "12px" }}>
                         <p className="eyebrow">What we did</p>
-                        {project.work ? <p className="body">{project.work}</p> : <p className="body todo">TODO: survey & design, engineering, costing and approvals for this project.</p>}
+                        {project.work ? <p className="body">{project.work}</p> : <Todo as="p">TODO: survey & design, engineering, costing and approvals for this project.</Todo>}
                     </div>
                 </div>
+                )}
             </Section>
 
             {gallery.length > 0 && (

@@ -5,6 +5,8 @@ import { telHref } from "../data/contact";
 import { openConsent } from "../lib/analytics";
 import { PageHero } from "../components/page/PageHero";
 import { Section } from "../components/page/Section";
+import { Todo } from "../components/ui/Todo";
+import { useSeesTodos } from "../hooks/useSeesTodos";
 import "./Privacy.css";
 
 // What the site really collects, in plain words. Legal parts are TODO until a lawyer has reviewed
@@ -23,6 +25,7 @@ export const Privacy = () => {
     usePageMeta("Privacy", "What the Formcraft website collects, why, who processes it and how to ask us to delete your details.");
     const { details } = useSite();
     const tel = telHref(details.phone);
+    const seesTodos = useSeesTodos();
 
     return (
         <div className="privacy">
@@ -31,9 +34,12 @@ export const Privacy = () => {
 
             <Section tone="sheet" seed={2}>
                 <div className="privacy-body">
-                    <p className="alert privacy-draft">
-                        This page describes what the site does today. <span className="todo">TODO: legal review by a lawyer against Uganda's Data Protection and Privacy Act, 2019 before launch.</span>
-                    </p>
+                    {/* A note for the team until a lawyer has reviewed the page; visitors don't see it */}
+                    {seesTodos && (
+                        <p className="alert privacy-draft">
+                            This page describes what the site does today. <Todo>TODO: legal review by a lawyer against Uganda's Data Protection and Privacy Act, 2019 before launch.</Todo>
+                        </p>
+                    )}
 
                     <h2 className="h3">What the site collects</h2>
                     <dl className="privacy-list">
@@ -46,12 +52,15 @@ export const Privacy = () => {
                     </dl>
 
                     <h2 className="h3">Who handles it for us</h2>
-                    <p className="body">The site runs on Google Firebase (hosting, sign-in, database, file storage and, after your consent, Analytics). Google processes this data on our behalf. <span className="todo">TODO: the Firebase data location (region) once it's confirmed.</span></p>
+                    <p className="body">The site runs on Google Firebase (hosting, sign-in, database, file storage and, after your consent, Analytics). Google processes this data on our behalf. <Todo>TODO: the Firebase data location (region) once it's confirmed.</Todo></p>
                     <p className="body">Online payments aren't open yet. When they are, payments will be handled by Flutterwave (mobile money and cards); we won't see or store your card or mobile-money PIN, and this page will be updated first.</p>
                     <p className="body">We don't sell your details or share them with advertisers.</p>
 
                     <h2 className="h3">How long we keep it</h2>
-                    <p className="body todo">TODO: retention periods for messages and quote requests, investor requests, the email list and contact-click counts.</p>
+                    {/* Until the retention periods are written, visitors get what the page already promises below */}
+                    <Todo as="p" fallback={<p className="body">Ask us how long we keep anything you've sent us, or ask us to delete it. How to ask is below.</p>}>
+                        TODO: retention periods for messages and quote requests, investor requests, the email list and contact-click counts.
+                    </Todo>
 
                     <h2 className="h3">Your choices</h2>
                     <ul className="privacy-points">
@@ -65,15 +74,19 @@ export const Privacy = () => {
 
                     <h2 className="h3">How to ask</h2>
                     <p className="body">
-                        {details.email ? <>Email <a className="link" href={`mailto:${details.email}?subject=${encodeURIComponent("Privacy request")}`}>{details.email}</a></> : <span className="todo">TODO: contact email</span>}
-                        {tel && <> or call <a className="link" href={tel}>{details.phone}</a></>}, or use the <Link className="link" to="/contact">contact form</Link>. <span className="todo">TODO: how quickly we reply to privacy requests.</span>
+                        {/* Builds "Email x or call y, or use the contact form." from whatever contact details are set */}
+                        {details.email && <>Email <a className="link" href={`mailto:${details.email}?subject=${encodeURIComponent("Privacy request")}`}>{details.email}</a></>}
+                        {tel && <>{details.email ? " or call " : "Call "}<a className="link" href={tel}>{details.phone}</a></>}
+                        {details.email || tel ? <>, or use the </> : <>Use the </>}
+                        <Link className="link" to="/contact">contact form</Link>.{" "}
+                        {!details.email && <Todo>TODO: contact email (Admin → Site details).</Todo>} <Todo>TODO: how quickly we reply to privacy requests.</Todo>
                     </p>
 
                     <h2 className="h3">Who we are</h2>
-                    <p className="body">Formcraft Design and Construction Co. Ltd, Kampala, Uganda. {details.address ? details.address : <span className="todo">TODO: registered company address.</span>}</p>
-                    <p className="body todo">TODO: Personal Data Protection Office (PDPO) registration number, if and when registered.</p>
+                    <p className="body">Formcraft Design and Construction Co. Ltd, Kampala, Uganda. {details.address ? details.address : <Todo>TODO: registered company address.</Todo>}</p>
+                    <Todo as="p">TODO: Personal Data Protection Office (PDPO) registration number, if and when registered.</Todo>
 
-                    <p className="fine">Last updated: <span className="todo">TODO: date of the reviewed version</span>.</p>
+                    <Todo as="p">TODO: "Last updated" date of the reviewed version.</Todo>
                 </div>
             </Section>
         </div>

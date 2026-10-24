@@ -10,6 +10,8 @@ import { useContentItem } from "../hooks/useContent";
 import { imgAlt, imgProps } from "../lib/images";
 import { formatUGX } from "../lib/money";
 import { NotFound } from "./NotFound";
+import { Todo, PartFact } from "../components/ui/Todo";
+import { known, splitPending } from "../lib/pending";
 import "./ProductPage.css";
 
 // Main photo plus a row of thumbnails when a product has more than one image (public/images names
@@ -57,7 +59,7 @@ const ProductGallery = ({ images, title, firstAlt }) => {
                 {current ? (
                     <img key={i} {...imgProps(current)} sizes="(max-width: 900px) 100vw, 50vw" alt={altFor(current, i)} fetchPriority={i === 0 ? "high" : undefined} draggable="false" />
                 ) : (
-                    <div className="placeholder">[Photo]</div>
+                    <div className="placeholder">Photo coming soon</div>
                 )}
                 {total > 1 && (
                     <figcaption className="product-page-count" aria-live="polite">
@@ -93,7 +95,7 @@ const ProductGallery = ({ images, title, firstAlt }) => {
 export const ProductPage = () => {
     const { slug } = useParams();
     const { item: product, items: products, loading } = useContentItem("products", slug);
-    usePageMeta(product?.title ?? "Product not found", product?.description, { image: product?.images?.[0], noindex: !product });
+    usePageMeta(product?.title ?? "Product not found", splitPending(product?.description)[0] || undefined, { image: product?.images?.[0], noindex: !product });
     const { add, openCart } = useCart();
     const [picked, setColor] = useState(null);
     const [pickedSize, setSize] = useState(null);
@@ -122,8 +124,8 @@ export const ProductPage = () => {
                     </nav>
                     <h1 className="h1-s">{product.title}</h1>
                     <p className="product-page-price">{formatUGX(product.priceUGX)}</p>
-                    {product.maker && <p className="small">Made by {product.maker} in the Formcraft workshop, Kampala.</p>}
-                    <p className="body">{product.description}</p>
+                    {known(product.maker) && <p className="small">Made by {product.maker} in the Formcraft workshop, Kampala.</p>}
+                    <p className="body"><PartFact text={product.description} /></p>
 
                     {product.colors.length > 0 && (
                         <fieldset className="product-page-set">
@@ -158,7 +160,7 @@ export const ProductPage = () => {
 
                     <dl className="product-page-facts">
                         {product.leadTime && <div><dt>Made to order</dt><dd>{product.leadTime.replace("Made to order · ", "")}</dd></div>}
-                        <div><dt>Delivery</dt><dd className="todo">TODO: areas and price</dd></div>
+                        <Todo as="div">TODO: delivery areas and price</Todo>
                         <div><dt>Pay with</dt><dd>MTN · Airtel · Card</dd></div>
                     </dl>
                 </div>

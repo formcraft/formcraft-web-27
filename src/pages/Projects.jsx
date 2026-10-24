@@ -8,6 +8,7 @@ import { Icon } from "../components/ui/Icon";
 import { DIVISIONS } from "../data/projects";
 import { useContent } from "../hooks/useContent";
 import { imgProps, imgAlt } from "../lib/images";
+import { Todo, Fact } from "../components/ui/Todo";
 import "./Projects.css";
 
 const divisionLabel = (id) => DIVISIONS.find((d) => d.id === id)?.label ?? id;
@@ -37,7 +38,7 @@ export const Projects = () => {
                 {loading ? (
                     <div className="projects-grid">{[0, 1, 2].map((k) => <div key={k} className="skeleton" style={{ aspectRatio: "4 / 3" }} />)}</div>
                 ) : shown.length === 0 ? (
-                    <p className="body projects-empty">No projects in this division on the site yet. <span className="todo">TODO: add construction, concrete and joinery case studies.</span></p>
+                    <p className="body projects-empty">No projects in this division on the site yet. <Todo>TODO: add construction, concrete and joinery case studies.</Todo></p>
                 ) : (
                     <div className="projects-grid">
                         {shown.map((p, i) => (
@@ -54,7 +55,7 @@ export const Projects = () => {
                                             {(p.divisions ?? []).map((d) => <span key={d} className="tag">{divisionLabel(d)}</span>)}
                                         </div>
                                         <h2 className="h3">{p.title}</h2>
-                                        <p className={`small ${String(p.summary ?? "").startsWith("TODO") ? "todo" : ""}`}>{p.summary}</p>
+                                        <Fact as="p" className="small" text={p.summary} />
                                         {p.hidden && <span className="tag">Hidden</span>}
                                     </div>
                                 </Link>

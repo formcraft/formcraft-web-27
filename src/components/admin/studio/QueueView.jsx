@@ -88,7 +88,7 @@ export const QueueView = ({ studio }) => {
                     ) : (
                         <section key={label} className="stack" style={{ "--gap": "10px" }} aria-label={label}>
                             <h4 className="h4">{label} <span className="fine">({list.length})</span></h4>
-                            <ul className="studio-queue">
+                            <ul className="mkt-queue">
                                 {list.map((card) => {
                                     const { post, channel } = card;
                                     const text = captionFor(post, channel, settings);
@@ -96,11 +96,11 @@ export const QueueView = ({ studio }) => {
                                     const media = post.media?.[0];
                                     const viaBuffer = channel.publish === "buffer" && settings.bufferConnected;
                                     return (
-                                        <li key={card.key} className="card studio-queue-card">
+                                        <li key={card.key} className="card mkt-queue-card">
                                             {media ? (
-                                                media.kind === "video" ? <video src={media.url} muted preload="metadata" className="studio-queue-media" aria-label={media.name} /> : <img src={media.url} alt={media.name} className="studio-queue-media" loading="lazy" />
+                                                media.kind === "video" ? <video src={media.url} muted preload="metadata" className="mkt-queue-media" aria-label={media.name} /> : <img src={media.url} alt={media.name} className="mkt-queue-media" loading="lazy" />
                                             ) : (
-                                                <div className="studio-queue-media studio-queue-empty">No picture</div>
+                                                <div className="mkt-queue-media mkt-queue-empty">No picture</div>
                                             )}
                                             <div className="stack" style={{ "--gap": "8px" }}>
                                                 <div className="row" style={{ "--gap": "8px" }}>
@@ -111,7 +111,7 @@ export const QueueView = ({ studio }) => {
                                                 </div>
                                                 <button type="button" className="admin-more" onClick={() => openComposer(post)}><strong>{post.title}</strong></button>
                                                 {post.results?.[channel.id]?.error && <p className="alert alert-error">{post.results[channel.id].error}</p>}
-                                                <p className="studio-queue-text small">{text || "(no caption)"}</p>
+                                                <p className="mkt-queue-text small">{text || "(no caption)"}</p>
                                                 <div className="row" style={{ "--gap": "8px" }}>
                                                     {post.media?.map((m, i) => (
                                                         <button key={m.url} type="button" className="btn btn-line btn-sm" onClick={() => download(m)}>Download {post.media.length > 1 ? `#${i + 1}` : m.kind === "video" ? "video" : "image"}</button>

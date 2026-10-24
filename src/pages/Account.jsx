@@ -100,14 +100,14 @@ export const Account = () => {
     }
 
     const first = (user.displayName || "").split(" ")[0] || "there";
-    const since = user.metadata?.creationTime ? when(new Date(user.metadata.creationTime)) : "[date]";
+    const since = user.metadata?.creationTime ? when(new Date(user.metadata.creationTime)) : null; // shown only when Firebase knows it
     const focusOrder = orderId ? orders.docs.find((o) => o.id === orderId || o.txRef === orderId) : null;
     const digital = orders.docs.filter((o) => o.status === "paid" || o.status === "shipped").flatMap((o) => (o.items ?? []).filter((it) => it.isDigital).map((it) => ({ ...it, orderId: o.id, paidAt: o.paidAt })));
 
     return (
         <div className="account">
             <PageHero motif="city" sheet="U101" seed={81} sceneHeight={200} eyebrow="Your account" title={`Hello, ${first}.`} crumbs={[["/", "Home"], [null, "Account"]]}
-                lead={`${user.email ?? ""} · member since ${since}`}>
+                lead={[user.email, since && `member since ${since}`].filter(Boolean).join(" · ")}>
                 <button type="button" className="btn btn-line" onClick={signOut}>Sign out</button>
             </PageHero>
 
@@ -224,7 +224,7 @@ export const Account = () => {
                             <dl className="card card-pad account-profile">
                                 <div><dt>Name</dt><dd>{user.displayName || "—"}</dd></div>
                                 <div><dt>Email</dt><dd>{user.email || "—"}</dd></div>
-                                <div><dt>Member since</dt><dd>{since}</dd></div>
+                                {since && <div><dt>Member since</dt><dd>{since}</dd></div>}
                             </dl>
                             <p className="small">Member profiles for the artisan directory arrive with the community.{show("/community") && <> <Link to="/community" className="link">About the community</Link></>}</p>
                             <button type="button" className="btn btn-line" onClick={signOut} style={{ alignSelf: "flex-start" }}>Sign out</button>

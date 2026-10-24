@@ -96,7 +96,7 @@ export const BulkView = ({ studio }) => {
 
     return (
         <div className="stack" style={{ "--gap": "18px" }}>
-            <div className="studio-filters">
+            <div className="mkt-filters">
                 <div className="field">
                     <label htmlFor="bulk-from">From</label>
                     <input id="bulk-from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
@@ -128,16 +128,16 @@ export const BulkView = ({ studio }) => {
                 </div>
             </div>
 
-            <div className="card card-pad stack studio-bulkbar" style={{ "--gap": "12px" }}>
+            <div className="card card-pad stack mkt-bulkbar" style={{ "--gap": "12px" }}>
                 <p className="small"><strong>{chosen.length}</strong> selected of {rows.length} shown.</p>
                 <div className="row" style={{ "--gap": "8px", alignItems: "flex-end" }}>
                     {isMarketing && <button type="button" className="btn btn-primary btn-sm" disabled={busy || !chosen.length} onClick={approve}>Approve</button>}
-                    <div className="field studio-inline">
+                    <div className="field mkt-inline">
                         <label htmlFor="bulk-shift">Move by days</label>
                         <input id="bulk-shift" type="number" value={shift} onChange={(e) => setShift(e.target.value)} style={{ width: "6em" }} />
                     </div>
                     <button type="button" className="btn btn-line btn-sm" disabled={busy || !chosen.length} onClick={move}>Move</button>
-                    <div className="field studio-inline">
+                    <div className="field mkt-inline">
                         <label htmlFor="bulk-newstatus">Status</label>
                         <select id="bulk-newstatus" value={newStatus} onChange={(e) => setNewStatus(e.target.value)}>
                             {Object.entries(STATUSES).filter(([k]) => isMarketing || EDITOR_STATUSES.includes(k)).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -273,13 +273,13 @@ const CsvImport = ({ studio }) => {
                             </thead>
                             <tbody>
                                 {checked.items.map((i) => (
-                                    <tr key={i.line} className={i.errors.length ? "studio-row-bad" : ""}>
+                                    <tr key={i.line} className={i.errors.length ? "mkt-row-bad" : ""}>
                                         <td>{i.line}</td>
                                         <td className="fine">{i.post.scheduledAt ? `${formatDay(dayKey(i.post.scheduledAt))} ${timeKey(i.post.scheduledAt)}` : "—"}</td>
                                         <td>{i.post.title || "—"}{i.file ? <span className="fine"> · {i.file.name}</span> : null}</td>
                                         <td><StatusTag status={i.post.status} /></td>
                                         <td className="fine">
-                                            {i.errors.map((e) => <div key={e} className="studio-over">{e}</div>)}
+                                            {i.errors.map((e) => <div key={e} className="mkt-over">{e}</div>)}
                                             {i.warnings.map((w) => <div key={w}>{w}</div>)}
                                             {!i.errors.length && !i.warnings.length && "OK"}
                                         </td>

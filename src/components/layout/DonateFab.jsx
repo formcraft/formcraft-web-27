@@ -1,10 +1,10 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Icon } from "../ui/Icon";
 import { Popover } from "../ui/Popover";
 import { usePublicDoc } from "../../hooks/usePublicDoc";
 import { useShowLink } from "../../hooks/useSite";
-import { formatUGX } from "../../lib/money";
+import { Todo } from "../ui/Todo";
 import "./DonateFab.css";
 
 // Floating plant-a-tree button on every page. It opens a small card just above itself (the page
@@ -12,10 +12,33 @@ import "./DonateFab.css";
 // and the rest live on /donate. Payments stay off until a planting partner and the price per tree
 // are agreed (open question in the build plan); only the webhook will ever add trees to the count.
 const AMOUNTS = [1, 5, 10];
-const count = (n) => (Number.isInteger(n) ? new Intl.NumberFormat("en-UG").format(n) : "[n]");
+const count = (n) => new Intl.NumberFormat("en-UG").format(n);
 
+/**
+ * On phones the button would sit on top of the first screen's text, so it waits until the visitor has
+ * scrolled about 60% of a screen, then slides in. On wider screens it's always there.
+ * @returns {boolean} true while the button should stay out of the way
+ */
+const useAwayAtTop = () => {
+    const [away, setAway] = useState(false);
+    useEffect(() => {
+        const phone = window.matchMedia?.("(max-width: 700px)");
+        const update = () => setAway(Boolean(phone?.matches) && window.scrollY < window.innerHeight * 0.6);
+        update();
+        window.addEventListener("scroll", update, { passive: true });
+        phone?.addEventListener?.("change", update);
+        return () => {
+            window.removeEventListener("scroll", update);
+            phone?.removeEventListener?.("change", update);
+        };
+    }, []);
+    return away;
+};
+
+/** The floating plant-a-tree button and its pop-up. Rendered once by Layout.jsx on every page. */
 export const DonateFab = () => {
     const [open, setOpen] = useState(false);
+    const away = useAwayAtTop() && !open;
     const [amount, setAmount] = useState(5);
     const button = useRef(null);
     const showLink = useShowLink();
@@ -27,7 +50,7 @@ export const DonateFab = () => {
             <button
                 ref={button}
                 type="button"
-                className="donate-fab"
+                className={`donate-fab ${away ? "is-away" : ""}`}
                 onClick={() => setOpen((o) => !o)}
                 aria-haspopup="dialog"
                 aria-expanded={open}
@@ -59,8 +82,14 @@ export const DonateFab = () => {
                 }
             >
                 <div className="donate-fab-count paper-dark">
-                    <b>{count(stats?.treesPlanted)}</b>
-                    <span>trees planted so far</span>
+                    {Number.isInteger(stats?.treesPlanted) ? (
+                        <>
+                            <b>{count(stats.treesPlanted)}</b>
+                            <span>trees planted so far</span>
+                        </>
+                    ) : (
+                        <span>The count starts with the first planting.</span>
+                    )}
                 </div>
                 <fieldset className="donate-fab-set">
                     <legend>How many trees?</legend>
@@ -74,8 +103,7 @@ export const DonateFab = () => {
                     </div>
                 </fieldset>
                 <p className="donate-fab-price">
-                    {trees} · <span className="todo">{formatUGX(null)}</span>
-                    <span className="fine"> TODO: price per tree to confirm.</span>
+                    {trees} <Todo>TODO: price per tree to confirm.</Todo>
                 </p>
             </Popover>
         </>

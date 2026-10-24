@@ -73,7 +73,7 @@ export const GenerateView = ({ studio }) => {
                         </select>
                     </div>
                 </div>
-                <fieldset className="studio-checks">
+                <fieldset className="mkt-checks">
                     <legend className="label">Channels</legend>
                     {activeChannels.length === 0 && <p className="small">No active channels.</p>}
                     {activeChannels.map((c) => (

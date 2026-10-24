@@ -6,6 +6,9 @@ import { Photo } from "../components/page/Photo";
 import { QuoteForm } from "../components/forms/QuoteForm";
 import { Reveal } from "../components/ui/Reveal";
 import { Icon } from "../components/ui/Icon";
+import { Fact, Todo } from "../components/ui/Todo";
+import { useSeesTodos } from "../hooks/useSeesTodos";
+import { isPending } from "../lib/pending";
 import "./Construction.css";
 
 const BUILD_STEPS = [
@@ -33,6 +36,7 @@ const BUILD_TYPES = [
 ];
 
 export const Construction = () => {
+    const seesTodos = useSeesTodos(); // the team also sees rows that are still "TODO"
     usePageMeta("Construction", "Formcraft builds from a construction-ready model, zone by zone, and offers ready-to-build home designs for 50 × 100 ft plots.");
     return (
         <div className="construction" data-division="construction">
@@ -54,7 +58,7 @@ export const Construction = () => {
                 </ol>
                 <ul className="row construction-services" style={{ "--gap": "8px" }}>
                     {["Site supervision", "Quality control", "Contractor valuations", "Milestone sign-offs"].map((s) => <li key={s} className="tag tag-div">{s}</li>)}
-                    <li className="tag todo">Site safety: TODO approach</li>
+                    <Todo as="li">TODO: site safety approach</Todo>
                 </ul>
             </Section>
 
@@ -67,31 +71,28 @@ export const Construction = () => {
                         <p className="small">Complete, permit-ready designs. Buy the plans on their own, or buy them with a build — either way you know the design, the drawings and the likely cost before you commit.</p>
                     </Reveal>
                     <Reveal delay={0.1} className="construction-library">
-                        {["[Design name]", "[Design name]"].map((n, i) => (
-                            <article key={i} className={`card card-pad construction-home ${i ? "tilt-r" : "tilt-l"}`}>
-                                <div className="between"><span className="tag">Sample</span><span className="fine">Release 2026.1</span></div>
-                                <div className="placeholder" style={{ aspectRatio: "16 / 10" }}>[Render and floor plan]</div>
-                                <h3 className="h4">{n}</h3>
-                                <p className="dim">50 × 100 ft plot</p>
-                                <p className="fine">[floor area] m² · Designed by [architect's name] with Formcraft Studio</p>
-                                <div className="between"><span className="small">Plans UGX [price]</span><span className="small">Build from UGX [estimate]</span></div>
-                            </article>
-                        ))}
+                        {/* One honest card that leads to the library (the designs themselves live on /templates) */}
+                        <article className="card card-pad construction-home tilt-l stack" style={{ "--gap": "12px" }}>
+                            <span className="tag" style={{ alignSelf: "flex-start" }}>The home library</span>
+                            <h3 className="h3">Ready-to-build designs for 50 × 100 ft plots.</h3>
+                            <p className="small">The full drawing set, quantities and renders for each design, from one model.</p>
+                            <Link to="/templates" className="btn btn-ink btn-sm" style={{ alignSelf: "flex-start" }}>Browse the designs <Icon name="arrow" size={16} /></Link>
+                        </article>
                     </Reveal>
                 </div>
                 <Reveal className="construction-included">
                     <h3 className="h3">What you get with every design</h3>
                     <ul className="grid-3 construction-included-list">
-                        {INCLUDED.map(([a, b]) => (
+                        {INCLUDED.filter(([, b]) => seesTodos || !isPending(b)).map(([a, b]) => (
                             <li key={a} className="checklist">
                                 <span className="row" style={{ "--gap": "12px", alignItems: "flex-start" }}>
                                     <span className="tick"><Icon name="check" size={14} /></span>
-                                    <span className="stack" style={{ "--gap": "2px" }}><strong>{a}</strong><span className={`small ${b.startsWith("TODO") ? "todo" : ""}`}>{b}</span></span>
+                                    <span className="stack" style={{ "--gap": "2px" }}><strong>{a}</strong><Fact as="span" className="small" text={b} /></span>
                                 </span>
                             </li>
                         ))}
                     </ul>
-                    <p className="small">Every plot is different: before you build, we adapt the design to your plot — site survey, soil test, foundations checked against the results, and the council submission. <span className="todo">TODO: price for adapting a library design.</span></p>
+                    <p className="small">Every plot is different: before you build, we adapt the design to your plot — site survey, soil test, foundations checked against the results, and the council submission. <Todo>TODO: price for adapting a library design.</Todo></p>
                 </Reveal>
             </Section>
 
@@ -101,7 +102,7 @@ export const Construction = () => {
                         <p className="eyebrow">For young architects</p>
                         <h2 className="h2">Design a home for the library. Earn every time it sells.</h2>
                         <p className="body">If your home is selected, we develop it with you to the Formcraft standard and publish it under your name. You earn a royalty on every set of plans sold — and a share when Formcraft builds it.</p>
-                        <p className="fine">Royalty, build share, ownership and payment terms: TODO.</p>
+                        <Todo as="p">TODO: royalty, build share, ownership and payment terms.</Todo>
                         <Link to="/contact" className="btn btn-primary" style={{ alignSelf: "flex-start" }}>Send us your concept</Link>
                     </Reveal>
                     <Reveal delay={0.1}>

@@ -5,11 +5,13 @@
   border: 0; border-radius: 50%; color: var(--fc-navy); cursor: pointer;
   background: var(--tex-orange);
   box-shadow: 0 2px 0 var(--fc-orange-edge), 0 10px 22px -8px var(--sh);
-  transition: translate .25s var(--fc-ease-out), scale .16s var(--fc-ease-out);
+  transition: translate .25s var(--fc-ease-out), scale .16s var(--fc-ease-out), opacity .3s var(--fc-ease-out), visibility .3s;
 }
 @media (hover: hover) and (pointer: fine) { .donate-fab:hover { translate: 0 -2px; } }
 .donate-fab:focus-visible { translate: 0 -2px; }
 .donate-fab:active { scale: .94; }
+/* phones, near the top of the page: out of the way (and out of the Tab order) until the visitor scrolls */
+.donate-fab.is-away { opacity: 0; visibility: hidden; translate: 0 16px; }
 .donate-fab:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
 .donate-fab svg { transition: rotate .3s var(--fc-ease-out); }
 @media (hover: hover) and (pointer: fine) { .donate-fab:hover svg { rotate: -14deg; } }

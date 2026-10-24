@@ -1,3 +1,6 @@
+// Popover: a small card that opens next to the button that owns it (used by the plant-a-tree button).
+// Unlike a full-screen dialog it doesn't dim the page. It behaves like a proper dialog for keyboard
+// and screen-reader users: focus moves in, Tab stays inside, Escape closes it.
 import { useEffect, useId, useRef } from "react";
 import { Icon } from "./Icon";
 import "./Popover.css";
@@ -10,6 +13,17 @@ const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), selec
 // outside click that landed on nothing focusable (otherwise it stays where the visitor clicked).
 // Placement comes from the class: "popover-corner" (default) sits bottom-right above a 50 px
 // floating button; pass another class to place it elsewhere.
+/**
+ * @param {object} props
+ * @param {boolean} props.open            whether the card is showing
+ * @param {() => void} props.onClose      called when the visitor closes it (×, Escape, click outside)
+ * @param {import("react").RefObject<HTMLElement>} props.anchorRef  the button that opens it (focus returns there)
+ * @param {string} props.title            the card's heading (also read out by screen readers)
+ * @param {import("react").ReactNode} props.children  the card's content
+ * @param {import("react").ReactNode} [props.footer]  optional bottom row (e.g. the main button)
+ * @param {string} [props.placement="corner"]  where it sits; adds the class "popover-<placement>"
+ * @param {string} [props.className]      extra classes
+ */
 export const Popover = ({ open, onClose, anchorRef, title, children, footer, placement = "corner", className = "" }) => {
     const ref = useRef(null);
     const reason = useRef(null);

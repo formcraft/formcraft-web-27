@@ -110,7 +110,7 @@ export const CalendarView = ({ studio }) => {
             <button
                 key={p.id}
                 type="button"
-                className={`studio-chip studio-chip-${p.status || "draft"}`}
+                className={`mkt-chip mkt-chip-${p.status || "draft"}`}
                 draggable={canEditPost(p, isMarketing)}
                 onDragStart={(e) => {
                     e.dataTransfer.setData("text/plain", p.id);
@@ -119,11 +119,11 @@ export const CalendarView = ({ studio }) => {
                 onClick={() => openComposer(p)}
                 title={`${p.title || "(untitled)"} — ${STATUSES[p.status] ?? p.status}`}
             >
-                <span className="studio-chip-time">{timeKey(p.scheduledAt)}</span>
-                <span className="studio-chip-title">{p.title || "(untitled)"}</span>
-                {!compact && <span className="studio-chip-meta">{ids.map((id) => channelLabel(channelsById[id] ?? { name: id })).join(" · ")}</span>}
+                <span className="mkt-chip-time">{timeKey(p.scheduledAt)}</span>
+                <span className="mkt-chip-title">{p.title || "(untitled)"}</span>
+                {!compact && <span className="mkt-chip-meta">{ids.map((id) => channelLabel(channelsById[id] ?? { name: id })).join(" · ")}</span>}
                 <span className="sr-only">, {STATUSES[p.status] ?? p.status}</span>
-                {p.confirmDate && <span className="studio-flag">confirm date</span>}
+                {p.confirmDate && <span className="mkt-flag">confirm date</span>}
             </button>
         );
     };
@@ -131,12 +131,12 @@ export const CalendarView = ({ studio }) => {
     const dropProps = (day) => ({
         onDragOver: (e) => {
             e.preventDefault();
-            e.currentTarget.classList.add("studio-drop");
+            e.currentTarget.classList.add("mkt-drop");
         },
-        onDragLeave: (e) => e.currentTarget.classList.remove("studio-drop"),
+        onDragLeave: (e) => e.currentTarget.classList.remove("mkt-drop"),
         onDrop: (e) => {
             e.preventDefault();
-            e.currentTarget.classList.remove("studio-drop");
+            e.currentTarget.classList.remove("mkt-drop");
             const post = docs.find((p) => p.id === e.dataTransfer.getData("text/plain"));
             if (post) move(post, day);
         },
@@ -146,12 +146,12 @@ export const CalendarView = ({ studio }) => {
 
     return (
         <div className="stack" style={{ "--gap": "16px" }}>
-            <div className="studio-toolbar">
+            <div className="mkt-toolbar">
                 <div className="row" style={{ "--gap": "8px" }}>
                     <button type="button" className="btn btn-line btn-sm" onClick={() => step(-1)} aria-label="Previous">‹</button>
                     <button type="button" className="btn btn-line btn-sm" onClick={() => setCursor(today)}>Today</button>
                     <button type="button" className="btn btn-line btn-sm" onClick={() => step(1)} aria-label="Next">›</button>
-                    <strong className="studio-range" aria-live="polite">
+                    <strong className="mkt-range" aria-live="polite">
                         {shown === "month" ? monthLabel(cursor) : `${formatDay(range.from)} – ${formatDay(range.to)}`}
                     </strong>
                 </div>
@@ -164,7 +164,7 @@ export const CalendarView = ({ studio }) => {
                 </div>
             </div>
 
-            <div className="studio-filters">
+            <div className="mkt-filters">
                 <div className="field">
                     <label htmlFor="cal-channel">Channel</label>
                     <select id="cal-channel" value={filters.channel} onChange={(e) => setFilters({ ...filters, channel: e.target.value })}>
@@ -194,18 +194,18 @@ export const CalendarView = ({ studio }) => {
             {loading && <div className="skeleton" style={{ height: 80 }} />}
 
             {shown !== "list" ? (
-                <div className={`studio-grid studio-grid-${shown}`}>
-                    {WEEKDAYS.map((w) => <div key={w} className="studio-grid-head" aria-hidden="true">{w}</div>)}
+                <div className={`mkt-grid mkt-grid-${shown}`}>
+                    {WEEKDAYS.map((w) => <div key={w} className="mkt-grid-head" aria-hidden="true">{w}</div>)}
                     {days.map((d) => {
                         const outside = shown === "month" && d.slice(0, 7) !== cursor.slice(0, 7);
                         return (
-                            <section key={d} className={`studio-day ${outside ? "studio-day-out" : ""} ${d === today ? "studio-day-today" : ""}`} aria-label={formatDay(d, { weekday: "long", day: "numeric", month: "long" })} {...dropProps(d)}>
-                                <div className="studio-day-head">
-                                    <span className="studio-day-num">{Number(d.slice(8))}{d === today && <span className="sr-only"> (today)</span>}</span>
-                                    <button type="button" className="studio-add" onClick={() => openComposer(null, { day: d })} aria-label={`New post on ${formatDay(d)}`}>+</button>
+                            <section key={d} className={`mkt-day ${outside ? "mkt-day-out" : ""} ${d === today ? "mkt-day-today" : ""}`} aria-label={formatDay(d, { weekday: "long", day: "numeric", month: "long" })} {...dropProps(d)}>
+                                <div className="mkt-day-head">
+                                    <span className="mkt-day-num">{Number(d.slice(8))}{d === today && <span className="sr-only"> (today)</span>}</span>
+                                    <button type="button" className="mkt-add" onClick={() => openComposer(null, { day: d })} aria-label={`New post on ${formatDay(d)}`}>+</button>
                                 </div>
                                 {(badges.get(d) ?? []).map((o) => (
-                                    <span key={o.id} className={`studio-badge studio-badge-${o.category}`} title={o.postAngle}>
+                                    <span key={o.id} className={`mkt-badge mkt-badge-${o.category}`} title={o.postAngle}>
                                         {o.name}{o.confirmDate ? " (confirm)" : ""}
                                     </span>
                                 ))}
@@ -215,25 +215,25 @@ export const CalendarView = ({ studio }) => {
                     })}
                 </div>
             ) : (
-                <ol className="studio-agenda">
+                <ol className="mkt-agenda">
                     {days
                         .filter((d) => byDay.has(d) || badges.has(d) || d === today)
                         .map((d) => (
-                            <li key={d} className={`studio-agenda-day ${d === today ? "studio-day-today" : ""}`}>
+                            <li key={d} className={`mkt-agenda-day ${d === today ? "mkt-day-today" : ""}`}>
                                 <div className="between" style={{ alignItems: "center", gap: "8px" }}>
                                     <h4 className="h4">{formatDay(d, { weekday: "long", day: "numeric", month: "long" })}{d === today ? " · today" : ""}</h4>
                                     <button type="button" className="btn btn-line btn-sm" onClick={() => openComposer(null, { day: d })}>Add post</button>
                                 </div>
                                 {(badges.get(d) ?? []).map((o) => (
-                                    <span key={o.id} className={`studio-badge studio-badge-${o.category}`}>{o.name}{o.confirmDate ? " (confirm date)" : ""}</span>
+                                    <span key={o.id} className={`mkt-badge mkt-badge-${o.category}`}>{o.name}{o.confirmDate ? " (confirm date)" : ""}</span>
                                 ))}
-                                <ul className="studio-agenda-posts">
+                                <ul className="mkt-agenda-posts">
                                     {(byDay.get(d) ?? []).map((p) => (
-                                        <li key={p.id} className="studio-agenda-post">
+                                        <li key={p.id} className="mkt-agenda-post">
                                             {chip(p, false)}
                                             <StatusTag status={p.status} />
                                             {canEditPost(p, isMarketing) && (
-                                                <div className="field studio-move">
+                                                <div className="field mkt-move">
                                                     <label htmlFor={`mv-${p.id}`}>Move to…</label>
                                                     <input id={`mv-${p.id}`} type="date" defaultValue={d} onChange={(e) => move(p, e.target.value)} />
                                                 </div>
@@ -246,16 +246,16 @@ export const CalendarView = ({ studio }) => {
                 </ol>
             )}
 
-            <details className="card card-pad studio-undated">
+            <details className="card card-pad mkt-undated">
                 <summary>
                     <strong>Ideas without a date</strong> <span className="fine">({undated.docs.length})</span>
                 </summary>
                 {undated.docs.length === 0 ? (
                     <p className="small">None.</p>
                 ) : (
-                    <ul className="studio-agenda-posts">
+                    <ul className="mkt-agenda-posts">
                         {undated.docs.map((p) => (
-                            <li key={p.id} className="studio-agenda-post">
+                            <li key={p.id} className="mkt-agenda-post">
                                 {chip(p, false)}
                                 <StatusTag status={p.status} />
                             </li>

@@ -137,7 +137,7 @@ export const OccasionsView = ({ studio }) => {
                     </div>
                 </div>
 
-                <fieldset className="studio-fieldset">
+                <fieldset className="mkt-fieldset">
                     <legend className="label">When</legend>
                     <div className="field">
                         <label htmlFor="oc-rule">Rule</label>
@@ -216,7 +216,7 @@ export const OccasionsView = ({ studio }) => {
                     <input type="checkbox" checked={Boolean(v.active)} onChange={(e) => setV("active", e.target.checked)} />
                     <span>Active (shown on the calendar and used by Generate)</span>
                 </label>
-                <fieldset className="studio-fieldset">
+                <fieldset className="mkt-fieldset">
                     <legend className="label">Seasonal site theme (decided later — needs brand approval)</legend>
                     <label className="admin-check">
                         <input type="checkbox" checked={Boolean(v.siteTheme?.enabled)} onChange={(e) => setV("siteTheme", { ...v.siteTheme, enabled: e.target.checked })} />
@@ -257,7 +257,7 @@ export const OccasionsView = ({ studio }) => {
                 </p>
             )}
             <div className="between" style={{ alignItems: "flex-end" }}>
-                <div className="studio-filters">
+                <div className="mkt-filters">
                     <div className="field">
                         <label htmlFor="oc-year">Year</label>
                         <select id="oc-year" value={year} onChange={(e) => setYear(Number(e.target.value))}>
@@ -291,10 +291,10 @@ export const OccasionsView = ({ studio }) => {
                     </thead>
                     <tbody>
                         {rows.map(({ o, date, confirm }) => (
-                            <tr key={o.id} className={o.active === false ? "studio-row-off" : ""}>
+                            <tr key={o.id} className={o.active === false ? "mkt-row-off" : ""}>
                                 <td className="fine">
-                                    {date ? formatDay(date) : <strong className="studio-over">Set the date</strong>}
-                                    {confirm && date ? <div className="studio-flag">confirm</div> : null}
+                                    {date ? formatDay(date) : <strong className="mkt-over">Set the date</strong>}
+                                    {confirm && date ? <div className="mkt-flag">confirm</div> : null}
                                     <div>{describeRule(o)}</div>
                                 </td>
                                 <td>

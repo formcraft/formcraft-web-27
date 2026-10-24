@@ -56,3 +56,6 @@ hotel-stills/
 
 # Offline check reports (npm run check)
 check-report/
+
+# Offline check logs
+check-*.log

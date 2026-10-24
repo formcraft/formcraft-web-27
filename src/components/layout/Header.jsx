@@ -1,3 +1,9 @@
+// The header at the top of every page.
+// Desktop: logo, the main menu (four "doors": Hire us / Shop / Join / Back us, each opening a small
+// panel of links, plus About and Contact), then tools: day/night switch, Admin (team only), cart,
+// account or sign in, and the "Request a quote" button.
+// Phones: the same links move into a slide-out menu (Drawer) opened by the menu button.
+// The menu comes from src/data/nav.js; links to pages the admin has switched off are left out.
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
@@ -17,6 +23,11 @@ const prefetchFromEvent = (event) => {
     if (href) prefetchRoute(href);
 };
 
+/**
+ * One menu "door" on desktop (e.g. "Hire us"): a button that opens a panel of links.
+ * The panel closes on Escape (focus goes back to the button), on a click elsewhere, and on page change.
+ * @param {{ group: { label: string, links: Array<{to: string, label: string, note?: string}> }, pathname: string }} props
+ */
 const NavGroup = ({ group, pathname }) => {
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
@@ -70,6 +81,7 @@ const NavGroup = ({ group, pathname }) => {
     );
 };
 
+/** The site header. Rendered once by Layout.jsx above every page. */
 export const Header = () => {
     const { user, isEditor, loading, openSignIn } = useAuth();
     const { pathname } = useLocation();
@@ -125,7 +137,7 @@ export const Header = () => {
             </div>
 
             <Drawer open={menuOpen} onClose={() => setMenuOpen(false)} title="Menu">
-                <nav className="header-mobile" aria-label="Main" onPointerDown={prefetchFromEvent}>
+                <nav className="header-mobile" aria-label="Main menu" onPointerDown={prefetchFromEvent}>
                     {groups.map((group) =>
                         group.links ? (
                             <div key={group.label} className="header-mobile-group">

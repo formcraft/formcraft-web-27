@@ -13,6 +13,9 @@ import { formatUGX } from "../lib/money";
 import { sendInvestorLead } from "../lib/forms";
 import { Honeypot } from "../components/forms/Honeypot";
 import { DEV_STATUSES, devStatusLabel, isSampleDev } from "../data/developments";
+import { Todo, PartFact } from "../components/ui/Todo";
+import { useSeesTodos } from "../hooks/useSeesTodos";
+import { known } from "../lib/pending";
 import "./RealEstate.css";
 
 const LEVELS = [
@@ -20,14 +23,15 @@ const LEVELS = [
         level: "Level 1",
         title: "Community investor",
         text: "For members of the Formcraft community and first-time investors.",
-        points: ["Crowdfund from UGX [min] per development", "Pay by mobile money or bank", "Project summaries and progress updates"],
-        todo: "TODO: limits per person",
+        points: ["Crowdfund per development", "Pay by mobile money or bank", "Project summaries and progress updates"],
+        todo: "TODO: minimum per development (UGX) and limits per person",
     },
     {
         level: "Level 2",
         title: "Verified investor",
         text: "Identity checked; full access to each development's numbers.",
-        points: ["Tickets from UGX [min]", "Financial model, drawings and cost plan", "Quarterly reports and site visits"],
+        points: ["Larger tickets", "Financial model, drawings and cost plan", "Quarterly reports and site visits"],
+        todo: "TODO: minimum ticket for verified investors (UGX)",
     },
     {
         level: "Level 3",
@@ -44,7 +48,7 @@ const HOW = [
     ["Follow the build, earn returns", "Progress from site and the model; returns paid as set out in the terms."],
 ];
 
-const money = (v, fallback = "UGX [n]") => (Number.isInteger(v) ? formatUGX(v) : fallback);
+const money = (v) => (Number.isInteger(v) ? formatUGX(v) : null);
 
 const InterestForm = () => {
     const [status, setStatus] = useState("idle");
@@ -74,7 +78,7 @@ const InterestForm = () => {
         return (
             <div className="card card-pad stack" role="status" style={{ "--gap": "12px" }}>
                 <h3 className="h3">Thanks — we've got it.</h3>
-                <p className="body">The Real Estate team will be in touch. <span className="todo">TODO: confirm reply time.</span></p>
+                <p className="body">The Real Estate team will be in touch. <Todo>TODO: confirm reply time.</Todo></p>
                 <button type="button" className="btn btn-ink btn-sm" style={{ alignSelf: "flex-start" }} onClick={() => setStatus("idle")}>Send another</button>
             </div>
         );
@@ -121,7 +125,10 @@ const InterestForm = () => {
 export const RealEstate = () => {
     usePageMeta("Real estate", "Rental apartments, hostels and homes designed by Formcraft Studio and built by Formcraft Construction. Back a development and share in its returns.");
     const show = useShowLink();
-    const { items, loading } = useContent("developments");
+    const { items: all, loading } = useContent("developments");
+    const seesTodos = useSeesTodos();
+    // Visitors see real developments only; sample listings are for the team until terms are approved.
+    const items = seesTodos ? all : all.filter((d) => !isSampleDev(d));
     const [stage, setStage] = useState("all");
     const shown = items.filter((d) => stage === "all" || d.status === stage);
     const samples = items.some(isSampleDev);
@@ -137,8 +144,8 @@ export const RealEstate = () => {
 
             <Section tone="sheet" seed={2} small id="facts">
                 <dl className="kpis">
-                    <div><dt className="fine">Developments planned</dt><dd className="h3">[n]</dd></div>
-                    <div><dt className="fine">Raised from investors</dt><dd className="h3">UGX [n]</dd></div>
+                    {seesTodos && <div><dt className="fine">Developments planned</dt><dd className="h3"><Todo>TODO: number of developments planned</Todo></dd></div>}
+                    {seesTodos && <div><dt className="fine">Raised from investors</dt><dd className="h3"><Todo>TODO: amount raised (UGX)</Todo></dd></div>}
                     <div><dt className="fine">Led by</dt><dd className="h4">Peter Isingoma</dd><dd className="small">Co-Founder &amp; Real Estate Lead</dd></div>
                 </dl>
             </Section>
@@ -157,6 +164,11 @@ export const RealEstate = () => {
                     <div className="real-estate-grid" aria-busy="true">
                         {[0, 1, 2].map((i) => <div key={i} className="skeleton" style={{ height: 380 }} />)}
                     </div>
+                ) : items.length === 0 ? (
+                    <div className="card card-pad stack real-estate-empty" style={{ "--gap": "10px" }}>
+                        <h3 className="h4">The first developments open here once their plans, costs and terms are approved.</h3>
+                        <p className="small"><a href="#talk" className="link">Register your interest</a> and the Real Estate team will contact you when one opens.</p>
+                    </div>
                 ) : shown.length === 0 ? (
                     <p className="body real-estate-empty">No developments at this stage yet.</p>
                 ) : (
@@ -164,22 +176,29 @@ export const RealEstate = () => {
                         {shown.map((d, i) => (
                             <Reveal as="li" key={d.slug} delay={(i % 3) * 0.06}>
                                 <article className="card real-estate-card">
-                                    <Photo name={imgName(d.images?.[0])} alt={d.images?.[0]?.alt || `[Render: ${d.kind || d.title}]`} ratio="16 / 10" />
+                                    <Photo name={imgName(d.images?.[0])} alt={d.images?.[0]?.alt || `${d.title}, render`} ratio="16 / 10" />
                                     <div className="real-estate-card-body">
                                         <div className="row" style={{ "--gap": "6px" }}>
                                             <span className={`tag real-estate-status is-${d.status}`}>{devStatusLabel(d.status)}</span>
                                             {isSampleDev(d) && <span className="tag">Sample</span>}
                                             {d.hidden && <span className="tag">Hidden</span>}
                                         </div>
-                                        <p className="fine">{d.kind ? `${d.kind} · ` : ""}{d.location || "[location]"}</p>
+                                        <p className="fine">{[known(d.kind), known(d.location)].filter(Boolean).join(" · ")}</p>
                                         <h3 className="h4"><Link to={`/real-estate/${d.slug}`} className="real-estate-card-link">{d.title}</Link></h3>
+                                        {/* only the facts that are set; terms and returns appear once approved */}
                                         <dl className="real-estate-facts">
-                                            <div><dt className="fine">Units</dt><dd>{d.units ?? "[n]"}</dd></div>
-                                            <div><dt className="fine">Units from</dt><dd>{money(d.unitFromUGX)}</dd></div>
-                                            <div><dt className="fine">Min. ticket</dt><dd>{money(d.minInvestUGX)}</dd></div>
-                                            <div><dt className="fine">Completion</dt><dd>{d.completion || "[date]"}</dd></div>
+                                            {[
+                                                ["Units", Number.isInteger(d.units) ? d.units : null],
+                                                ["Units from", money(d.unitFromUGX)],
+                                                ["Min. ticket", money(d.minInvestUGX)],
+                                                ["Completion", known(d.completion)],
+                                            ]
+                                                .filter(([, v]) => v !== null)
+                                                .map(([k, v]) => (
+                                                    <div key={k}><dt className="fine">{k}</dt><dd>{v}</dd></div>
+                                                ))}
                                         </dl>
-                                        <p className="fine">Target return [x]% a year · <span className="todo">shown once terms are approved</span></p>
+                                        <Todo as="p">TODO: target return (% a year), shown once terms are approved</Todo>
                                         <Link to={`/real-estate/${d.slug}`} className="link real-estate-view">View <Icon name="arrow" size={16} /></Link>
                                     </div>
                                 </article>
@@ -187,7 +206,7 @@ export const RealEstate = () => {
                         ))}
                     </ul>
                 )}
-                {samples && <p className="fine real-estate-note">Sample listings. Figures appear when each development's plans, costs and terms are approved.</p>}
+                {samples && seesTodos && <p className="fine real-estate-note">Sample listings. Figures appear when each development's plans, costs and terms are approved.</p>}
             </Section>
 
             <Section tone="sheet" seed={6} id="levels">
@@ -208,7 +227,7 @@ export const RealEstate = () => {
                                     <li key={p}><span className="tick"><Icon name="check" size={14} /></span><span className="small">{p}</span></li>
                                 ))}
                             </ul>
-                            {l.todo && <p className="fine todo">{l.todo}</p>}
+                            {l.todo && <Todo as="p">{l.todo}</Todo>}
                         </Reveal>
                     ))}
                 </ul>
@@ -221,15 +240,15 @@ export const RealEstate = () => {
                         <Reveal as="li" key={title} delay={i * 0.06} className="card step">
                             <h3 className="h4">{title}</h3>
                             <p className="small">
-                                {text.split("TODO")[0]}
-                                {text.includes("TODO") && <span className="todo">TODO{text.split("TODO")[1]}</span>}
+                                <PartFact text={text} />
                             </p>
                         </Reveal>
                     ))}
                 </ol>
                 <div className="alert alert-error real-estate-risk" role="note">
                     <p className="small"><strong>Your capital is at risk.</strong> Property investments can lose value, returns are not guaranteed and you may not be able to sell early.</p>
-                    <p className="fine todo">TODO: approval or licensing from the Capital Markets Authority of Uganda (or the right exemption), and final risk wording from a lawyer, before any investment is offered. Nothing on this page is an offer to sell securities.</p>
+                    <p className="small">Nothing on this page is an offer to sell securities.</p>
+                    <Todo as="p">TODO: approval or licensing from the Capital Markets Authority of Uganda (or the right exemption), and final risk wording from a lawyer, before any investment is offered.</Todo>
                 </div>
             </Section>
 

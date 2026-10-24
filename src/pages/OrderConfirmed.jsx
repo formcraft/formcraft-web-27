@@ -10,6 +10,7 @@ import { PageHero } from "../components/page/PageHero";
 import { Section } from "../components/page/Section";
 import { Icon } from "../components/ui/Icon";
 import { CheckoutSteps } from "./Checkout";
+import { PartFact } from "../components/ui/Todo";
 import "./OrderConfirmed.css";
 
 // Where Flutterwave sends the customer back. The status comes only from the order in Firestore,
@@ -76,11 +77,11 @@ export const OrderConfirmed = () => {
                             <h2 className="h3">What happens next</h2>
                             <ul className="checklist">
                                 {[
-                                    ["Made-to-order pieces go to the workshop — usually 2–3 weeks.", false],
-                                    ["We call you to agree a delivery day. TODO: delivery areas and prices", true],
-                                    ["Plans and other downloads are ready in your account once the payment clears.", false],
-                                ].map(([t, todo]) => (
-                                    <li key={t}><span className="tick"><Icon name="check" size={14} /></span><span className={todo ? "small todo" : "small"}>{t}</span></li>
+                                    "Made-to-order pieces go to the workshop — usually 2–3 weeks.",
+                                    "We call you to agree a delivery day. TODO: delivery areas and prices",
+                                    "Plans and other downloads are ready in your account once the payment clears.",
+                                ].map((t) => (
+                                    <li key={t}><span className="tick"><Icon name="check" size={14} /></span><span className="small"><PartFact text={t} /></span></li>
                                 ))}
                             </ul>
                             <div className="row">
@@ -108,8 +109,8 @@ export const OrderConfirmed = () => {
                             )}
                             <dl className="orderconfirmed-facts">
                                 <div><dt>Status</dt><dd>{status ? <span className={status === "paid" || status === "shipped" ? "tag tag-accent" : "tag"}>{status}</span> : "—"}</dd></div>
-                                <div><dt>Delivery</dt><dd>{order?.delivery?.area ? [order.delivery.area, order.delivery.street].filter(Boolean).join(", ") : "[area], [landmark]"}</dd></div>
-                                <div><dt>Total</dt><dd><strong>{Number.isInteger(order?.totalUGX) ? formatUGX(order.totalUGX) : "UGX [total]"}</strong></dd></div>
+                                <div><dt>Delivery</dt><dd>{order?.delivery?.area ? [order.delivery.area, order.delivery.street].filter(Boolean).join(", ") : "Agreed when we call you"}</dd></div>
+                                <div><dt>Total</dt><dd><strong>{Number.isInteger(order?.totalUGX) ? formatUGX(order.totalUGX) : "Being confirmed"}</strong></dd></div>
                             </dl>
                         </aside>
                     </div>

@@ -7,6 +7,7 @@ import { Section, SectionHead } from "../components/page/Section";
 import { Photo } from "../components/page/Photo";
 import { Reveal, Kinetic } from "../components/ui/Reveal";
 import { Icon } from "../components/ui/Icon";
+import { Fact } from "../components/ui/Todo";
 import { Logo, LogoMark } from "../components/ui/Logo";
 import { flagship } from "../data/projects";
 import "./Home.css";
@@ -33,12 +34,14 @@ const DOORS = [
     { who: "Investors & donors", title: "Back us", text: "Invest in Formcraft developments — from community crowdfunding to partner deals.", to: "/invest", cta: "See the developments", tone: "dark" },
 ];
 
-const Counter = ({ value, label }) => (
-    <div>
-        <span className="num">{Number.isInteger(value) ? value.toLocaleString("en-UG") : "[n]"}</span>
-        <span className="small">{label}</span>
-    </div>
-);
+/** One live number (from Firestore stats/public). Left out entirely until it's a real number. */
+const Counter = ({ value, label }) =>
+    Number.isInteger(value) ? (
+        <div>
+            <span className="num">{value.toLocaleString("en-UG")}</span>
+            <span className="small">{label}</span>
+        </div>
+    ) : null;
 
 export const Home = () => {
     usePageMeta(null, "Formcraft Design and Construction, Kampala: BIM-led design, construction, precast concrete and workshop-made furniture, in one value chain with local artisans.");
@@ -187,7 +190,7 @@ export const Home = () => {
                             <strong>The home library</strong>
                             <span className="tag">Release 2026.1</span>
                         </div>
-                        <div className="placeholder" style={{ aspectRatio: "16 / 10" }}>[Render of a home design]</div>
+                        <div className="placeholder" style={{ aspectRatio: "16 / 10" }}>Renders come with the first release</div>
                         <p className="dim">50 × 100 ft plot</p>
                         <p className="small">Designed by young Ugandan architects, who earn a royalty every time their design sells.</p>
                     </Reveal>
@@ -224,7 +227,7 @@ export const Home = () => {
                                 <div className="home-flag-body">
                                     <span className="tag">{p.division}</span>
                                     <h3 className="h3">{p.title}</h3>
-                                    <p className="small">{p.text}</p>
+                                    <Fact as="p" className="small" text={p.text} />
                                 </div>
                             </>
                         );
@@ -241,7 +244,9 @@ export const Home = () => {
                 </div>
             </Section>
 
-            {/* Impact counters (live from Firestore stats/public) */}
+            {/* Impact counters (live from Firestore stats/public). Hidden until there's at least one
+                real number, so visitors never see placeholders where the proof should be. */}
+            {[stats?.artisans, stats?.projectsDone, stats?.treesPlanted].some(Number.isInteger) && (
             <Section tone="sheet" seed={34} small id="impact">
                 <div className="between home-impact">
                     <div className="stack" style={{ "--gap": "12px" }}>
@@ -255,6 +260,7 @@ export const Home = () => {
                     </div>
                 </div>
             </Section>
+            )}
 
             {/* Roadmap */}
             <Section tone="dark" seed={55} id="roadmap">

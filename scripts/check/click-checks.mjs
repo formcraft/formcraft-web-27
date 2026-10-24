@@ -5,7 +5,7 @@
 // back to the menu button"). A check passes or fails, and a failure says what went wrong.
 // They run in the real Chrome on this computer, with the internet blocked (see lib.mjs).
 
-import { BASE, isExpectedOfflineNoise, openContext, wait } from "./lib.mjs";
+import { BASE, isExpectedOfflineNoise, openContext, runPool, wait } from "./lib.mjs";
 import { NOT_FOUND_HEADING } from "./page-checks.mjs";
 
 /** Opens a page and waits for its main heading. */
@@ -136,6 +136,9 @@ export const CLICK_CHECKS = [
             for (const width of [1440, 360]) {
                 const ctx = await openContext(browser, { width, height: width < 768 ? 780 : 900 });
                 const { page } = await open(ctx, "/about");
+                // on phones the button only appears after scrolling past the first screen
+                await page.evaluate(() => window.scrollTo({ top: window.innerHeight, behavior: "instant" }));
+                await wait(500);
                 await page.locator(".donate-fab").first().click();
                 await wait(500);
                 const box = await page.locator(".donate-fab-pop").first().boundingBox();
@@ -224,17 +227,21 @@ export async function checkLinks(browser, paths) {
         }
         await page.close();
     }
-    const broken = [];
-    for (const [link, from] of found) {
-        if (/\.(pdf|png|jpe?g|webp|svg|xml|txt|zip)$/i.test(link)) {
-            const res = await fetch(BASE + link).catch(() => null);
-            if (!res || !res.ok) broken.push({ link, from });
-            continue;
-        }
-        const { page } = await open(ctx, link);
-        if (NOT_FOUND_HEADING.test(await h1Text(page))) broken.push({ link, from });
-        await page.close();
-    }
+    // Open the links six at a time; files (PDFs, images) are just fetched.
+    const results = await runPool(
+        [...found].map(([link, from]) => async () => {
+            if (/\.(pdf|png|jpe?g|webp|svg|xml|txt|zip)$/i.test(link)) {
+                const res = await fetch(BASE + link).catch(() => null);
+                return !res || !res.ok ? { link, from } : null;
+            }
+            const { page } = await open(ctx, link);
+            const lost = NOT_FOUND_HEADING.test(await h1Text(page));
+            await page.close();
+            return lost ? { link, from } : null;
+        }),
+        6
+    );
+    const broken = results.filter(Boolean);
     await ctx.close();
     return { checked: found.size, broken };
 }

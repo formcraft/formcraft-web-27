@@ -82,7 +82,7 @@ export const TopicsView = ({ studio }) => {
                     <label htmlFor="tp-notes">Notes</label>
                     <textarea id="tp-notes" rows={2} value={v.notes} onChange={(e) => setV("notes", e.target.value)} />
                 </div>
-                <fieldset className="studio-checks">
+                <fieldset className="mkt-checks">
                     <legend className="label">Formats</legend>
                     {Object.entries(FORMATS).map(([k, label]) => (
                         <label key={k} className="chip">
@@ -113,7 +113,7 @@ export const TopicsView = ({ studio }) => {
     return (
         <div className="stack" style={{ "--gap": "16px" }}>
             <div className="between" style={{ alignItems: "flex-end" }}>
-                <div className="studio-filters">
+                <div className="mkt-filters">
                     <div className="field">
                         <label htmlFor="tp-filter">Pillar</label>
                         <select id="tp-filter" value={pillar} onChange={(e) => setPillar(e.target.value)}>
@@ -137,9 +137,9 @@ export const TopicsView = ({ studio }) => {
             </div>
             {note && <p className={`alert ${note.ok ? "" : "alert-error"}`} role={note.ok ? "status" : "alert"}>{note.text}</p>}
             {topics.length === 0 && <p className="card card-pad small">No topics yet.{isMarketing ? " Import the starter topics (ideas from the site and Company Profile) or add your own." : ""}</p>}
-            <ul className="studio-topics">
+            <ul className="mkt-topics">
                 {list.map((t) => (
-                    <li key={t.id} className={`card studio-topic ${t.active === false ? "studio-row-off" : ""}`}>
+                    <li key={t.id} className={`card mkt-topic ${t.active === false ? "mkt-row-off" : ""}`}>
                         <div className="stack" style={{ "--gap": "4px" }}>
                             <span className="fine">{t.pillar}{t.active === false ? " · archived" : ""}</span>
                             <strong>{t.idea}</strong>

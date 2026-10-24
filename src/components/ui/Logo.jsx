@@ -1,4 +1,7 @@
-// Official logo SVGs from public/logos. Navy on day paper, white on night paper (and on dark sheets).
+// The official Formcraft logos (SVG files in public/logos, from the Brand Guide; never redraw them).
+// Navy on day paper, white on night paper and on dark sheets. Each division has its own lockup.
+// In "auto" tone both versions are in the page and CSS shows the right one (.only-day/.only-night),
+// so switching edition never waits for an image to load.
 const FILES = {
     formcraft: { day: "/logos/formcraft-navy.svg", night: "/logos/formcraft-white.svg", label: "Formcraft", ratio: 157.61 / 34.24 },
     studio: { day: "/logos/studio-navy.svg", night: "/logos/studio-white.svg", label: "Formcraft Studio", ratio: 130.11 / 29.36 },
@@ -7,7 +10,14 @@ const FILES = {
     stores: { day: "/logos/stores-navy.svg", night: "/logos/stores-white.svg", label: "Formcraft Stores", ratio: 130.12 / 29.36 },
 };
 
-// tone: "auto" follows the edition, "light" always white (dark sheets), "dark" always navy
+/**
+ * @param {object} props
+ * @param {"formcraft"|"studio"|"construction"|"concrete"|"stores"} [props.brand="formcraft"]
+ * @param {number} [props.height=30]      height in px (the width follows the logo's proportions)
+ * @param {"auto"|"light"|"dark"} [props.tone="auto"]  auto follows the edition; light = always white; dark = always navy
+ * @param {string} [props.className]
+ * @param {boolean} [props.decorative=false]  true when a link around it already says "Formcraft home"
+ */
 export const Logo = ({ brand = "formcraft", height = 30, tone = "auto", className = "", decorative = false }) => {
     const file = FILES[brand];
     const width = Math.round(height * file.ratio);
@@ -25,6 +35,7 @@ export const Logo = ({ brand = "formcraft", height = 30, tone = "auto", classNam
     );
 };
 
+/** The orange FC mark on its own (decorative). @param {{ size?: number, className?: string }} props */
 export const LogoMark = ({ size = 26, className = "" }) => (
     <img src="/logos/fc-mark-orange.svg" alt="" width={Math.round(size * 1.43)} height={size} className={className} />
 );

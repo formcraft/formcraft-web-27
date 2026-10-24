@@ -5,7 +5,8 @@
 //   1. Lint      – oxlint reads the code for mistakes.
 //   2. Build     – builds the site exactly as it would go live (`npm run build`, which also writes
 //                  the SEO pages, sitemap.xml and robots.txt).
-//   3. Files     – checks the build has a page for every address in the sitemap, plus robots.txt.
+//   3. Files     – checks the build has a page for every address in the sitemap, plus robots.txt,
+//                  and that no class name is styled by two stylesheets (css-collisions.mjs).
 //   4. Size      – checks the main JavaScript file stays under the budget (phones on slow data).
 //   5. Pages     – opens every page in Chrome at phone, tablet and desktop sizes, day and night,
 //                  and looks for layout problems (see page-checks.mjs).
@@ -28,6 +29,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 import { CLICK_CHECKS, checkLinks } from "./click-checks.mjs";
+import { findCssCollisions } from "./css-collisions.mjs";
 import { BASE, ROOT, launchBrowser, openContext, runPool, startPreview } from "./lib.mjs";
 import { checkPage } from "./page-checks.mjs";
 import { writeReport } from "./report.mjs";
@@ -106,6 +108,10 @@ if (!flag("--no-build")) {
     }
 }
 
+// Two stylesheets styling the same class can break pages far away (see css-collisions.mjs).
+const collisions = findCssCollisions();
+steps.push({ name: "CSS: no class name styled by two stylesheets", ok: !collisions.length, detail: collisions.length ? collisions.map((c) => `.${c.className} in ${c.files.join(" + ")}`).join("; ") : "none" });
+
 log("3/8 Files in dist/…");
 const missing = [];
 if (!existsSync(join(DIST, "robots.txt"))) missing.push("robots.txt");
@@ -150,7 +156,7 @@ const jobs = pagesToCheck.flatMap((path) =>
         return { path, result };
     })
 );
-const pageResults = await runPool(jobs, 4);
+const pageResults = await runPool(jobs, 6); // six pages at a time
 const pages = pagesToCheck.map((path) => ({ path, results: pageResults.filter((r) => r.path === path).map((r) => r.result) }));
 
 log("6/8 Click checks…");

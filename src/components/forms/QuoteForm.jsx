@@ -4,6 +4,7 @@ import { sendQuote } from "../../lib/forms";
 import { Icon } from "../ui/Icon";
 import { Honeypot } from "./Honeypot";
 import { SubscribeForm } from "./SubscribeForm";
+import { Todo } from "../ui/Todo";
 import "./Forms.css";
 
 // Request a proposal. Saves to Firestore `quotes` (plus an optional drawing in Storage).
@@ -41,7 +42,7 @@ export const QuoteForm = ({ types, defaultType, heading = "Tell us about the plo
                     <span className="tick"><Icon name="check" size={16} /></span>
                 </span>
                 <h3 className="h3">Request sent.</h3>
-                <p className="body">Thanks — we'll call you to book a site visit and talk through your plot. <span className="todo">TODO: confirm reply time</span></p>
+                <p className="body">Thanks — we'll call you to book a site visit and talk through your plot. <Todo>TODO: confirm reply time</Todo></p>
                 <div className="row">
                     <Link to="/projects" className="btn btn-line btn-sm">See our work</Link>
                     <button type="button" className="btn btn-ink btn-sm" onClick={() => setStatus("idle")}>Send another</button>

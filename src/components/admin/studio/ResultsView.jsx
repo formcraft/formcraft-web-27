@@ -98,7 +98,7 @@ export const ResultsView = ({ studio }) => {
                                                 <div key={cid}><a className="link" href={x.url} target="_blank" rel="noreferrer">{channelLabel(channelsById[cid] ?? { name: cid })}</a></div>
                                             ))}
                                             {Object.entries(p.results ?? {}).filter(([, x]) => x?.error).map(([cid, x]) => (
-                                                <div key={cid} className="studio-over">{channelLabel(channelsById[cid] ?? { name: cid })}: {x.error}</div>
+                                                <div key={cid} className="mkt-over">{channelLabel(channelsById[cid] ?? { name: cid })}: {x.error}</div>
                                             ))}
                                         </td>
                                         <td><code className="fine">{r.campaign}</code></td>

@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 
-// Sheets settle into place as they scroll into view. One shared observer for the whole page.
+// useReveal(): tells a component when it has scrolled into view, so it can animate in
+// ("sheets settle into place"). Used by the <Reveal> component.
+// One shared IntersectionObserver (the browser's "is this on screen?" watcher) serves the whole page,
+// which is much cheaper than one per element. Each element is watched only until it first appears.
 let observer = null;
 const callbacks = new WeakMap();
 
@@ -20,6 +23,10 @@ const getObserver = () => {
     return observer;
 };
 
+/**
+ * @returns {[import("react").RefObject<HTMLElement>, boolean]} a ref to put on the element, and
+ *   whether it has come into view yet (true straight away in browsers without IntersectionObserver).
+ */
 export const useReveal = () => {
     const ref = useRef(null);
     const [inView, setInView] = useState(false);

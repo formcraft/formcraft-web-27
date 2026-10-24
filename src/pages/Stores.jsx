@@ -8,6 +8,7 @@ import { Reveal } from "../components/ui/Reveal";
 import { Icon } from "../components/ui/Icon";
 import { CATEGORIES } from "../data/products";
 import { useContent } from "../hooks/useContent";
+import { Todo, PartFact } from "../components/ui/Todo";
 import "./Stores.css";
 
 // Hero → collection → community → made to order (the shop's existing order, rebuilt)
@@ -83,7 +84,7 @@ export const Stores = () => {
                         ))}
                     </ol>
                 </div>
-                <p className="fine todo stores-makers">Meet the makers — TODO: real profiles, with each maker's consent.</p>
+                <Todo as="p">TODO: "Meet the makers": real profiles, with each maker's consent.</Todo>
             </Section>
 
             <Section tone="ground" seed={6} id="custom">
@@ -93,7 +94,7 @@ export const Stores = () => {
                 <ol className="steps">
                     {["Tell us what you need, with a photo or sketch", "Agree the design and price, pay a deposit", "We build it — visit the workshop any time", "Delivered and fitted. TODO: delivery areas and pricing"].map((t, i) => (
                         <Reveal as="li" key={t} delay={i * 0.06} className="card step">
-                            <p className="body">{t}</p>
+                            <p className="body"><PartFact text={t} /></p>
                         </Reveal>
                     ))}
                 </ol>

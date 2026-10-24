@@ -11,6 +11,9 @@ import { Icon } from "../components/ui/Icon";
 import { sendInterest } from "../lib/forms";
 import { Honeypot } from "../components/forms/Honeypot";
 import { formatUGX } from "../lib/money";
+import { Todo, Fact } from "../components/ui/Todo";
+import { known } from "../lib/pending";
+import { useSeesTodos } from "../hooks/useSeesTodos";
 import "./Community.css";
 
 const BENEFITS = [
@@ -50,8 +53,6 @@ const formatDate = (value) => {
     return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString("en-UG", { day: "numeric", month: "short", year: "numeric" });
 };
 
-const isPlaceholder = (text) => /^\[|^TODO/.test(String(text ?? ""));
-
 // Small "send" helper shared by both forms on this page
 const useSend = () => {
     const [status, setStatus] = useState("idle"); // idle | sending | sent | error
@@ -74,7 +75,9 @@ export const Community = () => {
     usePageMeta("Community", "Join the Formcraft community: carpenters, welders, sculptors, designers and students working with Formcraft as equals — fair pricing, shared machinery and a steady market.");
     const show = useShowLink();
     const { data: stats } = usePublicDoc("stats/public");
-    const { items: events, loading: eventsLoading } = useContent("events");
+    const { items: allEvents, loading: eventsLoading } = useContent("events");
+    // visitors see scheduled events only; sample events (no date yet) are for the team
+    const events = useSeesTodos() ? allEvents : allEvents.filter((e) => formatDate(e.date));
     const [trade, setTrade] = useState("all");
     const [eventSlug, setEventSlug] = useState("");
     const eventSelect = useRef(null);
@@ -82,7 +85,8 @@ export const Community = () => {
     const booking = useSend();
 
     const makers = SAMPLE_MAKERS.filter((m) => trade === "all" || m === trade);
-    const artisans = Number.isInteger(stats?.artisans) ? stats.artisans.toLocaleString("en-UG") : "[n]";
+    const artisans = Number.isInteger(stats?.artisans) ? stats.artisans.toLocaleString("en-UG") : null;
+    const seesTodos = useSeesTodos(); // the team also sees the sample makers, jobs and numbers
 
     const bookPlace = (slug) => {
         setEventSlug(slug);
@@ -124,19 +128,23 @@ export const Community = () => {
                 <a href="#jobs" className="btn btn-line">See open commissions</a>
             </PageHero>
 
+            {/* Live numbers: shown once there's a real count (never placeholders for visitors) */}
+            {(artisans || seesTodos) && (
             <Section tone="sheet" seed={2} small id="numbers">
                 <dl className="kpis community-kpis">
                     <div>
                         <dt className="fine">Artisans in the network</dt>
-                        <dd className="h3">{artisans}</dd>
+                        <dd className="h3">{artisans ?? <Todo>TODO: artisan count (Firestore stats/public)</Todo>}</dd>
                     </div>
-                    <div>
-                        <dt className="fine">Commissions this year</dt>
-                        <dd className="h3">[n]</dd>
-                    </div>
+                    {seesTodos && (
+                        <div>
+                            <dt className="fine">Commissions this year</dt>
+                            <dd className="h3"><Todo>TODO: commissions count from Firestore stats once Cloud Functions write it.</Todo></dd>
+                        </div>
+                    )}
                 </dl>
-                <p className="fine todo community-note">TODO: commissions count from Firestore stats once Cloud Functions write it.</p>
             </Section>
+            )}
 
             <Section tone="ground" seed={3} id="why">
                 <SectionHead eyebrow="Why join" title="What you get as a member." />
@@ -171,8 +179,14 @@ export const Community = () => {
                             </button>
                         ))}
                     </div>
-                    <p className="fine" aria-live="polite">{makers.length} sample profile{makers.length === 1 ? "" : "s"}</p>
+                    {seesTodos && <p className="fine" aria-live="polite">{makers.length} sample profile{makers.length === 1 ? "" : "s"}</p>}
                 </div>
+                {!seesTodos ? (
+                    <div className="card card-pad stack community-empty" style={{ "--gap": "10px" }}>
+                        <h3 className="h4">The directory opens with the first approved members.</h3>
+                        <p className="small">Makers appear here with their consent, once they've joined and been approved. Want to be listed? <a href="#join" className="link">Join below</a>.</p>
+                    </div>
+                ) : (
                 <ul className="grid-4 community-makers">
                     {makers.map((m, i) => (
                         <li key={`${m}-${i}`} className="card community-maker">
@@ -185,8 +199,9 @@ export const Community = () => {
                         </li>
                     ))}
                 </ul>
+                )}
                 <div className="between community-after">
-                    <p className="fine todo">TODO: real profiles, shared with each maker's consent.</p>
+                    <Todo as="p">TODO: real profiles, shared with each maker's consent.</Todo>
                     <Link to="/contact" className="link">Ask us to find a maker <Icon name="arrow" size={16} /></Link>
                 </div>
             </Section>
@@ -195,6 +210,12 @@ export const Community = () => {
                 <SectionHead eyebrow="Jobs & commissions" title="Open work.">
                     <p>Approved members and the Formcraft team post jobs. Posting opens with member accounts.</p>
                 </SectionHead>
+                {!seesTodos ? (
+                    <div className="card card-pad stack community-empty" style={{ "--gap": "10px" }}>
+                        <h3 className="h4">No open commissions listed yet.</h3>
+                        <p className="small">Members will post jobs here once member accounts open. <a href="#join" className="link">Join the community</a> to hear about them first.</p>
+                    </div>
+                ) : (
                 <div className="table-wrap card" role="region" aria-label="Open jobs and commissions (sample rows)" tabIndex={0}>
                     <table className="table">
                         <caption className="fine community-caption">Sample rows — real jobs appear here once members can post.</caption>
@@ -220,6 +241,7 @@ export const Community = () => {
                         </tbody>
                     </table>
                 </div>
+                )}
             </Section>
 
             <Section tone="sheet" seed={6} id="events">
@@ -235,13 +257,14 @@ export const Community = () => {
                         {events.map((e, i) => (
                             <Reveal as="li" key={e.slug} delay={(i % 3) * 0.06} className="card card-pad community-event">
                                 <div className="between" style={{ alignItems: "center" }}>
-                                    <p className={`eyebrow ${e.date ? "" : "todo"}`}>{formatDate(e.date) ?? "[Date]"}</p>
+                                    <p className="eyebrow">{formatDate(e.date) ?? <Todo>TODO: date</Todo>}</p>
                                     {e.hidden && <span className="tag">Hidden</span>}
                                 </div>
                                 <h3 className="h4">{e.title}</h3>
-                                {e.summary && <p className={`small ${isPlaceholder(e.summary) ? "todo" : ""}`}>{e.summary}</p>}
+                                <Fact as="p" className="small" text={e.summary} />
                                 <p className="fine">
-                                    {e.venue || "[venue]"} · {Number.isInteger(e.capacity) ? e.capacity : "[capacity]"} places · {e.priceUGX === 0 ? "Free" : formatUGX(e.priceUGX)}
+                                    {/* venue · places · price, from whatever is known */}
+                                    {[known(e.venue), Number.isInteger(e.capacity) && `${e.capacity} places`, e.priceUGX === 0 ? "Free" : formatUGX(e.priceUGX)].filter(Boolean).join(" · ")}
                                 </p>
                                 <button type="button" className="btn btn-line btn-sm community-book" onClick={() => bookPlace(e.slug)}>
                                     Book a place

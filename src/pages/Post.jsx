@@ -6,6 +6,7 @@ import { Section } from "../components/page/Section";
 import { Photo } from "../components/page/Photo";
 import { imgName } from "../lib/images";
 import { Icon } from "../components/ui/Icon";
+import { useSeesTodos } from "../hooks/useSeesTodos";
 import "./Post.css";
 
 const label = (text) => (text ? text.charAt(0).toUpperCase() + text.slice(1) : "");
@@ -35,14 +36,17 @@ const Body = ({ text }) =>
                     </ul>
                 );
             }
-            return <p key={i} className={block.startsWith("TODO") ? "todo" : undefined}>{block}</p>;
+            return <p key={i}>{block}</p>;
         });
 
 const readMinutes = (text) => Math.max(1, Math.round(String(text ?? "").split(/\s+/).filter(Boolean).length / 200));
 
 export const Post = () => {
     const { slug } = useParams();
-    const { item: post, loading, items } = useContentItem("posts", slug);
+    const { item: found, loading, items } = useContentItem("posts", slug);
+    const seesTodos = useSeesTodos();
+    const post = found && (seesTodos || !isPlanned(found)) ? found : null;
+    const readable = seesTodos ? items : items.filter((x) => !isPlanned(x));
     usePageMeta(post ? post.title : loading ? "Journal" : "Post not found", post?.excerpt, { image: post?.images?.[0], noindex: !post && !loading });
 
     if (!post && loading) {
@@ -66,12 +70,13 @@ export const Post = () => {
 
     const planned = isPlanned(post);
     const draft = !planned && !post.publishedAt;
+    // A planned topic has no text yet: visitors get the "couldn't find that post" page above instead.
     const first = post.images?.[0];
     const cover = imgName(first);
     const coverAlt = (typeof first === "object" && first?.alt) || post.title;
     const related = [
-        ...items.filter((p) => p.slug !== post.slug && p.category === post.category),
-        ...items.filter((p) => p.slug !== post.slug && p.category !== post.category),
+        ...readable.filter((p) => p.slug !== post.slug && p.category === post.category),
+        ...readable.filter((p) => p.slug !== post.slug && p.category !== post.category),
     ].slice(0, 3);
 
     return (
@@ -83,12 +88,13 @@ export const Post = () => {
                 <article className="post-article">
                     <div className="post-meta">
                         <p className="fine">
-                            By {post.author ?? <span className="todo">[author]</span>} · {formatDate(post.publishedAt) ?? <span className="todo">[date]</span>}
+                            By {post.author || "Formcraft"}
+                            {formatDate(post.publishedAt) && <> · {formatDate(post.publishedAt)}</>}
                             {!planned && <> · {readMinutes(post.body)} min read</>}
                         </p>
                         <div className="row" style={{ "--gap": "6px" }}>
-                            {planned && <span className="tag post-state">Planned — not written yet</span>}
-                            {draft && <span className="tag post-state">Draft — for review before publishing</span>}
+                            {seesTodos && planned && <span className="tag post-state">Planned — not written yet</span>}
+                            {seesTodos && draft && <span className="tag post-state">Draft — for review before publishing</span>}
                             {post.hidden && <span className="tag">Hidden</span>}
                         </div>
                     </div>
@@ -115,7 +121,7 @@ export const Post = () => {
                                 <Link to={`/journal/${p.slug}`} className="card card-pad post-related-card">
                                     <span className="tag">{label(p.category) || "Journal"}</span>
                                     <h3 className="h4">{p.title}</h3>
-                                    {isPlanned(p) && <span className="fine">Planned</span>}
+                                    {seesTodos && isPlanned(p) && <span className="fine">Planned</span>}
                                     <Icon name="arrow" size={18} />
                                 </Link>
                             </li>

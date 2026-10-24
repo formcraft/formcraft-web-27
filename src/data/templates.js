@@ -1,7 +1,7 @@
 // Template home designs until the team adds real ones in Admin (Firestore `templates`).
 // These are SAMPLE listings from the owner's design: the bedroom/floor mixes show how the library
 // will be organised. Names, floor areas, architects, prices and images are not known yet, so they
-// stay as placeholders (null prints "[n]" / "UGX [price]"). Never replace them with made-up values.
+// stay as placeholders (null shows as "Price on request", or the line is left out). Never replace them with made-up values.
 // Fields match CONTENT.templates in src/data/content.js. The "sample" tag marks these listings.
 const sample = (slug, { bedrooms, bathrooms, floors, tags, summary }) => ({
     id: slug,
@@ -42,9 +42,11 @@ export const templateKindName = (t) => TEMPLATE_KINDS.find((k) => k.id === templ
 
 export const isSample = (t) => (t?.tags ?? []).includes("sample");
 
-const n = (v) => (v ?? v === 0 ? v : "[n]");
-export const templateSpec = (t) => `${n(t.bedrooms)} bed · ${n(t.bathrooms)} bath`;
-export const templateArea = (t) => `${n(t.areaM2)} m²`;
+/** "3 bed · 2 bath", built only from the numbers that are set ("" when none are). */
+export const templateSpec = (t) =>
+    [Number.isInteger(t.bedrooms) && `${t.bedrooms} bed`, Number.isInteger(t.bathrooms) && `${t.bathrooms} bath`].filter(Boolean).join(" · ");
+/** "120 m²", or null while the floor area isn't set. */
+export const templateArea = (t) => (Number.isFinite(t.areaM2) ? `${t.areaM2} m²` : null);
 
 export const templates = [
     sample("sample-bungalow-2-bed", {

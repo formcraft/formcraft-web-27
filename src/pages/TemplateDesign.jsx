@@ -12,7 +12,10 @@ import { Reveal } from "../components/ui/Reveal";
 import { Icon } from "../components/ui/Icon";
 import { formatUGX } from "../lib/money";
 import { track } from "../lib/analytics";
-import { templateKindName, templateSpec, isSample } from "../data/templates";
+import { templateKindName, templateSpec, templateArea, isSample } from "../data/templates";
+import { useSeesTodos } from "../hooks/useSeesTodos";
+import { isPending, known, splitPending } from "../lib/pending";
+import { Todo, PartFact } from "../components/ui/Todo";
 import "./TemplateDesign.css";
 
 // Placeholder views until a design has its renders and plans uploaded in Admin
@@ -31,20 +34,23 @@ const BUILD_TYPES = [
     ["template-adapt", "Adapt it to my plot"],
 ];
 
-const n = (v) => (v ?? v === 0 ? v : "[n]");
 
 export const TemplateDesign = () => {
     const { slug } = useParams();
     const { hash } = useLocation();
     const show = useShowLink();
-    const { item: t, loading, items } = useContentItem("templates", slug);
+    const { item: found, loading, items: all } = useContentItem("templates", slug);
+    const seesTodos = useSeesTodos();
+    // Sample listings are for the team: visitors get the "can't find that design" page instead.
+    const t = found && (seesTodos || !isSample(found)) ? found : null;
+    const items = seesTodos ? all : all.filter((x) => !isSample(x));
     const viewed = t?.slug;
     useEffect(() => {
         if (viewed) track("select_content", { content_type: "template", item_id: viewed });
     }, [viewed]);
     const [view, setView] = useState(0);
     const [option, setOption] = useState("build");
-    usePageMeta(t ? `${t.title} · Template builds` : loading ? "Template builds" : "Design not found", t?.summary, { noindex: (!t && !loading) || (t && isSample(t)) });
+    usePageMeta(t ? `${t.title} · Template builds` : loading ? "Template builds" : "Design not found", known(t?.summary) ?? splitPending(t?.summary)[0] ?? undefined, { noindex: (!t && !loading) || (t && isSample(t)) });
 
     // Deep links like /templates/x#build: scroll once the design has loaded
     useEffect(() => {
@@ -78,13 +84,12 @@ export const TemplateDesign = () => {
     const current = gallery[Math.min(view, gallery.length - 1)];
     const others = items.filter((x) => x.slug !== t.slug).slice(0, 3);
     const specs = [
-        ["Bedrooms", n(t.bedrooms)],
-        ["Bathrooms", n(t.bathrooms)],
-        ["Floors", n(t.floors)],
-        ["Floor area", `${n(t.areaM2)} m²`],
+        ["Bedrooms", t.bedrooms],
+        ["Bathrooms", t.bathrooms],
+        ["Floors", t.floors],
+        ["Floor area", templateArea(t)],
         ["Plot", t.plot || "50 × 100 ft"],
     ];
-    const summaryTodo = t.summary?.includes("TODO");
 
     return (
         <div className="template-design" data-division="construction">
@@ -94,7 +99,7 @@ export const TemplateDesign = () => {
                 </nav>
                 <div className="template-design-top">
                     <div className="stack template-design-gallery" style={{ "--gap": "12px" }}>
-                        <Photo name={current.name} alt={current.alt} caption={current.label} note={`Release ${t.release || "[release]"}`} ratio="4 / 3" eager sizes="(max-width: 900px) 100vw, 60vw" />
+                        <Photo name={current.name} alt={current.alt} caption={current.label} note={t.release ? `Release ${t.release}` : undefined} ratio="4 / 3" eager sizes="(max-width: 900px) 100vw, 60vw" />
                         <div className="row" role="group" aria-label="Choose a view" style={{ "--gap": "8px" }}>
                             {gallery.map((g, i) => (
                                 <button key={`${g.label}-${i}`} type="button" className="chip" aria-pressed={i === view} onClick={() => setView(i)}>{g.label}</button>
@@ -107,18 +112,17 @@ export const TemplateDesign = () => {
                             {isSample(t) && <span className="tag">Sample listing</span>}
                             {t.hidden && <span className="tag">Hidden</span>}
                             <span className="tag tag-div">{templateKindName(t)}</span>
-                            <span className="fine">Release {t.release || "[release]"}</span>
+                            {t.release && <span className="fine">Release {t.release}</span>}
                         </div>
                         <h1 className="h1-s">{t.title}</h1>
                         <p className="small">{templateSpec(t)}</p>
                         {t.summary && (
                             <p className="lead">
-                                {summaryTodo ? t.summary.split("TODO")[0] : t.summary}
-                                {summaryTodo && <span className="todo">TODO{t.summary.split("TODO")[1]}</span>}
+                                <PartFact text={t.summary} />
                             </p>
                         )}
                         <dl className="kpis template-design-specs">
-                            {specs.map(([k, v]) => (
+                            {specs.filter(([, v]) => v !== null && v !== undefined && v !== "").map(([k, v]) => (
                                 <div key={k}>
                                     <dt className="fine">{k}</dt>
                                     <dd className="h4">{v}</dd>
@@ -126,7 +130,7 @@ export const TemplateDesign = () => {
                             ))}
                         </dl>
                         <p className="fine">
-                            Designed by {t.architect || "[architect's name]"} with Formcraft Studio
+                            {t.architect && !isPending(t.architect) ? `Designed by ${t.architect} with Formcraft Studio` : "From the Formcraft Studio home library"}
                             {show("/templates") && <> · <Link to="/templates#designers" className="link">Design for the library</Link></>}
                         </p>
                     </div>
@@ -146,7 +150,7 @@ export const TemplateDesign = () => {
                             </label>
                             <label className="option">
                                 <input type="radio" name="buy" value="build" checked={option === "build"} onChange={() => setOption("build")} />
-                                <span className="between template-design-option-head"><strong className="h4">Plans + Formcraft build</strong><span className="h4">from {Number.isInteger(t.buildFromUGX) ? formatUGX(t.buildFromUGX) : "UGX [estimate]"}</span></span>
+                                <span className="between template-design-option-head"><strong className="h4">Plans + Formcraft build</strong><span className="h4">{Number.isInteger(t.buildFromUGX) ? `from ${formatUGX(t.buildFromUGX)}` : formatUGX(null)}</span></span>
                                 <span className="small">We adapt the design to your plot, take it through approvals and build it.</span>
                             </label>
                         </fieldset>
@@ -160,7 +164,7 @@ export const TemplateDesign = () => {
                         ) : (
                             <a href="#build" className="btn btn-primary" style={{ alignSelf: "flex-start" }}>Book a site visit <Icon name="arrow" size={18} /></a>
                         )}
-                        <p className="fine">Plans are delivered as a private download in your account after payment. <span className="todo">TODO: licence — how many builds one purchase covers.</span></p>
+                        <p className="fine">Plans are delivered as a private download in your account after payment. <Todo>TODO: licence — how many builds one purchase covers.</Todo></p>
                     </Reveal>
 
                     <Reveal delay={0.1} className="stack" style={{ "--gap": "28px" }}>
@@ -177,7 +181,7 @@ export const TemplateDesign = () => {
                         </div>
                         <div className="stack" style={{ "--gap": "10px" }}>
                             <h2 className="h3">Version history</h2>
-                            <p className="small">v1.0 · first release <span className="fine">· Release {t.release || "[release]"}</span></p>
+                            <p className="small">v1.0 · first release {t.release && <span className="fine">· Release {t.release}</span>}</p>
                         </div>
                     </Reveal>
                 </div>
@@ -206,10 +210,10 @@ export const TemplateDesign = () => {
                         {others.map((o, i) => (
                             <Reveal as="li" key={o.slug} delay={i * 0.06}>
                                 <Link to={`/templates/${o.slug}`} className="card template-design-more-card">
-                                    <Photo name={imgName(o.images?.[0])} alt={o.images?.[0]?.alt || "[Render]"} ratio="16 / 10" />
+                                    <Photo name={imgName(o.images?.[0])} alt={o.images?.[0]?.alt || `${o.title}, render`} ratio="16 / 10" />
                                     <span className="stack" style={{ "--gap": "4px", padding: "16px 18px 20px" }}>
                                         <strong className="h4">{o.title}</strong>
-                                        <span className="small">{n(o.bedrooms)} bed · {templateKindName(o).toLowerCase()}</span>
+                                        <span className="small">{[templateSpec(o), templateKindName(o).toLowerCase()].filter(Boolean).join(" · ")}</span>
                                     </span>
                                 </Link>
                             </Reveal>

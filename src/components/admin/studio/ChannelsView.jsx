@@ -9,7 +9,7 @@ import { WEEKDAYS, importStarterDocs, removeDoc, saveDoc, saveStudioSettings, sl
 const emptyChannel = { platform: "instagram", name: "", handle: "", url: "", active: true, publish: "manual", bufferChannelId: "", captionLimit: "", notes: "" };
 
 const DayPicker = ({ id, label, value, onChange }) => (
-    <fieldset className="studio-checks" id={id}>
+    <fieldset className="mkt-checks" id={id}>
         <legend className="label">{label}</legend>
         {WEEKDAYS.map((w, i) => (
             <label key={w} className="chip">
@@ -204,7 +204,7 @@ export const ChannelsView = ({ studio }) => {
                         {channels.map((c) => {
                             const own = s.channelDays?.[c.id] ?? [];
                             return (
-                                <tr key={c.id} className={c.active === false ? "studio-row-off" : ""}>
+                                <tr key={c.id} className={c.active === false ? "mkt-row-off" : ""}>
                                     <td><strong>{channelLabel(c)}</strong>{c.active === false && <span className="fine"> · inactive</span>}{c.notes ? <div className="fine">{c.notes}</div> : null}</td>
                                     <td className="fine">{c.handle ? (profileUrlOf(c) ? <a className="link" href={profileUrlOf(c)} target="_blank" rel="noreferrer">@{c.handle}</a> : `@${c.handle}`) : "TODO"}</td>
                                     <td className="fine">{captionLimitOf(c) ?? "—"}</td>
@@ -257,7 +257,7 @@ export const ChannelsView = ({ studio }) => {
                 <p className="small">
                     Without Buffer, approved posts wait in the Queue to be posted by hand — everything works that way. To have them sent automatically:
                 </p>
-                <ol className="small studio-steps">
+                <ol className="small mkt-steps">
                     <li>Create a Buffer account, connect Formcraft’s social accounts there, and create an API key in Buffer’s API settings.</li>
                     <li>Store the key as a Cloud Functions secret: <code>firebase functions:secrets:set BUFFER_TOKEN</code>, then deploy the functions (Blaze plan).</li>
                     <li>Press “Load Buffer channels” below, set each channel’s Publishing to “Through Buffer” and paste its Buffer channel id.</li>
@@ -268,7 +268,7 @@ export const ChannelsView = ({ studio }) => {
                     <button type="button" className="btn btn-line btn-sm" disabled={busy} onClick={loadBuffer}>Load Buffer channels</button>
                 </div>
                 {buffer && (
-                    <ul className="studio-buffer">
+                    <ul className="mkt-buffer">
                         {buffer.map((b) => (
                             <li key={b.id}><strong>{b.name || b.displayName}</strong> · {b.service} · <code>{b.id}</code></li>
                         ))}

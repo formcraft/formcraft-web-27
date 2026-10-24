@@ -1,4 +1,8 @@
-// Stroke icons drawn for Formcraft (24 × 24 grid). Decorative by default; pass `label` to announce one.
+// The site's icons: simple line drawings on a 24 × 24 grid, drawn in code (no image files to download).
+// They take the text colour around them (currentColor), so they work in day and night.
+// Decorative by default (screen readers skip them); pass `label` when the icon is the only thing
+// saying what a button does (better still: put aria-label on the button itself).
+// To add an icon: add an entry to PATHS with SVG shapes on the 24 × 24 grid.
 const PATHS = {
     arrow: <path d="M5 12h14M13 6l6 6-6 6" />,
     arrowLeft: <path d="M19 12H5M11 6l-6 6 6 6" />,
@@ -87,6 +91,14 @@ const PATHS = {
     trash: <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />,
 };
 
+/**
+ * @param {object} props
+ * @param {keyof typeof PATHS} props.name  which icon, e.g. "cart", "leaf", "close"
+ * @param {number} [props.size=20]          width and height in px
+ * @param {number} [props.strokeWidth=2]    line thickness
+ * @param {string} [props.label]            text for screen readers; leave out for decorative icons
+ * @param {string} [props.className]
+ */
 export const Icon = ({ name, size = 20, strokeWidth = 2, label, className }) => (
     <svg
         className={className}

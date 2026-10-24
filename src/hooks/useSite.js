@@ -1,3 +1,5 @@
+// useSite(): the site settings the admin controls (which pages are on, contact details, motion speed).
+// See src/context/SiteContext.jsx.
 import { useContext } from "react";
 import { SiteContext } from "../context/contexts";
 import { pageForPath } from "../data/pages";

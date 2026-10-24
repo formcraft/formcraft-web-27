@@ -62,7 +62,7 @@ export const About = () => {
                 <div className="grid-3">
                     {TEAM.map((p, i) => (
                         <Reveal key={p.name} delay={i * 0.08} className="card about-person">
-                            <div className="placeholder" style={{ aspectRatio: "4 / 5" }}>[Portrait: {p.name}]</div>
+                            <div className="placeholder" style={{ aspectRatio: "4 / 5" }} role="img" aria-label={`Portrait of ${p.name}, coming soon`}>Portrait coming soon</div>
                             <div className="card-pad stack" style={{ "--gap": "8px" }}>
                                 <h3 className="h3">{p.name}</h3>
                                 <p className="tag" style={{ alignSelf: "flex-start" }}>{p.role}</p>
