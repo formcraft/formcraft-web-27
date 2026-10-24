@@ -53,9 +53,9 @@
 4. **Blaze plan** (2.2) — required before step 6.
 5. **[CC] Deploy the security rules and indexes**: `firebase deploy --only firestore:rules,firestore:indexes,storage`.
 6. **[CC] Deploy the functions**: `firebase deploy --only functions`. (Functions: `submitLead`, `claimTeamRole`, `onTeamChange`, and the studio's Buffer publisher.)
-7. **[CC] Make Emlyn the first admin**: sign in once on the site with formcraftinc@gmail.com, then
-   `node scripts/set-admin.js formcraftinc@gmail.com` (needs a service-account key file — Firebase console → Project settings → Service accounts → Generate key; keep it out of the repo). Sign out and back in.
-8. **Add Peter and Esther** in Admin → Team as admins (their emails from 1.5). Their access switches on the next time they sign in.
+7. **[CC] Make Emlyn the owner**: sign in once on the site with formcraftinc@gmail.com, then
+   `node scripts/set-admin.js formcraftinc@gmail.com --owner` (the owner is the only one who manages Admin → Team) (needs a service-account key file — Firebase console → Project settings → Service accounts → Generate key; keep it out of the repo). Sign out and back in.
+8. **Add Peter and Esther** in Admin → Team (full access; their emails from 1.5). Their access switches on the next time they sign in.
 9. **[CC] Buffer token**: `firebase functions:secrets:set BUFFER_TOKEN` (paste the token from 2.3), redeploy functions, then Admin → Studio → Channels → map each channel to its Buffer channel.
 10. **Firestore clean-up rule**: Google Cloud → Firestore → TTL → add a policy on collection `rateLimits`, field `expiresAt` (old spam-protection counters delete themselves).
 11. **Nightly backups**: Google Cloud → Firestore → Disaster recovery / Backups → create a daily backup schedule (keep 7–14 days).

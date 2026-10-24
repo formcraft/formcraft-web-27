@@ -7,6 +7,32 @@
 
 Last updated: 2026-10-24 (round 6)
 
+## ▶ From the local side: copy pilot (step A) on `try/copy-pilot` (2026-10-24)
+
+Built from your answers in `questions-for-cloud.md` (thank you; the living-sky design answers are merged in too).
+**For the owner to click through, not merged into `paper-edition` yet.**
+- **Admin → Copy** (`CopyPanel`), register `src/data/copy.js` (Home, ~95 pieces incl. `metaTitle` /
+  `metaDescription`), `useCopy`, `copyStore` (REST, device cache, early load from `Layout`), `copyText` (bold,
+  italic, line breaks; no HTML), size presets. Published `copy/{page}`, drafts `copyDrafts/{page}`, history
+  `copy/{page}/history` (batch with the publish). Home's visible text, title and description are identical to
+  before (compared).
+- **Owner model:** claim `owner` (only `scripts/set-admin.js --owner`); only the owner sees and writes Team; everyone
+  else full access (`admin: true`, role "team"). `claimsFor` maps "admin"/"team" to full access and never touches
+  `owner`. **One difference from your Q7 proposal (permission lists in claims, `settings/roles`):** not built yet.
+  The owner asked for "everyone the same access" now, and no limited role exists yet, so per CLAUDE.md "Simplicity
+  first" the rules keep `isAdmin()` and the old `marketing`/`editor` roles stay as the limited options. When the first
+  limited role is needed (blog writers), the permission lists + `onRoleChange` come in with the Journal review.
+- **Rules:** 20 emulator checks pass (scratch script; to be moved into `@firebase/rules-unit-testing`).
+- `usePageMeta` order is copy → `seo.js` → page; `seo-pages.mjs` reads published copy at build.
+
+**Owner, 2026-10-24, for the full site test after these features:** "Text mismatches in the admin section. Text is
+not well organized." The full run must cover the **admin screens signed in** (today `npm run check` only sees the
+sign-in gate), plus every test that makes the site top tier: smoothness, data richness, flexibility, UI. The local
+side will add a signed-in admin pass to `npm run check` (emulators) and tidy the admin wording and layout; if you see
+admin text you'd organise differently, list it here.
+
+**Next (your order):** Admin → Features, then Sky 1 (drag sun and moon, moon phases), then pre-rendering.
+
 ## ▶ Cloud session: design the living sky — `docs/brief-living-sky.md` (2026-10-24)
 
 The owner wants you to **design** the draggable moon and sun (the moon is a secret), wind with an Admin slider,

@@ -58,9 +58,22 @@ theme colour (`--ink`, `--sheet`, …) are set there too. Never write a colour c
 use the token name, e.g. `color: var(--fc-rust);`. Brand rules: use #F1F1F1 instead of white and #171D1A instead
 of black; division pages keep navy and orange and add only their own accent.
 
-## Add or change text
+## Change the words on a page (no code)
 
-Edit the page's file in `src/pages/`. Keep the voice in `CLAUDE.md` ("Writing on the site"): quietly confident,
+**Admin → Copy** (signed in as a team member). Pick the page, find the text (search, or the filters), change it,
+then **Save draft** and open **Preview drafts on the page** to see it in place (only the team sees drafts). When it
+reads well, **Publish**: visitors see it on their next page load. **Back to the original** undoes it; every change
+is listed under "Recent changes". Use `**bold**`, `*italic*` and line breaks; nothing else. Headings and
+paragraphs can be made a size smaller or larger. Stay within the character limit shown. Pages not in Admin → Copy
+yet (everything except Home, until copy step B) are changed in code, below.
+
+## Add or change text (code)
+
+For a page in the copy register (`src/data/copy.js`), change the built-in wording there; it's what visitors see
+until someone publishes an edit in Admin. To put a page into Admin → Copy: add its entries to `COPY` (ids never
+reused), then in the page `const t = useCopy("<page key>")` and `{t("id")}` (or `t.str("id")` for alt text and
+labels). Keep the defaults identical to today's text and compare before and after. Otherwise edit the page's file
+in `src/pages/`. Keep the voice in `CLAUDE.md` ("Writing on the site"): quietly confident,
 plain, no hard selling. **Never invent** a fact, price, client, number or quote. When something isn't known yet,
 leave a placeholder the visitor won't see:
 
@@ -89,11 +102,14 @@ Add its shapes (drawn on a 24 × 24 grid) to `PATHS` in `src/components/ui/Icon.
 
 ## Give someone admin rights
 
-Once the paid plan and Cloud Functions are on: **Admin → Team**. Until then, on the developer's computer:
+**Only the owner** (Emlyn Atochon) adds people to the team. Once the paid plan and Cloud Functions are on:
+**Admin → Team** (everyone gets the same full access unless the owner picks a limited role). Until then, on the
+developer's computer:
 ```bash
 npm install --no-save firebase-admin
-node scripts/set-admin.js person@example.com                  # admin
-node scripts/set-admin.js person@example.com --role marketing # or: --role editor
+node scripts/set-admin.js formcraftinc@gmail.com --owner        # once: the owner
+node scripts/set-admin.js person@example.com                    # full team access
+node scripts/set-admin.js person@example.com --role marketing   # a limited role (or --role editor)
 ```
 The person signs out and back in to pick it up. (Against the emulators, put
 `FIREBASE_AUTH_EMULATOR_HOST=localhost:9099` in front.)

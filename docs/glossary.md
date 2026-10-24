@@ -2,9 +2,14 @@
 
 In alphabetical order. If a word in the code or the docs isn't here, it should be: add it.
 
-**Admin / team roles.** Signed-in Formcraft staff. `admin` can do everything; `marketing` runs the Studio
-(social calendar), leads and content; `editor` drafts content. Stored as a *custom claim* on the person's
-account, set only from the server (`scripts/set-admin.js` or Admin → Team).
+**Admin / team roles.** Signed-in Formcraft staff. Everyone on the team has the same full access (claim
+`admin`, role "team"); the **owner** (claim `owner`) is the only one who manages Admin → Team. Limited roles
+`marketing` (Studio, leads, content) and `editor` (drafts) exist for later. Stored as a *custom claim* on the
+person's account, set only from the server (`scripts/set-admin.js` or Admin → Team).
+
+**Copy / copy register.** The words on the site. The *register* (`src/data/copy.js`) lists every piece the team
+can edit in Admin → Copy, with its built-in wording and length limit. A *draft* is an unpublished edit (team only,
+previewed with `?preview=draft`); *publishing* makes it public.
 
 **Build.** Turning the source code into the finished site in `dist/` (`npm run build`): files are combined,
 shrunk and given unique names so browsers can cache them safely.

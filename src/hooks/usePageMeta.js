@@ -1,3 +1,4 @@
+// usePageMeta: sets each page's title, description, link-preview tags and search hints (details below the imports).
 import { useEffect, useSyncExternalStore } from "react";
 import { useLocation } from "react-router-dom";
 import { DEFAULT_OG_IMAGE, ROUTES, SITE_URL, absUrl, imagePath, metaForPath, metaText, pageTitle } from "../data/seo";
