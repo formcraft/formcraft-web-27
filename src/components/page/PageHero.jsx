@@ -1,0 +1,41 @@
+import { Link } from "react-router-dom";
+import { PaperLayers } from "../scene/PaperLayers";
+import { Logo } from "../ui/Logo";
+import { Kinetic } from "../ui/Reveal";
+import "./PageHero.css";
+
+// Opening sheet for inner pages: crumbs, division lockup, headline, lead, actions, and a
+// shallow paper landscape whose front hill takes the division colour.
+export const PageHero = ({ eyebrow, title, lead, children, brand, sheet, crumbs, seed = 21, sceneHeight = 300, city = true }) => (
+    <section className="page-hero">
+        <div className="wrap page-hero-copy">
+            {crumbs && (
+                <nav className="crumbs" aria-label="Breadcrumb">
+                    {crumbs.map(([to, label]) => (
+                        <span key={label} className="row" style={{ "--gap": "8px" }}>
+                            {to ? <Link to={to}>{label}</Link> : <span aria-current="page">{label}</span>}
+                            {to && <span aria-hidden="true">/</span>}
+                        </span>
+                    ))}
+                </nav>
+            )}
+            {brand && (
+                <div className="page-hero-brand">
+                    <Logo brand={brand} height={30} />
+                </div>
+            )}
+            {eyebrow && <p className="eyebrow">{eyebrow}</p>}
+            <h1 className="h1-s page-hero-title">
+                <Kinetic text={title} />
+            </h1>
+            {lead && <p className="lead rise" style={{ "--delay": ".35s" }}>{lead}</p>}
+            {children && <div className="row rise" style={{ "--delay": ".5s" }}>{children}</div>}
+            {sheet && (
+                <p className="page-hero-sheet" aria-hidden="true">
+                    Sheet <b>{sheet}</b>
+                </p>
+            )}
+        </div>
+        <PaperLayers seed={seed} height={sceneHeight} city={city} tall={0.7} sun={{ x: 1180, y: 70, r: 40 }} accent={Boolean(brand)} className="page-hero-scene" />
+    </section>
+);

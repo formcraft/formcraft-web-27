@@ -148,6 +148,13 @@
   --edge-ground: var(--dark);
 }
 .paper-orange {
+  --ground: var(--fc-white);
+  --sheet: var(--fc-paper-sheet);
+  --sheet-2: var(--fc-paper-sheet-2);
+  --tex-sheet: linear-gradient(rgba(248, 248, 245, .84), rgba(248, 248, 245, .84)), url("/textures/paper.webp") center / 600px, var(--fc-paper-sheet);
+  --hl: rgba(241, 241, 241, .8);
+  --sh: rgba(28, 37, 45, .24);
+  --sh-2: rgba(28, 37, 45, .14);
   --ink: var(--fc-navy);
   --ink-2: rgba(28, 37, 45, .82);
   --ink-3: rgba(28, 37, 45, .7);

@@ -1,0 +1,12 @@
+.page-hero { position: relative; overflow: hidden; }
+.page-hero-copy { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 22px; padding-top: clamp(48px, 7vw, 104px); }
+.page-hero-title { max-width: 16ch; }
+.page-hero-brand img { height: 30px; width: auto; }
+.page-hero-sheet {
+  position: absolute; right: clamp(20px, 4vw, 48px); top: clamp(28px, 4vw, 48px);
+  display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+  font: 700 11px/1 var(--fc-font-body); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3);
+}
+.page-hero-sheet b { font: 600 30px/1 var(--fc-font-display); letter-spacing: -.01em; color: var(--ink); }
+.page-hero-scene { margin-top: clamp(-90px, -5vw, -24px); }
+@media (max-width: 900px) { .page-hero-sheet { display: none; } }

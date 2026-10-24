@@ -179,7 +179,7 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 | --- | --- | --- | --- | --- |
 | 1 | Home, Services, About, Portfolio describe a form-builder SaaS | Rewrite from the Company Profile; `TODO:` where facts are missing (full rewrite in Phase 1) | P0.9 | To do |
 | 2 | Terracotta + Inter (shop) and `#4285F4` (Home) break the Brand Guide | `tokens.css` + fonts; replace hard-coded colours and inline styles | P0.3 | Done (2026-10-24) |
-| 3 | Emoji logo, Vite favicon | Formcraft SVG logo and FC mark from `public/logos/` | P0.6 | To do |
+| 3 | Emoji logo, Vite favicon | Formcraft SVG logo and FC mark from `public/logos/` | P0.6 | Done (2026-10-24) |
 | 4 | Invented testimonials, "Trusted by" logos, collection makers, blog posts | Remove; `TODO:` placeholders | P0.9 | To do |
 | 5 | Prices in dollars | Whole UGX integers, `formatUGX` → "UGX 120,000" | P0.7 | To do |
 | 6 | Forced sign-in overlay after 2 s, can't be closed | Remove auto-popup; sign-in on demand, closable | P0.4 | Done (2026-10-09) |
@@ -187,9 +187,9 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 | 8 | Products reshuffle every 14 s | Stable order | P0.7 | To do |
 | 9 | Buttons that do nothing (Home cards, Explore, Join, Donate, Settings, Read Our Story) | Real routes or remove | P0.9 | To do |
 | 10 | Blank screen until auth answers | Render immediately; gate only what needs the user | P0.4 | Done (2026-10-09) |
-| 11 | Routes don't match the site map; no 404; `Construction.jsx` name clash | `routes.jsx`, redirects, `NotFound`, `ComingSoon.jsx` | P0.5 | To do |
-| 12 | `Footer.jsx` empty | Build footer | P0.6 | To do |
-| 13 | Header links have no `href`; current page removed; no mobile menu | `<NavLink>`, active state, four doors, mobile menu | P0.6 | To do |
+| 11 | Routes don't match the site map; no 404; `Construction.jsx` name clash | `routes.jsx`, redirects, `NotFound`, `ComingSoon.jsx` | P0.5 | Done (2026-10-24) |
+| 12 | `Footer.jsx` empty | Build footer | P0.6 | Done (2026-10-24) |
+| 13 | Header links have no `href`; current page removed; no mobile menu | `<NavLink>`, active state, four doors, mobile menu | P0.6 | Done (2026-10-24) |
 | 14 | Clickable `<div>`/`<article>`, unlabeled icon buttons, modal without focus trap/Escape | `<button>`/`<Link>`, `aria-label`, focus trap + Escape | P0.10 | To do |
 | 15 | Vite template leftovers; title "formcraft" | Delete; title "Formcraft" | P0.1 | Done (2026-10-09) |
 | 16 | `Shop.css` `:root`, global `.container`/`.section`/`.btn` leak | Move to `src/styles/`; prefix component classes | P0.3 | Done (2026-10-24) |
@@ -204,8 +204,8 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 | P0.2 Firebase config | Done (2026-10-24) |
 | P0.3 Brand base | Done (2026-10-24) |
 | P0.4 Auth | Done (2026-10-09) |
-| P0.5 Layout and routing | To do |
-| P0.6 Header and footer | To do |
+| P0.5 Layout and routing | Done (2026-10-24) |
+| P0.6 Header and footer | Done (2026-10-24) |
 | P0.7 Shop → Stores | To do |
 | P0.8 Cart | To do |
 | P0.9 Honest content | To do |
@@ -230,6 +230,7 @@ Newest first. One row per commit or task.
 
 | Date | Task | What changed | Files |
 | --- | --- | --- | --- |
+| 2026-10-24 | P0.5, P0.6 | `src/routes.jsx`: every page lazy-loaded, redirects (`/shop`, `/portfolio`, `/services`, `/blog`), 404, `ComingSoon` for later-phase routes (was `pages/Construction.jsx`). `App.jsx`: Theme, Auth and Cart providers, `<Suspense>` with `PageSkeleton`. `components/layout/`: `Layout` (skip link, scroll and focus on navigation), `Header` (logo SVG, `<NavLink>` four-door groups with disclosure panels, mobile menu drawer, day/night switch, cart, account/sign-in, quote button), `Footer` (drawing title block with a sheet number per page), `DonateFab` (plant-a-tree drawer; payment off until a partner and price are agreed). Page shell pieces in `components/page/` (`PageHero`, `Section`, `Photo`). Old `components/Header.*` and `Footer.jsx` removed. Sign-in dialog restyled with tokens. | `src/routes.jsx`, `src/App.jsx`, `src/components/layout/*`, `src/components/page/*`, `src/pages/ComingSoon.jsx`, `src/pages/NotFound.jsx` |
 | 2026-10-24 | P0.3 | Paper design system with **day and night editions**: `src/styles/tokens.css` (brand colours + every derived value; theme variables switch on `data-theme` on `<html>`), `fonts.css` (self-hosted Satoshi and Clash Grotesk variable `.woff2`), `base.css` (reset, layout helpers, type scale, motion, reduced motion), `components.css` (buttons, paper cards, photos, tags, forms, tables, torn edges). `ThemeContext` (`useTheme()`), theme picked before paint in `index.html`. UI pieces in `components/ui/`: `Icon`, `Logo`, `TornEdge`, `Reveal`/`Kinetic`, `Drawer` (native `<dialog>`). Hooks `useReveal`, `usePageMeta`; `lib/money.js` (`formatUGX`), `lib/storage.js`. Assets in `public/` (fonts, logos, textures, WebP renders); favicon is the FC mark. | `src/styles/*`, `src/context/ThemeContext.jsx`, `src/components/ui/*`, `src/hooks/*`, `src/lib/*`, `index.html`, `src/main.jsx`, `public/*` |
 | 2026-10-24 | P0.2 | `config/firebase.jsx` → `config/firebase.js`: config from `VITE_FIREBASE_*` env vars (falls back to a `demo-` project with a console warning), exports `app`, `auth`, `db`, `storage`, `functions`, connects to the emulators when `VITE_USE_EMULATORS=true`, Analytics only in production. Added `.env.example`, `firebase.json` (SPA rewrite, cache headers, emulator ports), `.firebaserc`, `firestore.rules` (plan starter), `storage.rules`, `firestore.indexes.json`. `firebase` → ^12, added `three` ^0.184. Fixed `.oxlintrc.json` (react version "19.2", no `parserOptions`). | `src/config/firebase.js`, `package.json`, Firebase files, `.oxlintrc.json` |
 | 2026-10-09 | — | Moved to the new repo `formcraft/formcraft-web-27` (private). Flattened: the app moved from `formcraftwebsite2026/website/` to the repo root, history kept. One root `.gitignore` covering deps, builds, all `.env*` except `.env.example`, Firebase/service-account keys, emulator data, logs and editor files. | `.gitignore`, all paths, docs |

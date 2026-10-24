@@ -1,130 +1,27 @@
-/* Sign-in dialog styles. Colours move to tokens in P0.3. */
-
-.auth-dialog {
-  padding: 0;
-  border: none;
-  background: transparent;
-  max-width: 400px;
-  width: 90%;
-}
-
-.auth-dialog::backdrop {
-  background-color: rgba(0, 0, 0, 0.35);
-}
-
+/* Sign-in dialog: a paper card over a dimmed page. */
+.auth-dialog { padding: 0; border: 0; background: transparent; color: var(--ink); max-width: 420px; width: calc(100% - 32px); }
+.auth-dialog::backdrop { background: var(--scrim); backdrop-filter: blur(3px); }
 .auth-box {
-  position: relative;
-  background-color: white;
-  padding: 40px;
-  border-radius: 10px;
-  text-align: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  animation: slideUp 0.3s ease-out;
+  position: relative; display: flex; flex-direction: column; gap: 14px; padding: 40px 32px 32px; text-align: left;
+  border-radius: 6px; background: var(--tex-sheet);
+  box-shadow: inset 0 1px 0 var(--hl), 0 1px 1px var(--sh-2), 0 30px 60px -20px var(--sh);
+  animation: fc-rise .3s var(--fc-ease) both;
 }
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
+.auth-box::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; border-radius: 6px 6px 0 0; background: var(--fc-orange); }
 .auth-close {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 40px;
-  height: 40px;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  color: #666;
-  font-size: 24px;
-  line-height: 1;
-  cursor: pointer;
+  position: absolute; top: 10px; right: 10px; width: 44px; height: 44px; border: 0; border-radius: 50%;
+  background: transparent; color: var(--ink-2); font-size: 26px; line-height: 1; cursor: pointer;
 }
-
-.auth-close:hover {
-  background-color: #f0f0f0;
-}
-
-.auth-close:focus-visible,
-.auth-button:focus-visible {
-  outline: 2px solid #333;
-  outline-offset: 2px;
-}
-
-.auth-message {
-  margin-top: 0;
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
-  color: #333;
-}
-
-.auth-description {
-  margin-bottom: 30px;
-  color: #666;
-  font-size: 16px;
-}
-
+.auth-close:hover { background: var(--sheet-2); color: var(--ink); }
+.auth-message { margin: 0; font: 600 28px/1.1 var(--fc-font-display); color: var(--ink); }
+.auth-description { margin: 0 0 8px; color: var(--ink-2); font-size: 16px; }
 .auth-button {
-  padding: 12px 24px;
-  font-size: 16px;
-  background-color: #4285F4;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  width: 100%;
-  font-weight: 600;
+  min-height: 52px; padding: 0 24px; border: 0; border-radius: var(--fc-radius); cursor: pointer; width: 100%;
+  font: 700 16px var(--fc-font-body); color: var(--fc-navy);
+  background: url("/textures/orange.webp") center / 600px, var(--fc-orange);
+  box-shadow: 0 3px 0 var(--fc-orange-edge);
+  transition: translate .2s var(--fc-ease);
 }
-
-.auth-button:hover {
-  background-color: #357ae8;
-}
-
-.auth-button:active {
-  transform: scale(0.98);
-}
-
-.auth-button:disabled {
-  opacity: 0.7;
-  cursor: wait;
-}
-
-.auth-error {
-  margin: 16px 0 0;
-  color: #b3261e;
-  font-size: 14px;
-}
-
-@media (max-width: 480px) {
-  .auth-dialog {
-    width: 95%;
-  }
-
-  .auth-box {
-    padding: 30px 20px;
-  }
-
-  .auth-message {
-    font-size: 20px;
-    margin-bottom: 15px;
-  }
-
-  .auth-description {
-    font-size: 14px;
-    margin-bottom: 20px;
-  }
-
-  .auth-button {
-    padding: 10px 20px;
-    font-size: 14px;
-  }
-}
+.auth-button:hover { translate: 0 -2px; }
+.auth-button:disabled { opacity: .7; cursor: wait; }
+.auth-error { margin: 4px 0 0; color: var(--acc-ink); font-size: 14px; font-weight: 700; }
