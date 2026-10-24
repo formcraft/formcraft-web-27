@@ -18,7 +18,9 @@
 3. **Weather scenes:** clear, partly cloudy, overcast, **rain** and **storm** (owner said yes to storm).
 4. **The scenes match Kampala's weather, syncing automatically.**
 5. **A tester the owner can click to change the weather** (and wind, time of day) to see every scene.
-6. **Keep the standard:** fast, responsive, smooth on a mid-range phone. A full site test runs after these land.
+6. **Turn features on and off in Admin** (owner, 2026-10-24: "I should be able to turn features on and off in
+   the admin panel").
+7. **Keep the standard:** fast, responsive, smooth on a mid-range phone. A full site test runs after these land.
 
 ## Constraints (from CLAUDE.md, the checks and earlier rounds)
 
@@ -53,6 +55,12 @@
   non-commercial**. Needs Blaze; until then Admin sets the weather by hand.
 - **Admin → Motion:** "Wind strength" slider (0–2×) and "Weather": Auto (Kampala live) / clear / partly /
   overcast / rain / storm (`settings/site.motion.wind`, `settings/site.weather`).
+- **Feature switches:** a new **Admin → Features** panel, like Admin → Pages: one switch per feature, saved in
+  `settings/site.features` (the document every page already reads, so no extra request), cached on the device,
+  admin-only to change. Sky: sun/moon dragging, fluid stars/clouds, wind, weather scenes, live Kampala sync,
+  storm glow. Also the site's other optional pieces: opening animation, email prompt, plant-a-tree button, Home
+  3D model (off = the 2D drawing), cookie banner stays on (legal). A feature that's off loads no code for it.
+  The secret moon is listed plainly as "Drag the sun and moon" (Admin only, visitors never see this panel).
 - **Tester:** a "Sky tester" panel to click through weather, wind and day/night, shown in `npm run dev` (next
   to the 3D preview panel) **and** to signed-in team members on the live site (so the owner can show it in a
   meeting). It changes only that browser's view, never the site setting. Plus `?sky=rain` style links for the
@@ -93,5 +101,9 @@
    you want overall.
    **Reply:**
 
-9. **Anything else** (night rain, rainbows after rain, a different moon phase from the real calendar…)?
+9. **Feature switches.** Agree with Admin → Features and the list above? Anything to add or keep out
+   (e.g. features that must never be switched off)?
+   **Reply:**
+
+10. **Anything else** (night rain, rainbows after rain, a different moon phase from the real calendar…)?
    **Reply:**
