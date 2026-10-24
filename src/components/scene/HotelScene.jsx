@@ -4,13 +4,14 @@ import { readJSON, writeJSON } from "../../lib/storage";
 import "./HotelScene.css";
 
 // How the home page shows the hotel model — device levels (owner brief, section 4):
+// - "ultra":    dev preview only for now: 2× pixels, 4096 px shadows, antialiasing (strong graphics cards);
 // - "full":     live three.js scene at full resolution, faded in over the still picture;
 // - "standard": the same, with fewer pixels and smaller shadows (mid-range phones, 3G);
-// - "lite":     the still picture with a "Tap to explore the model" button (Save-Data, 2G,
-//               ≤ 2 GB memory, reduced motion, software graphics); tapping loads the live scene;
 // - "still":    the still picture only (no WebGL).
-// Browser signals give a first guess; a live frame check confirms it (too slow → lite), and the
-// result is remembered on the device for 30 days so return visits don't guess again.
+// No device is sent to a "Tap to explore" step any more (owner, 2026-10-24): slow devices and
+// connections get the standard scene, just later. "lite" only survives in old stored results,
+// which are ignored. Browser signals give a first guess; a live frame check confirms it (too slow →
+// standard), and the result is remembered on the device for 30 days so return visits don't guess again.
 const LEVEL_KEY = "fc-3d-level";
 const MONTH = 30 * 24 * 3600 * 1000;
 
@@ -28,6 +29,19 @@ const webglInfo = () => {
 
 const smallScreen = () => Math.min(window.innerWidth, window.innerHeight) < 700;
 
+// Development only: preview the hotel as different devices get it (HotelPreviewSwitch below).
+// Stored on this browser until changed; never read in production builds.
+const PREVIEW_KEY = "fc-3d-preview";
+const PREVIEWS = [
+    ["auto", "Auto", null],
+    ["ultra", "Ultra (this PC)", { level: "ultra" }],
+    ["best", "Best (desktops)", { level: "full" }],
+    ["phone", "Mid-range phone", { level: "standard" }],
+    ["slow", "Slow phone", { level: "standard", delay: 6000 }],
+    ["none", "No 3D", { level: "still" }],
+];
+const devPreview = () => (import.meta.env.DEV ? PREVIEWS.find(([key]) => key === readJSON(PREVIEW_KEY, "auto"))?.[2] ?? null : null);
+
 // ?still=1 (development only): renders the live scene alone, for scripts/render-hotel-stills.mjs
 const stillCapture = () => import.meta.env.DEV && typeof window !== "undefined" && new URLSearchParams(window.location.search).has("still");
 
@@ -36,15 +50,20 @@ const guessLevel = () => {
     const gl = webglInfo();
     if (!gl) return "still";
     if (stillCapture()) return "full";
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return "lite";
+    const preview = devPreview();
+    if (preview) return preview.level;
+    // Owner's rule: the model always comes in by itself; slow devices and connections only get it later
+    // and at a lower quality, never behind a "Tap to explore" button. Reduced motion keeps the model
+    // but the scene holds it still.
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return "standard";
     const saved = readJSON(LEVEL_KEY, null);
-    if (saved?.level && Date.now() - (saved.at ?? 0) < MONTH) return saved.level;
+    if (saved?.level && saved.level !== "lite" && Date.now() - (saved.at ?? 0) < MONTH) return saved.level;
     const conn = navigator.connection;
     const mem = navigator.deviceMemory;
     const cores = navigator.hardwareConcurrency;
-    if (conn?.saveData || /(^|-)2g$/.test(conn?.effectiveType ?? "")) return "lite";
-    if (mem !== undefined && mem <= 2) return "lite";
-    if (/swiftshader|llvmpipe|software/i.test(gl.renderer)) return "lite";
+    if (conn?.saveData || /(^|-)2g$/.test(conn?.effectiveType ?? "")) return "standard";
+    if (mem !== undefined && mem <= 2) return "standard";
+    if (/swiftshader|llvmpipe|software/i.test(gl.renderer)) return "standard";
     if (conn?.effectiveType === "3g") return "standard";
     if (mem !== undefined && mem <= 4) return "standard";
     if (/mali-[4t]|adreno \(tm\) [345]\d\d|powervr sgx|videocore/i.test(gl.renderer)) return "standard";
@@ -98,7 +117,7 @@ export const HotelScene = () => {
     const [ready, setReady] = useState(false);
     const canvasRef = useRef(null);
     const handleRef = useRef(null);
-    const live = level === "full" || level === "standard";
+    const live = level === "ultra" || level === "full" || level === "standard";
 
     // tell the page which level is on (CSS shows "Tap to explore" in lite, the view buttons when live + ready)
     useEffect(() => {
@@ -135,13 +154,16 @@ export const HotelScene = () => {
         const idle = window.requestIdleCallback ?? ((fn) => setTimeout(fn, 600));
         const cancelIdle = window.cancelIdleCallback ?? clearTimeout;
         const start = () =>
-            Promise.all([loaders[edition](), loadTextures()])
+            // ultra draws its own uncompressed paper (the concept's look); the others use the baked WebP textures
+            Promise.all([loaders[edition](), level === "ultra" ? Promise.resolve({}) : loadTextures()])
                 .then(([{ createHotelScene }, textures]) => {
                     if (controller.signal.aborted || !canvasRef.current) return null;
                     return createHotelScene(canvasRef.current, {
                         sheetUrl: "/images/fmc-sheet-a1.webp",
                         textures,
                         quality: level,
+                        still: stillCapture(), // capture mode: hold the idle turn and scraps at their first frame
+                        fixed: Boolean(devPreview()), // dev preview: no automatic step-down
                         signal: controller.signal,
                         // fade in only once a frame has really been drawn
                         onReady: () =>
@@ -152,10 +174,11 @@ export const HotelScene = () => {
                                     if (stillCapture()) setTimeout(() => (window.__hotelStillReady = true), 4500);
                                 })
                             ),
-                        // live frame check: too slow even at the lowest resolution → the still picture
+                        // live frame check: too slow even at the lowest resolution → step down to the
+                        // standard scene (fewer pixels, smaller shadows), but keep the model live
                         onSlow: () => {
-                            rememberLevel("lite");
-                            setLevel("lite");
+                            rememberLevel("standard");
+                            if (level === "full") setLevel("standard");
                         },
                         onSmooth: (atFull) => rememberLevel(level === "full" && atFull ? "full" : "standard"),
                     });
@@ -172,23 +195,53 @@ export const HotelScene = () => {
                     console.warn("Hotel model unavailable, keeping the still picture.", error);
                     if (!controller.signal.aborted) setLevel("still");
                 });
-        const idleId = idle(start, { timeout: 1800 });
+        const delay = devPreview()?.delay; // "Slow phone" preview: the model arrives late, as on a slow connection
+        const idleId = delay ? setTimeout(start, delay) : idle(start, { timeout: 1800 });
         return () => {
             controller.abort();
-            cancelIdle(idleId);
+            if (delay) clearTimeout(idleId);
+            else cancelIdle(idleId);
             handleRef.current?.dispose();
             handleRef.current = null;
         };
     }, [live, level, edition]);
 
     return (
-        <div className={`hotel-scene ${ready && live ? "is-ready" : ""}`} aria-hidden="true">
-            {/* the still picture shows straight away and stays underneath, so nothing ever flashes */}
-            <Still theme={edition} />
-            {live && (
-                // a fresh canvas per edition, so each script gets a clean WebGL context
-                <canvas key={`${edition}-${level}`} id="scene" ref={canvasRef} className="hotel-scene-canvas" />
-            )}
+        <>
+            <div className={`hotel-scene ${ready && live ? "is-ready" : ""}`} aria-hidden="true">
+                {/* the still picture shows straight away and stays underneath, so nothing ever flashes */}
+                <Still theme={edition} />
+                {live && (
+                    // a fresh canvas per edition, so each script gets a clean WebGL context
+                    <canvas key={`${edition}-${level}`} id="scene" ref={canvasRef} className="hotel-scene-canvas" />
+                )}
+            </div>
+            {import.meta.env.DEV && !stillCapture() && <HotelPreviewSwitch level={level} />}
+        </>
+    );
+};
+
+// Development only (npm run dev): switch between what different devices get, to design for all of them.
+const HotelPreviewSwitch = ({ level }) => {
+    const current = readJSON(PREVIEW_KEY, "auto");
+    const gpu = webglInfo()?.renderer.replace(/^ANGLE \(|\s*\(0x.*$|,\s*Direct3D.*$/g, "") || "no WebGL";
+    const choose = (key) => {
+        writeJSON(PREVIEW_KEY, key);
+        window.location.reload();
+    };
+    return (
+        <div className="hotel-preview" role="group" aria-label="3D preview, development only">
+            <span className="hotel-preview-title">Preview (dev only)</span>
+            <div className="hotel-preview-options">
+                {PREVIEWS.map(([key, label]) => (
+                    <button key={key} type="button" aria-pressed={current === key} onClick={() => choose(key)}>
+                        {label}
+                    </button>
+                ))}
+            </div>
+            <span className="hotel-preview-info">
+                Showing: {level} · GPU: {gpu}
+            </span>
         </div>
     );
 };

@@ -37,3 +37,11 @@
 .hotel-controls button:hover { background: var(--sheet); }
 .hotel-controls button[aria-pressed="true"] { background: var(--ink); color: var(--ground); }
 .hotel-controls button:focus-visible { outline: 3px solid var(--fc-orange); outline-offset: 1px; }
+/* development-only preview switch (HotelPreviewSwitch) */
+.hotel-preview { position: fixed; left: 12px; bottom: 12px; z-index: 60; display: grid; gap: 6px; max-width: calc(100vw - 96px); padding: 8px 10px; border-radius: 6px; background: var(--fc-navy); color: var(--fc-white); font-size: 12px; box-shadow: 0 6px 20px -8px var(--fc-black); }
+.hotel-preview-title { font-weight: 700; letter-spacing: .04em; text-transform: uppercase; font-size: 10px; opacity: .8; }
+.hotel-preview-options { display: flex; flex-wrap: wrap; gap: 4px; }
+.hotel-preview-options button { font: inherit; padding: 5px 8px; border-radius: 4px; border: 1px solid var(--fc-navy-3); background: var(--fc-navy-2); color: var(--fc-white); cursor: pointer; }
+.hotel-preview-options button[aria-pressed="true"] { background: var(--fc-orange); border-color: var(--fc-orange); color: var(--fc-navy); }
+.hotel-preview-options button:focus-visible { outline: 2px solid var(--fc-orange); outline-offset: 2px; }
+.hotel-preview-info { opacity: .8; font-size: 11px; }

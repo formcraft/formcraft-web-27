@@ -22,9 +22,10 @@ export async function createHotelScene(canvas, env) {
   var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var smallScreen = Math.min(innerWidth, innerHeight) < 700;
   var standard = env && env.quality === 'standard'; // mid-range devices: fewer pixels, smaller shadows
+  var ultra = env && env.quality === 'ultra';       // strong graphics cards (dev preview for now): 2× pixels, 4096 px shadows, uncompressed paper
   var root = document.documentElement;
   var R;
-  try { R = new THREE.WebGLRenderer({ canvas: canvas, antialias: !smallScreen && !standard, powerPreference: 'high-performance' }); }
+  try { R = new THREE.WebGLRenderer({ canvas: canvas, antialias: ultra || (!smallScreen && !standard), powerPreference: 'high-performance' }); }
   catch (e) { root.classList.add('nogl'); return null; }
   if (!R.getContext()) { root.classList.add('nogl'); return null; }
   var pause = function () {
@@ -37,7 +38,7 @@ export async function createHotelScene(canvas, env) {
 
   var small = Math.min(innerWidth, innerHeight) < 700;
   // performance: fewer pixels on phones, and the ratio drops further if frames run slow (see frame())
-  var maxRatio = Math.min(window.devicePixelRatio || 1, standard ? 1 : small ? 1.25 : 1.5), ratio = maxRatio;
+  var maxRatio = ultra ? Math.max(2, window.devicePixelRatio || 1) : Math.min(window.devicePixelRatio || 1, standard ? 1 : small ? 1.25 : 1.5), ratio = maxRatio;
   R.setPixelRatio(ratio);
   R.outputColorSpace = THREE.SRGBColorSpace;
   R.toneMapping = THREE.ACESFilmicToneMapping;
@@ -659,7 +660,7 @@ export async function createHotelScene(canvas, env) {
   var hemi = new THREE.HemisphereLight(lin('#7f95b8'), lin('#1a2028'), 0.32); scene.add(hemi);
   var key = new THREE.DirectionalLight(lin('#a8c0ff'), 0.85);
   key.position.set(-34, 44, 18); key.castShadow = true;
-  var SM = small || standard ? 1024 : 2048; key.shadow.mapSize.set(SM, SM);
+  var SM = ultra ? 4096 : small || standard ? 1024 : 2048; key.shadow.mapSize.set(SM, SM);
   var kc = key.shadow.camera; kc.left = -75; kc.right = 75; kc.top = 70; kc.bottom = -45; kc.near = 5; kc.far = 160;
   key.shadow.bias = -0.0004; key.shadow.normalBias = 0.03; key.shadow.radius = 4;
   scene.add(key);
@@ -1052,7 +1053,9 @@ export async function createHotelScene(canvas, env) {
     if (!drag) yaw.step(dt);
 
     var cx = sCam[0].x, cy = sCam[1].x, cz = sCam[2].x, tx = sTgt[0].x, ty = sTgt[1].x, tz = sTgt[2].x;
-    var orbit = (reduced ? 0 : Math.sin(t * 0.06) * 0.06) + sMx.x * 0.05 + yaw.x;
+    // idle turn: starts at the still picture's angle (sin 0 = 0) and moves at once, about 1.4°/s, ±9° over ~40 s
+    var tt = env.still ? 0 : t;
+    var orbit = (reduced ? 0 : Math.sin(tt * 0.15) * 0.16) + sMx.x * 0.05 + yaw.x;
     zoom.step(dt);
     var zf = fit * zoom.x;
     var dx = (cx - tx) * zf, dz = (cz - tz) * zf, ca = Math.cos(orbit), sa = Math.sin(orbit);
@@ -1081,7 +1084,7 @@ export async function createHotelScene(canvas, env) {
       flies.material.opacity = 0.65 + Math.sin(t * 2.3) * 0.25;
     }
 
-    if (!reduced) scraps.forEach(function (m) {
+    if (!reduced && !env.still) scraps.forEach(function (m) {
       var u = m.userData, f = dt * 60; m.position.y -= u.v * 0.016 * f; m.position.x += Math.sin(t * 0.4 + u.ph) * 0.01 * f;
       m.rotation.x += u.r.x * 0.01 * f; m.rotation.y += u.r.y * 0.012 * f; m.rotation.z += u.r.z * 0.01 * f;
       if (m.position.y < 0.5) m.position.y = 30;
@@ -1091,7 +1094,9 @@ export async function createHotelScene(canvas, env) {
     if (hint) hint.style.opacity = dragged ? '0' : (s.hw * 1).toFixed(3);
     if (frameNo++ % 3 === 0) R.shadowMap.needsUpdate = true;
     // adaptive resolution: if frames keep running slower than ~40 fps, draw fewer pixels
-    if (dt > 0.025) slow++; else slow = Math.max(0, slow - 1);
+    // ignore the first ~3 s (the page is still loading); count a frame as slow below ~30 fps
+    if (frameNo > 180) { if (dt > 0.034) slow++; else slow = Math.max(0, slow - 1); }
+    if (env.fixed) slow = 0; // a dev preview shows exactly the chosen quality: no automatic step-down
     if (slow > 45 && ratio > 0.75) { ratio = Math.max(0.75, ratio - 0.25); R.setPixelRatio(ratio); R.setSize(vw, vh, false); slow = 0; }
     else if (slow > 90 && ratio <= 0.75 && env.onSlow) { env.onSlow(); env.onSlow = null; } // still too slow at the lowest setting
     if (frameNo === 300 && slow === 0 && env.onSmooth) env.onSmooth(ratio === maxRatio);
