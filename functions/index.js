@@ -140,7 +140,7 @@ export const submitLead = onCall({ enforceAppCheck: ENFORCE_APP_CHECK, cors: tru
 const FULL = ["team", "admin"];
 const ROLES = [...FULL, "marketing", "editor"];
 const claimsFor = (member) => {
-    const role = member?.role ?? "team";
+    const role = member?.role; // an entry without a role gives no access (the panel always writes one)
     if (!member || member.active === false || !ROLES.includes(role)) return { admin: null, role: null };
     return FULL.includes(role) ? { admin: true, role: "team" } : { admin: null, role };
 };
