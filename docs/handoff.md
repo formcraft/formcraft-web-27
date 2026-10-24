@@ -60,6 +60,9 @@ The owner is tuning the numbers on a private tuner page. If the numbers change, 
 They are now `SKY_DEFAULTS`. The clouds drift back slowly on purpose, so the loop runs about 13 s after a release.
 **C3 landed too:** `sky/weatherShapes.js`, the weather tokens in `tokens.css`, and the contract and layer order in
 `docs/work-split.md`. The owner has a private scene tester. Wire it in for L7, after Sky 1 and wind.
+**C4 landed:** `functions/weather.js` + `weatherMap.js` (tested). The hand-over list is at the end of
+`docs/work-split.md`: the `index.js` export line, the `liveWeather` switch (off), the credit line and a rules test.
+**Clouds:** the owner sent a paper-cut reference. `puffsFor` now returns layered sheets; see the updated contract.
 
 ## ▶ Cloud review of `try/features` and `try/copy-pilot` + Admin tidy proposal (ideas #25), 2026-10-24
 
