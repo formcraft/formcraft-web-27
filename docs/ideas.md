@@ -14,12 +14,12 @@
 | --- | --- | --- | --- | --- |
 | 15 | Opening tear rips from one side, like a page torn out of a pad | Opening | **done** in the Home commit | handoff round 5 |
 | 14 | Animation timing settings in Admin | Admin, all pages | **done**: Admin → Motion | handoff round 5 |
-| 13 | Background first, then the 3D builds on it; 2D drawing for other devices; crisp everywhere; controls as a minimal left rail | Home | **done** in the Home commit | handoff round 5 |
+| 13 | Background first, then the 3D builds on it; 2D drawing only for the slowest devices; crisp everywhere; controls as a minimal left rail | Home | **done** in the Home commit | handoff round 5 |
 | 12 | Paper scraps falling like stones, visible again and kept that way | Home 3D | **done** in the Home commit after `cc73970` (own seed, near layer, colours, speed) | §12 below |
 | 11 | Paper texture that really pops (concrete-paper you can almost feel) | Home 3D | **accepted**, in progress: one screen-space paper grain over the model now (`.hotel-scene-grain`); world-unit fibres + normal map next | handoff "Owner decisions 2026-10-24" |
 | 10 | Ultra as a real level for strong desktop GPUs, not only a dev preview | Home 3D, speed | accepted for later; `ultra` ported as a dev preview | §10 |
 | 9 | Dev-only quality preview: Auto / Ultra / Best / Mid-range phone / Slow phone / No 3D | Dev tooling | **done** (ported from `try/auto-live`; "No 3D" is now "2D drawing") | handoff round 5 |
-| 8 | No "Tap to explore": the model always comes in by itself, later on slow devices | Home 3D, speed | **changed** by the owner: capable devices build the 3D, others get the 2D drawing; never a tap | handoff round 5 |
+| 8 | No "Tap to explore": the model always comes in by itself, later on slow devices | Home 3D, speed | **done**: most devices build the 3D (slow connections later); only the slowest get the 2D drawing; never a tap | handoff round 5 (owner correction) |
 | 7 | Seamless still → live: same angle, model moving at once, labels fade in, scraps start where the still has them | Home 3D | **changed**: no still any more; background first, then the model builds; labels after the build | handoff round 5 |
 | 6 | Start the 3D after the opening animation, so its build can't freeze the intro | Opening, speed | **done** (`introDone()` in `HotelScene.jsx`) | §6 |
 | 5 | Stills script that works on Windows (NVIDIA flag, hidden scrollbar, Node-only WebP) | Tooling | **declined**: stills removed | handoff round 5 |

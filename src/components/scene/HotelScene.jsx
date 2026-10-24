@@ -5,16 +5,17 @@ import { readJSON, writeJSON } from "../../lib/storage";
 import { Hotel2D } from "./Hotel2D";
 import "./HotelScene.css";
 
-// How the home page shows the hotel (owner, 2026-10-24): the paper background shows first; on
-// devices that can run it sharp, the 3D model then builds itself on top (hotel/build.js); every
-// other device gets the 2D paper-cut drawing (Hotel2D). There's no blurry middle level: the 3D
-// always draws at the screen's own sharpness (up to 2×), and a device that can't keep up gets 2D.
-// - "full":     3D, large shadow maps
-// - "standard": 3D, smaller shadow maps and fewer floating scraps (mid-range phones, 3G)
-// - "2d":       the 2D drawing (no WebGL, reduced motion, Save-Data, 2G, ≤ 2 GB memory, software
-//               or older graphics, or the live frame check said frames run slow)
-// The result of the frame check is remembered on the device for 30 days.
-const LEVEL_KEY = "fc-3d-level";
+// How the home page shows the hotel (owner, 2026-10-24): the paper background shows first, then the 3D
+// model builds itself on top (hotel/build.js). Most devices get the 3D; only the slowest get the 2D
+// paper-cut drawing (Hotel2D).
+// - "full":     3D at the screen's sharpness (up to 2×), large shadow maps
+// - "standard": 3D up to 1.5×, smaller shadow maps and fewer floating scraps (mid-range and older phones, 3G,
+//               reduced motion — the model is then held still and not animated)
+// - "2d":       the 2D drawing: no WebGL2, software graphics, the oldest phone GPUs, ≤ 1 GB memory, 2G, or
+//               the live frame check found frames under ~20 fps even at 1× pixels
+// The frame check first steps the pixel ratio down (never below 1×) and remembers "standard"; the result
+// is kept on the device for 30 days.
+const LEVEL_KEY = "fc-hotel-level"; // renamed 2026-10-24 so results stored by the stricter earlier rule are forgotten
 const MONTH = 30 * 24 * 3600 * 1000;
 
 const webglInfo = () => {
@@ -53,19 +54,20 @@ const guessLevel = () => {
     if (!gl) return "2d";
     const preview = devPreview();
     if (preview) return preview.level;
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return "2d";
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return "standard"; // held still, no build
     const saved = readJSON(LEVEL_KEY, null);
     // results stored by earlier versions ("lite", "still") are ignored: guess again
     if (saved?.level && Date.now() - (saved.at ?? 0) < MONTH && ["full", "standard", "2d"].includes(saved.level)) return saved.level;
     const conn = navigator.connection;
     const mem = navigator.deviceMemory;
     const cores = navigator.hardwareConcurrency;
-    if (conn?.saveData || /(^|-)2g$/.test(conn?.effectiveType ?? "")) return "2d";
-    if (mem !== undefined && mem <= 2) return "2d";
+    if (/(^|-)2g$/.test(conn?.effectiveType ?? "")) return "2d";
+    if (mem !== undefined && mem <= 1) return "2d";
     if (!gl.webgl2) return "2d";
     if (/swiftshader|llvmpipe|software/i.test(gl.renderer)) return "2d";
-    if (/mali-[4t]|adreno \(tm\) [345]\d\d|powervr sgx|videocore/i.test(gl.renderer)) return "2d";
-    if (conn?.effectiveType === "3g") return "standard";
+    if (/mali-4\d\d|adreno \(tm\) 3\d\d|powervr sgx|videocore/i.test(gl.renderer)) return "2d"; // the oldest phone GPUs only
+    if (/mali-t|adreno \(tm\) [45]\d\d/i.test(gl.renderer)) return "standard";
+    if (conn?.saveData || conn?.effectiveType === "3g") return "standard"; // the model may arrive later, never instead
     if (mem !== undefined && mem <= 4) return "standard";
     if (smallScreen() && cores !== undefined && cores < 6) return "standard";
     return "full";
@@ -176,6 +178,7 @@ export const HotelScene = () => {
                         // called by the script once its first frames (shadows included) are on screen
                         onReady: () => requestAnimationFrame(() => !controller.signal.aborted && setReady(true)),
                         // live frame check: frames keep running slow at full sharpness → the 2D drawing
+                        onStepDown: () => rememberLevel("standard"),
                         onSlow: () => {
                             rememberLevel("2d");
                             toFlat();

@@ -42,7 +42,7 @@ export async function createHotelScene(canvas, env) {
 
   var small = Math.min(innerWidth, innerHeight) < 700;
   // always the screen's own sharpness (up to 2×): a device that can't keep up gets the 2D drawing instead of a blurry 3D
-  var maxRatio = ultra ? Math.max(2, window.devicePixelRatio || 1) : Math.min(window.devicePixelRatio || 1, 2), ratio = maxRatio;
+  var maxRatio = ultra ? Math.max(2, window.devicePixelRatio || 1) : Math.min(window.devicePixelRatio || 1, standard ? 1.5 : 2), ratio = maxRatio;
   R.setPixelRatio(ratio);
   R.outputColorSpace = THREE.SRGBColorSpace;
   R.toneMapping = THREE.ACESFilmicToneMapping;
@@ -858,7 +858,7 @@ export async function createHotelScene(canvas, env) {
 
   var clock = new THREE.Timer(), lastHw = 1; clock.connect(document); cleanup.push(function () { clock.dispose(); });
   // only draw while a see-through section of the page shows the model
-  var visible = true, frameNo = 0, slow = 0, tStart = -1, build = null, settled = 0;
+  var visible = true, frameNo = 0, slow = 0, vslow = 0, tStart = -1, build = null, settled = 0;
   var windows = document.querySelectorAll('.home-window');
   if (windows.length && 'IntersectionObserver' in window) {
     var seen = new Set();
@@ -920,11 +920,16 @@ export async function createHotelScene(canvas, env) {
     var fi = frameNo++;
     if (fi % 3 === 1 || (build && !build.done && fi % 2 === 0 && fi > 1)) R.shadowMap.needsUpdate = true; // more often while pieces move
     // adaptive resolution: if frames keep running slower than ~40 fps, draw fewer pixels
-    // frame check: frames that keep running slow hand over to the 2D drawing
-    // (ignores the build and the next ~2 s; a frame counts as slow below ~30 fps; a dev preview never steps down)
-    if ((!build || build.done) && ++settled > 120) { if (dt > 0.034) slow++; else slow = Math.max(0, slow - 1); }
-    if (env.fixed) slow = 0;
-    if (slow > 90 && env.onSlow) { env.onSlow(); env.onSlow = null; }
+    // frame check (owner, 2026-10-24: 3D for most devices, the 2D drawing only for the slowest). Counted after the
+    // build and ~2 s of settling. Below ~30 fps: step the pixel ratio down, never below 1× (CSS pixels). Still below
+    // ~20 fps at 1×: hand over to the 2D drawing. A dev preview never steps down.
+    if ((!build || build.done) && ++settled > 120) {
+      if (dt > 0.034) slow++; else slow = Math.max(0, slow - 1);
+      if (dt > 0.05) vslow++; else vslow = Math.max(0, vslow - 1);
+    }
+    if (env.fixed) slow = vslow = 0;
+    if (slow > 60 && ratio > 1) { ratio = Math.max(1, ratio - 0.5); R.setPixelRatio(ratio); R.setSize(vw, vh, false); slow = 0; vslow = 0; if (env.onStepDown) env.onStepDown(); }
+    else if (vslow > 90 && ratio <= 1 && env.onSlow) { env.onSlow(); env.onSlow = null; }
     if (frameNo === 300 && slow === 0 && env.onSmooth) env.onSmooth(ratio === maxRatio);
     R.render(scene, camera);
     if (fi === 1 && env.onReady) { var onReady = env.onReady; env.onReady = null; onReady(); } // fade in once shadows are drawn

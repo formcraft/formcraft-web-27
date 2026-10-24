@@ -85,6 +85,12 @@ Phase 0 finished plus Phase 1 pages, in the new **paper-cut** design:
 > possible. The animations are too fast: put animation settings in Admin. The opening tear is too much:
 > it should rip from one side, like a page being torn out of a pad, not all at once.
 
+> **Correction from the owner (later the same day):** "I didn't say 3D only on devices that could show it
+> sharp. I just wanted a 2D version for the slowest of devices." Fixed in the "L1 levels fix" commit: most
+> devices get the 3D; the 2D drawing is only for the slowest (see `docs/current-code.md`, "Levels"). The
+> stored level is now `fc-hotel-level` (old `fc-3d-level` results are ignored). Where the list below says
+> "a device that can't draw it sharp gets 2D", read "only the slowest get 2D".
+
 **What changed (commits `cc73970` L3–L7, then the Home commit after it):**
 - **No still pictures any more.** `public/images/hotel-*.webp` and `scripts/render-hotel-stills.mjs` are
   deleted; nothing references them (the stills tasks in round 4 and on `try/auto-live` are dropped).
@@ -118,9 +124,9 @@ Phase 0 finished plus Phase 1 pages, in the new **paper-cut** design:
 1. `git pull`, `npm install`, `npm --prefix functions install`, `npm run lint`, `npm run build` (the build now
    also runs `scripts/seo-pages.mjs`: check `dist/` has a folder per route, `sitemap.xml`, `robots.txt`).
    Record the main chunk size; fix lint findings that are plain mistakes, list the rest.
-2. **Home in Chrome on this PC** (Intel and NVIDIA): clear `fc-3d-level`, load `/` — background first, then
-   the build. Which level does each GPU get? Does the Intel GPU stay in 3D after the build (frame check),
-   or hand over to 2D? Record fps after the build. Use the dev preview switch (bottom left in `npm run dev`)
+2. **Home in Chrome on this PC** (Intel and NVIDIA): clear `fc-hotel-level`, load `/` — background first, then
+   the build. Which level does each GPU get? The Intel GPU should stay in 3D after the build (the frame check may
+   step its pixel ratio down, but only frames under ~20 fps at 1× switch to 2D) — please confirm. Record fps after the build. Use the dev preview switch (bottom left in `npm run dev`)
    to compare Ultra / Best / Mid-range phone / 2D drawing. Screenshots or a short screen recording for the
    owner (360 px and desktop, both editions).
 3. **The build sequence** at 1× and with Admin → Motion "Home model building itself" at 2×: smooth? any
