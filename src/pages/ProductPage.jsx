@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../hooks/useCart";
 import { Section } from "../components/page/Section";
 import { ProductCard } from "../components/shop/ProductCard";
 import { Icon } from "../components/ui/Icon";

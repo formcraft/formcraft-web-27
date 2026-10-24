@@ -1,11 +1,11 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { CartContext } from "./contexts";
 import { readJSON, writeJSON } from "../lib/storage";
 import { productById } from "../data/products";
 
 // The cart holds { productId, color, size, qty } only, never prices: display prices come from
 // the product data, and the real total is worked out by the createCheckout Cloud Function (Phase 3).
 // Kept in localStorage so it survives navigation and reloads; synced to users/{uid}/cart in Phase 3.
-const CartContext = createContext(null);
 const KEY = "fc-cart";
 
 const sameLine = (a, b) => a.productId === b.productId && a.color === b.color && a.size === b.size;
@@ -61,8 +61,3 @@ export const CartProvider = ({ children }) => {
     return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
 
-export const useCart = () => {
-    const context = useContext(CartContext);
-    if (!context) throw new Error("useCart must be used inside <CartProvider>");
-    return context;
-};

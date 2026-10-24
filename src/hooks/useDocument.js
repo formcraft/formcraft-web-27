@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { doc, onSnapshot } from "firebase/firestore";
-import { db, firebaseConfigured } from "../config/firebase";
+import { getDb, firebaseConfigured } from "../config/firebase";
 
 // Live Firestore document. Returns { data, loading, error }; unsubscribes on unmount.
-// Without a Firebase config (and no emulators) it returns no data instead of failing.
+// Firestore loads on first use. Without a Firebase config (and no emulators) it returns no data.
 export const useDocument = (path) => {
     const [state, setState] = useState({ data: null, loading: true, error: null });
     useEffect(() => {
@@ -11,11 +10,22 @@ export const useDocument = (path) => {
             setState({ data: null, loading: false, error: null });
             return undefined;
         }
-        return onSnapshot(
-            doc(db, path),
-            (snap) => setState({ data: snap.exists() ? snap.data() : null, loading: false, error: null }),
-            (error) => setState({ data: null, loading: false, error })
-        );
+        let unsubscribe = () => {};
+        let cancelled = false;
+        Promise.all([getDb(), import("firebase/firestore")])
+            .then(([db, { doc, onSnapshot }]) => {
+                if (cancelled) return;
+                unsubscribe = onSnapshot(
+                    doc(db, path),
+                    (snap) => setState({ data: snap.exists() ? snap.data() : null, loading: false, error: null }),
+                    (error) => setState({ data: null, loading: false, error })
+                );
+            })
+            .catch((error) => setState({ data: null, loading: false, error }));
+        return () => {
+            cancelled = true;
+            unsubscribe();
+        };
     }, [path]);
     return state;
 };

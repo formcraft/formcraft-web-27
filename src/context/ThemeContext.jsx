@@ -1,9 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ThemeContext } from "./contexts";
 
 // Day and night paper editions. index.html sets data-theme before first paint so there's no flash;
 // this context keeps React in step with it. The visitor's choice is remembered; until they choose,
 // the site follows their system setting.
-const ThemeContext = createContext(null);
 const KEY = "fc-theme";
 
 const readSaved = () => {
@@ -52,8 +52,3 @@ export const ThemeProvider = ({ children }) => {
     return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
 
-export const useTheme = () => {
-    const context = useContext(ThemeContext);
-    if (!context) throw new Error("useTheme must be used inside <ThemeProvider>");
-    return context;
-};

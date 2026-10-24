@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useCart } from "../../context/CartContext";
+import { useCart } from "../../hooks/useCart";
 import { categoryLabel } from "../../data/products";
 import { formatUGX } from "../../lib/money";
 import { Icon } from "../ui/Icon";

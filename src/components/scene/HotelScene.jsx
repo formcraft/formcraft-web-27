@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useTheme } from "../../context/ThemeContext";
+import { useTheme } from "../../hooks/useTheme";
 import { PaperLayers } from "./PaperLayers";
 import "./HotelScene.css";
 

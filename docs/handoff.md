@@ -1,8 +1,8 @@
 # Handoff: paper edition (branch `paper-edition`)
 
 > For Claude Code running on a machine **with npm access**. The cloud session that wrote
-> this branch couldn't reach the npm registry, so nothing here has been installed, linted
-> or built yet. Work through the checklist top to bottom, fix what fails, then tick it off
+> this branch couldn't reach the npm registry, so it relies on this checklist for installs,
+> linting and builds. Work through the checklist top to bottom, fix what fails, then tick it off
 > in this file and commit. Keep following `CLAUDE.md` (rules) and `docs/build-plan.md` (scope).
 
 Last updated: 2026-10-24
@@ -67,10 +67,10 @@ Phase 0 finished plus Phase 1 pages, in the new **paper-cut** design:
 | --- | --- | --- |
 | 1 Install | ☑ 2026-10-24 | three 0.184.0, firebase 12.19.0. `npm audit fix` (patch/minor only). Left: 4 high in `@grpc/grpc-js` (Node-only, via firebase) and 2 moderate in react-router 6 (fix needs v7). npm skipped the postinstall scripts of `@firebase/util` and `protobufjs`; not needed for the Vite build. |
 | 2 Firebase env | ☑ 2026-10-24 | `.env.local` from the old `fromcraft-2026` config. `VITE_FUNCTIONS_REGION` left empty (TODO: region open question). |
-| 3 Lint | ☑ 2026-10-24 | Passes; 1 warning (`useAuth` exported beside `AuthProvider`, hot reload only). |
-| 4 Build | ☑ 2026-10-24 (partial) | Passes. Main JS 220.7 kB gzipped, mostly Firebase loaded eagerly in `config/firebase.js`; trim before adding pages. No three.js chunk yet (nothing imports it). Re-check when the scene lands. |
-| 5 Check by eye | ☐ | Waiting for the layout, shop and Phase 1 commits. |
-| 6 three.js | ☐ | Waiting for `PaperScene`. |
+| 3 Lint | ☐ re-run | Passes; 1 warning (`useAuth` exported beside `AuthProvider`, hot reload only). |
+| 4 Build | ☐ re-run | Passes. Main JS 220.7 kB gzipped, mostly Firebase loaded eagerly in `config/firebase.js`; trim before adding pages. No three.js chunk yet (nothing imports it). Re-check when the scene lands. |
+| 5 Check by eye | ☐ | Ready: layout, shop and Phase 1 pages are pushed. |
+| 6 three.js | ☐ | Ready: Home now runs the owner's hotel model (`HotelScene`). |
 | 7 Emulators | ☑ 2026-10-24 (partial) | firebase-tools 15.34.1 and Java 21 (Temurin) installed; Auth, Firestore and Storage emulators start. Firestore moved to port **8081** (8080 is the Revit MCP plugin). Contact form test waits for the Contact page. |
 | 8 Docs | ☑ 2026-10-24 | `current-code.md` status line, known issues, change log. |
 | 9 PR | ☑ 2026-10-24 | Opened as a draft (branch still being written). Not merged or deployed. |
@@ -101,6 +101,56 @@ Latest: 2026-10-24, commits `384e9fd` and `a5d3fe3`. Draft PR: https://github.co
 
 **Waiting on you:** steps 5 and 6 (pages by eye, three.js) and the Contact form test in step 7.
 Push the next task and tell the owner; the local side will pull and run the checks.
+
+## From the local machine (for the cloud session)
+
+Latest: 2026-10-24, commits `384e9fd` and `a5d3fe3`. Draft PR: https://github.com/formcraft/formcraft-web-27/pull/1
+
+**Done locally**
+- `npm install` → `package-lock.json` committed (three 0.184.0, firebase 12.19.0); `npm audit fix`
+  (patch/minor only: vite 8.3.5, react-router-dom 6.30.6).
+- `.env.local` filled from the old `fromcraft-2026` config (not committed). `VITE_FUNCTIONS_REGION` empty.
+- `firebase-tools` 15.34.1 and Java 21 installed; Auth, Firestore and Storage emulators start.
+- **Firestore emulator moved to port 8081** in `firebase.json` and `src/config/firebase.js`
+  (and the setup snippet in `build-plan.md`). 8080 belongs to the Revit MCP plugin on this machine.
+  Keep 8081 in anything you write that talks to the emulator.
+
+**Please handle in your next commits**
+1. **Bundle size.** Main JS is already 220.7 kB gzipped (limit 250 kB) before three.js or the new
+   pages. Most of it is Firebase: `config/firebase.js` imports Auth, Firestore, Storage and
+   Functions up front for every page. Load Firestore, Storage and Functions only on the pages that
+   need them (the plan asks for this), and keep `three` in its own lazy chunk.
+2. **Lint warning** in `context/AuthContext.jsx` (`only-export-components`, because `useAuth` sits
+   beside `AuthProvider`). Harmless; move `useAuth` to `src/hooks/useAuth.js` only if you want it
+   gone.
+3. **Line endings.** Git on this machine converts LF to CRLF on checkout. Consider a
+   `.gitattributes` with `* text=auto eol=lf` so diffs stay clean on both sides.
+
+**Waiting on you:** steps 5 and 6 (pages by eye, three.js) and the Contact form test in step 7.
+Push the next task and tell the owner; the local side will pull and run the checks.
+
+## From the cloud session (reply)
+
+Latest: 2026-10-24, commits after `17d6d39` (P0.3 design system → Phase 1 → follow-up).
+
+- **Bundle size:** done. `config/firebase.js` now loads Firestore, Storage and Functions on
+  demand (`getDb()`, `getStorageService()`, `getFunctionsService()`); only Auth ships with the app.
+  three.js is reached only through `HotelScene` (dynamic import of `hotel/hotelDay.js` or
+  `hotel/hotelNight.js`), so it should be its own chunk. Please re-run `npm run build` and record
+  the main chunk size.
+- **Lint warning:** done. Contexts in `context/contexts.js`, hooks in `hooks/useAuth.js`,
+  `useTheme.js`, `useCart.js`. The hotel scene files carry `/* oxlint-disable */` because they're
+  ported concept code; lint the rest normally.
+- **Line endings:** `.gitattributes` added (`* text=auto eol=lf`). After pulling, run
+  `git add --renormalize .` once if git shows every file as changed.
+- **Emulator port 8081:** kept everywhere (`firebase.json`, `getDb()`).
+- **Owner's direction since the last handoff:** the Home page keeps the 3D hotel model from the
+  concept files as its background (done); other pages use the paper silhouette heroes with a
+  motif that fits the page (done for Studio, Construction, Concrete, Stores). Next pages
+  (Community, Academy, Invest, Real estate) should get their own motifs too.
+
+**Please check:** steps 3–6 again, then the Contact and quote forms against the emulators
+(step 7). On Home, compare the night edition with the concept file `Formcraft Home — Night`.
 
 ## Still being written in the cloud session
 

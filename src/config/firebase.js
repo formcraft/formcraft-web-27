@@ -1,10 +1,9 @@
-// All Firebase setup lives here. Components import { auth, db, storage, functions }
-// and never call initializeApp themselves.
+// All Firebase setup lives here; nothing else calls initializeApp.
+// Auth is needed on every page (header), so it loads with the app. Firestore, Storage and
+// Functions load only when a page first asks for them: await getDb(), getStorageService(),
+// getFunctionsService(). That keeps them out of the main bundle.
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
-import { getStorage, connectStorageEmulator } from "firebase/storage";
-import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 
 const env = import.meta.env;
 
@@ -35,16 +34,37 @@ const firstLoad = getApps().length === 0; // guards against hot reload initialis
 
 export const app = firstLoad ? initializeApp(config) : getApp();
 export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
-export const functions = getFunctions(app, env.VITE_FUNCTIONS_REGION || undefined);
+const useEmulators = env.DEV && env.VITE_USE_EMULATORS === "true";
 
-if (firstLoad && env.DEV && env.VITE_USE_EMULATORS === "true") {
+if (firstLoad && useEmulators) {
   connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
-  connectFirestoreEmulator(db, "localhost", 8081); // 8080 is taken by the Revit MCP plugin
-  connectStorageEmulator(storage, "localhost", 9199);
-  connectFunctionsEmulator(functions, "localhost", 5001);
 }
+
+const once = (load) => {
+  let promise = null;
+  return () => (promise ??= load());
+};
+
+export const getDb = once(async () => {
+  const { getFirestore, connectFirestoreEmulator } = await import("firebase/firestore");
+  const db = getFirestore(app);
+  if (useEmulators) connectFirestoreEmulator(db, "localhost", 8081); // 8080 is taken by the Revit MCP plugin
+  return db;
+});
+
+export const getStorageService = once(async () => {
+  const { getStorage, connectStorageEmulator } = await import("firebase/storage");
+  const storage = getStorage(app);
+  if (useEmulators) connectStorageEmulator(storage, "localhost", 9199);
+  return storage;
+});
+
+export const getFunctionsService = once(async () => {
+  const { getFunctions, connectFunctionsEmulator } = await import("firebase/functions");
+  const functions = getFunctions(app, env.VITE_FUNCTIONS_REGION || undefined);
+  if (useEmulators) connectFunctionsEmulator(functions, "localhost", 5001);
+  return functions;
+});
 
 // Analytics only in production, loaded lazily so it never slows the first paint
 if (env.PROD && firebaseConfigured && env.VITE_FIREBASE_MEASUREMENT_ID) {

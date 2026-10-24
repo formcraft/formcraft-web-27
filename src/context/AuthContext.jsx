@@ -1,9 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { AuthContext } from "./contexts";
 import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "../config/firebase";
 import { SignInDialog } from "../components/auth/SignInDialog";
 
-const AuthContext = createContext(null);
 
 // Firebase error codes that mean "the visitor changed their mind", not a failure
 const CANCELLED = ["auth/popup-closed-by-user", "auth/cancelled-popup-request"];
@@ -68,8 +68,3 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
-export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) throw new Error("useAuth must be used inside <AuthProvider>");
-    return context;
-};
