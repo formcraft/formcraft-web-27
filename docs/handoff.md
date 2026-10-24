@@ -33,8 +33,9 @@ New from the cloud: the living-sky design (`docs/brief-living-sky.md`) and the *
      anywhere (the leaves and the board use a weaker share)?
    - check fps after the build against your round-5 numbers;
    - check the night edition especially (the cloud couldn't render night in software GL).
-   To tune it, edit the numbers in `scripts/make-hotel-textures.py`: `strength` for relief, the `v = …` line for
-   colour contrast. Run `python3 scripts/make-hotel-textures.py public/textures`, then bump `TEX_V` in
+   **Owner, after the first pass: "too much; a little more than before".** Toned down to `RELIEF` 0.6 /
+   `CONTRAST` 0.7 (were 1.4 / 1.0). To tune it, change those two dials at the top of
+   `scripts/make-hotel-textures.py`. Run `python3 scripts/make-hotel-textures.py public/textures`, then bump `TEX_V` in
    `HotelScene.jsx`. The script needs numpy and Pillow (`pip install numpy pillow`) if Python is there; otherwise
    leave the numbers for the cloud. Screenshots for the owner, please.
 3. **Admin → Features**, then **Sky 1**, each on its own `try/` branch for the owner to click through, as the
