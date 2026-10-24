@@ -27,8 +27,9 @@ If the user says the plan changed, re-read `docs/build-plan.md` before continuin
 3. **Reuse, don't rewrite.** Build on the existing components (see "What to keep" in `current-code.md`). Rename or move files only when the plan's structure needs it, and say so.
 4. **Check your work.** After each task: `npm run lint` and `npm run build` must pass. Open the page in `npm run dev` at 360px and desktop width and check it by keyboard.
 5. **Update `docs/current-code.md` in the same commit**, following its "How to keep this file up to date" steps: status line, file map, how-it-works paragraphs, checklist, change log.
-6. **Commit per task.** Message starts with the task id: `P0.4: AuthContext, remove forced sign-in`. Don't push or deploy unless asked.
-7. **Missing facts → `TODO:`.** Never invent copy, prices, clients, testimonials, team members or numbers.
+6. **Cloud ↔ local handoff (owner's rule).** Before and after every push: `git pull`, read what the other Claude Code session added (`docs/handoff.md`, `docs/ideas.md`, new branches), reconcile it with your work (port, merge or answer), and leave clear numbered tasks for the other side in `docs/handoff.md`.
+7. **Commit per task.** Message starts with the task id: `P0.4: AuthContext, remove forced sign-in`. Don't push or deploy unless asked.
+8. **Missing facts → `TODO:`.** Never invent copy, prices, clients, testimonials, team members or numbers.
 
 ## Stack (do not change without asking)
 
