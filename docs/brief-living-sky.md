@@ -380,3 +380,17 @@
      uses tokens, so it stays in the brand. Needs `prevKind` and `changedAt` in `stats/weather`.
    - **Not doing:** sound, lightning bolts, snow, radar maps, weather text on the site (the owner hasn't
      asked; and never claim "live" weather in visitor text).
+
+## Owner addition (2026-10-24): switch weather scenes on and off one by one
+
+> "I want to limit some scene changes. I should be able to turn off the thunderstorm or the rain and maybe leave
+> the main, which is light daylight and nighttime."
+
+- **Admin → Features** gets one switch per scene: Partly cloudy, Overcast, Mist, Rain, Storm, plus a master
+  "Weather scenes" switch. **Clear day and clear night are always on** (the base; they can't be switched off).
+- **Fallback:** when the live weather (or Admin "Weather") asks for a scene that's off, show the nearest calmer scene
+  that's on: storm → rain → overcast → partly → clear (mist → partly → clear).
+- Wind keeps its own slider; 0 = no wind.
+- **The tester** still shows every scene to the team, marking switched-off ones "off for visitors".
+- A scene that's off loads no code for visitors.
+- Stored with the other switches in `settings/site.features` (e.g. `features.weather = { partly, overcast, mist, rain, storm }`).
