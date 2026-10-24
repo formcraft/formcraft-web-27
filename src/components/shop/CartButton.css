@@ -1,0 +1,8 @@
+.cart-button-badge {
+  position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px;
+  display: grid; place-items: center; border-radius: 999px;
+  background: var(--fc-orange); color: var(--fc-navy); font: 700 11px/1 var(--fc-font-body);
+  box-shadow: 0 0 0 2px var(--ground);
+  animation: cart-pop .3s var(--fc-ease);
+}
+@keyframes cart-pop { from { scale: .4; } to { scale: 1; } }
