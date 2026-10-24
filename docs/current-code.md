@@ -221,7 +221,7 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 - `npm run lint` passes with one warning: `context/AuthContext.jsx` exports `useAuth()` next to the provider (`only-export-components`; affects hot reload only). Kept, since the plan puts `useAuth()` there.
 - Main JS bundle is 220.7 kB gzipped (limit 250 kB), mostly Firebase: `config/firebase.js` imports Auth, Firestore, Storage and Functions eagerly for every page. Load Firestore/Storage/Functions only on the pages that use them before three.js and the new pages land.
 - `npm audit`: 4 high in `@grpc/grpc-js` (pulled in by `firebase`, Node-only, not in the browser build; npm's "fix" is a downgrade to firebase 9, ignored) and 2 moderate in `react-router` 6 (fixed only in v7, which is a later task).
-- Firestore emulator port 8080 clashes with the Revit MCP plugin, which also listens on 8080 on the owner's machine. Close Revit's MCP server while using the emulators, or move Firestore to another port in `firebase.json` and `config/firebase.js`.
+- The Firestore emulator runs on port **8081**, not the default 8080, because the Revit MCP plugin uses 8080 on the owner's machine. Keep `firebase.json` and `config/firebase.js` in step.
 - P0.4 was tested in Edge for opening, closing (×, Escape, backdrop), focus and no auto-popup. A real Google sign-in wasn't tested; try it once in the browser.
 
 ---
@@ -232,6 +232,7 @@ Newest first. One row per commit or task.
 
 | Date | Task | What changed | Files |
 | --- | --- | --- | --- |
+| 2026-10-24 | — | Firestore emulator moved from port 8080 to 8081 (Revit MCP plugin uses 8080). Installed firebase-tools and Java 21 locally; emulators start. | `firebase.json`, `src/config/firebase.js`, docs |
 | 2026-10-24 | handoff | Local install on the owner's machine: `npm install` (three 0.184.0, firebase 12.19.0), `npm audit fix` (patch/minor only: vite 8.3.5, react-router-dom 6.30.6). Lint and build pass. `.env.local` filled from the old `fromcraft-2026` config (not committed). | `package-lock.json`, docs |
 | 2026-10-24 | P0.2 | `config/firebase.jsx` → `config/firebase.js`: config from `VITE_FIREBASE_*` env vars (falls back to a `demo-` project with a console warning), exports `app`, `auth`, `db`, `storage`, `functions`, connects to the emulators when `VITE_USE_EMULATORS=true`, Analytics only in production. Added `.env.example`, `firebase.json` (SPA rewrite, cache headers, emulator ports), `.firebaserc`, `firestore.rules` (plan starter), `storage.rules`, `firestore.indexes.json`. `firebase` → ^12, added `three` ^0.184. Fixed `.oxlintrc.json` (react version "19.2", no `parserOptions`). | `src/config/firebase.js`, `package.json`, Firebase files, `.oxlintrc.json` |
 | 2026-10-09 | — | Moved to the new repo `formcraft/formcraft-web-27` (private). Flattened: the app moved from `formcraftwebsite2026/website/` to the repo root, history kept. One root `.gitignore` covering deps, builds, all `.env*` except `.env.example`, Firebase/service-account keys, emulator data, logs and editor files. | `.gitignore`, all paths, docs |

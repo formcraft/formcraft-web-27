@@ -64,7 +64,7 @@ Phase 0 finished plus Phase 1 pages, in the new **paper-cut** design:
 | 4 Build | ☑ 2026-10-24 (partial) | Passes. Main JS 220.7 kB gzipped, mostly Firebase loaded eagerly in `config/firebase.js`; trim before adding pages. No three.js chunk yet (nothing imports it). Re-check when the scene lands. |
 | 5 Check by eye | ☐ | Waiting for the layout, shop and Phase 1 commits. |
 | 6 three.js | ☐ | Waiting for `PaperScene`. |
-| 7 Emulators | ☐ | Not installed here: needs `firebase-tools` and Java 21+. Port 8080 clashes with the Revit MCP plugin on this machine. |
+| 7 Emulators | ☑ 2026-10-24 (partial) | firebase-tools 15.34.1 and Java 21 (Temurin) installed; Auth, Firestore and Storage emulators start. Firestore moved to port **8081** (8080 is the Revit MCP plugin). Contact form test waits for the Contact page. |
 | 8 Docs | ☑ 2026-10-24 | `current-code.md` status line, known issues, change log. |
 | 9 PR | ☑ 2026-10-24 | Opened as a draft (branch still being written). Not merged or deployed. |
 

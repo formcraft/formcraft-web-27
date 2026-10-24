@@ -293,7 +293,7 @@ Needs Node.js 20+, Git and a Google account. The React app already exists, so th
 
    if (firstLoad && env.DEV && env.VITE_USE_EMULATORS === "true") {
      connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
-     connectFirestoreEmulator(db, "localhost", 8080);
+     connectFirestoreEmulator(db, "localhost", 8081); // 8080 is used by the Revit MCP plugin
      connectStorageEmulator(storage, "localhost", 9199);
      connectFunctionsEmulator(functions, "localhost", 5001);
    }

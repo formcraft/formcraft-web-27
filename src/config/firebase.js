@@ -41,7 +41,7 @@ export const functions = getFunctions(app, env.VITE_FUNCTIONS_REGION || undefine
 
 if (firstLoad && env.DEV && env.VITE_USE_EMULATORS === "true") {
   connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
-  connectFirestoreEmulator(db, "localhost", 8080);
+  connectFirestoreEmulator(db, "localhost", 8081); // 8080 is taken by the Revit MCP plugin
   connectStorageEmulator(storage, "localhost", 9199);
   connectFunctionsEmulator(functions, "localhost", 5001);
 }
