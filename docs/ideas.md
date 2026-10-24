@@ -25,7 +25,7 @@
 | 14 | Animation timing settings in Admin | Admin, all pages | **done**: Admin → Motion | handoff round 5 |
 | 13 | Background first, then the 3D builds on it; 2D drawing only for the slowest devices; crisp everywhere; controls as a minimal left rail | Home | **done** in the Home commit | handoff round 5 |
 | 12 | Paper scraps falling like stones, visible again and kept that way | Home 3D | **done** in the Home commit after `cc73970` (own seed, near layer, colours, speed) | §12 below |
-| 11 | Paper texture that really pops (concrete-paper you can almost feel) | Home 3D | **accepted**, in progress: one screen-space paper grain over the model now (`.hotel-scene-grain`); world-unit fibres + normal map next | handoff "Owner decisions 2026-10-24" |
+| 11 | Paper texture that really pops (concrete-paper you can almost feel) | Home 3D | **built (cloud)**: paper sized in metres of wall + a normal map (`scripts/make-hotel-textures.py`); to verify on the Intel and NVIDIA GPUs and at 360 px (handoff round 6) | handoff "Owner decisions 2026-10-24" |
 | 10 | Ultra as a real level for strong desktop GPUs, not only a dev preview | Home 3D, speed | accepted for later; `ultra` ported as a dev preview | §10 |
 | 9 | Dev-only quality preview: Auto / Ultra / Best / Mid-range phone / Slow phone / No 3D | Dev tooling | **done** (ported from `try/auto-live`; "No 3D" is now "2D drawing") | handoff round 5 |
 | 8 | No "Tap to explore": the model always comes in by itself, later on slow devices | Home 3D, speed | **done**: most devices build the 3D (slow connections later); only the slowest get the 2D drawing; never a tap | handoff round 5 (owner correction) |

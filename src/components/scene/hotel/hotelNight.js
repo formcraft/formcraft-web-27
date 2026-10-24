@@ -118,11 +118,13 @@ export async function createHotelScene(canvas, env) {
     fibres(g, w, h, 1400, 'rgba(255,255,255,.75)', 'rgba(70,62,55,.28)');
     for (var i = 0; i < 2500; i++) { g.fillStyle = 'rgba(80,70,60,' + (0.1 + rnd() * 0.2) + ')'; g.beginPath(); g.arc(rnd() * w, rnd() * h, 0.6 + rnd() * 1.1, 0, 6.3); g.fill(); }
   }, 1, 1);
-  var bumpTex = baked.bump ? imageTex(baked.bump, false) : canvasTex(1024, 1024, function (g, w, h) {
+  var bumpTex = baked.bump ? imageTex(baked.bump, false) : baked.normal ? new THREE.Texture() /* replaced by the normal map below */ : canvasTex(1024, 1024, function (g, w, h) {
     g.fillStyle = '#808080'; g.fillRect(0, 0, w, h);
     pulp(g, w, h, 90, 120);
     fibres(g, w, h, 1100, 'rgba(255,255,255,.7)', 'rgba(0,0,0,.6)');
   }, 1, 1, false);
+  // relief as a normal map (ideas #11): light catches it at any distance, unlike the old bump map
+  var normalTex = baked.normal ? imageTex(baked.normal, false) : null;
   function tiled(t, rx, ry) { var c = t.clone(); c.needsUpdate = true; c.repeat.set(rx, ry); return c; }
 
   // the model base is the Formcraft A1 sheet (FMC_TB_A1): its frame and title block printed exactly,
@@ -1148,6 +1150,16 @@ export async function createHotelScene(canvas, env) {
   layoutObserver.observe(document.body);
   cleanup.push(function () { layoutObserver.disconnect(); });
   if (env.debug) window.__hotelDebug = { camera: camera, keys: KEYS, sample: function () { return { anchors: anchors.map(function (a) { return a.y; }), vh: vh, vw: vw, fit: fit, scrollY: scrollY }; } };
+  // swap the paper bump for the baked normal map, keeping each material's relative strength
+  // (walls 0.045 = full strength, leaves 0.02 about half, the board 0.006 a trace)
+  if (normalTex) scene.traverse(function (o) {
+    var ms = !o.material ? [] : Array.isArray(o.material) ? o.material : [o.material];
+    ms.forEach(function (m) {
+      if (!m.bumpMap || m.bumpMap !== bumpTex) return;
+      var k = Math.min(1, Math.max(0.15, m.bumpScale / 0.045));
+      m.normalMap = normalTex; m.normalScale.set(k, k); m.bumpMap = null; m.needsUpdate = true;
+    });
+  });
   if (R.compileAsync) { try { await R.compileAsync(scene, camera); } catch (err) {} }
   if (stopped()) return null;
   // after compiling (hidden objects aren't compiled): hide the model for the opening build
