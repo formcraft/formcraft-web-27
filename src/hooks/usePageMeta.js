@@ -1,6 +1,18 @@
-import { useEffect } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { useLocation } from "react-router-dom";
 import { DEFAULT_OG_IMAGE, ROUTES, SITE_URL, absUrl, imagePath, metaForPath, metaText, pageTitle } from "../data/seo";
+import { COPY, copyItem } from "../data/copy";
+import { pageForPath } from "../data/pages";
+import { publishedItems, subscribeCopy } from "../lib/copyStore";
+import { plainCopy } from "../lib/copyText";
+
+const NONE = Object.freeze({});
+// A published title or description from Admin → Copy (plain text, within the register's limit), or null
+const edited = (edits, page, id) => {
+    const text = plainCopy(edits[id]?.text ?? "").trim();
+    const max = copyItem(page, id)?.max ?? 160;
+    return text ? text.slice(0, max) : null;
+};
 
 // Each route sets its own <title>, meta description, canonical link, Open Graph / Twitter tags
 // and robots. src/data/seo.js is the source of truth for static routes: the build writes the same
@@ -9,8 +21,10 @@ import { DEFAULT_OG_IMAGE, ROUTES, SITE_URL, absUrl, imagePath, metaForPath, met
 //   usePageMeta(title, description)                         title format: "<title> · Formcraft"
 //   usePageMeta(title, description, { image, noindex, canonical })
 //
-// - Static routes (/studio, /stores, …): the title, description and preview image from seo.js win,
-//   unless the call sets `noindex` (a special state such as "not open yet"), which keeps its own title.
+// - Static routes (/studio, /stores, …): a title or description published in Admin → Copy wins, then the
+//   title, description and preview image from seo.js, unless the call sets `noindex` (a special state
+//   such as "not open yet"), which keeps its own title. The build bakes published edits in too
+//   (scripts/seo-pages.mjs), so the pre-built head matches from the next build.
 // - Detail and other pages: the title and description passed in ("TODO: …" notes are left out);
 //   with no description or image, the site's default ones (never the previous page's).
 // - `image`: a path, URL or images[] entry ("chair", { name, alt }). `canonical`: a path or URL;
@@ -45,12 +59,18 @@ export const usePageMeta = (title, description, options = {}) => {
     const { pathname } = useLocation();
     const { noindex = false, canonical } = options ?? {};
     const image = options?.image ? imagePath(options.image) : null;
+    const page = pageForPath(pathname)?.key;
+    const edits = useSyncExternalStore(subscribeCopy, () => (page && COPY[page] ? publishedItems(page) : NONE));
 
     useEffect(() => {
         const route = noindex ? null : metaForPath(pathname);
-        const fullTitle = route ? route.fullTitle : pageTitle(title);
+        // copy edits only on the page's own address, never on detail pages under it
+        const own = route && route.key === page;
+        const titleEdit = own ? edited(edits, page, "metaTitle") : null;
+        const descEdit = own ? edited(edits, page, "metaDescription") : null;
+        const fullTitle = titleEdit ? (copyItem(page, "metaTitle")?.full ? titleEdit : pageTitle(titleEdit)) : route ? route.fullTitle : pageTitle(title);
         // Nothing passed → the site defaults, never the previous page's text or picture
-        const desc = route ? route.description : metaText(description) ?? ROUTES["/"].description;
+        const desc = descEdit ?? (route ? route.description : metaText(description) ?? ROUTES["/"].description);
         const img = absUrl(image || route?.image || DEFAULT_OG_IMAGE);
         const path = pathname.length > 1 ? pathname.replace(/\/+$/, "") : "/";
         const url = canonical ? absUrl(canonical) : `${SITE_URL}${path}`;
@@ -72,5 +92,5 @@ export const usePageMeta = (title, description, options = {}) => {
 
         if (noindex || route?.noindex) setMeta("name", "robots", "noindex,follow");
         else removeMeta("name", "robots");
-    }, [pathname, title, description, image, noindex, canonical]);
+    }, [pathname, title, description, image, noindex, canonical, page, edits]);
 };

@@ -8,6 +8,8 @@ import { CartDrawer } from "../shop/CartDrawer";
 import { SubscribePrompt } from "../forms/SubscribePrompt";
 import { initAttribution } from "../../lib/attribution";
 import { installClickTracking } from "../../lib/track";
+import { loadCopy } from "../../lib/copyStore";
+import { pageForPath } from "../../data/pages";
 
 // On a new page: go to the top (or to the #section in the link) and move focus to the main area
 // so keyboard and screen-reader users start at the new content. Not on the first load, so Tab
@@ -39,6 +41,13 @@ const useFunnel = () => {
     }, []);
 };
 
+// Start reading the page's edited text (Admin → Copy) as soon as the address is known, in parallel with
+// the page's own code, so the edits are usually there before the page first draws.
+const useCopyEarly = () => {
+    const { pathname } = useLocation();
+    useEffect(() => loadCopy(pageForPath(pathname)?.key), [pathname]);
+};
+
 /**
  * The frame around every page: skip link, header, the page itself (in <main>), footer, and the floating
  * pieces (plant-a-tree, cart drawer, cookie notice, email prompt). Used once in App.jsx.
@@ -47,6 +56,7 @@ const useFunnel = () => {
 export const Layout = ({ children }) => {
     useScrollOnNavigate();
     useFunnel();
+    useCopyEarly();
     return (
         <>
             <a className="skip-link" href="#main">

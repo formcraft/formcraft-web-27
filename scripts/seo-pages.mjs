@@ -10,6 +10,10 @@
 //
 // Options:  --dist <dir>   (default: dist)      Env: SITE_URL=https://example.com (see src/data/seo.js)
 // No dependencies: Node 18+ only.
+//
+// Page titles and descriptions published in Admin → Copy (Firestore `copy/{page}`, public) are read over
+// REST and win over seo.js, like on the live site (usePageMeta). The project comes from VITE_FIREBASE_*
+// (environment or .env.local). If the database can't be reached, the build says so and uses seo.js.
 
 import { readFile, writeFile, mkdir, access } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
@@ -125,6 +129,47 @@ const write = async (path, html) => {
 };
 
 // ── Run ───────────────────────────────────────────────────────────────────────────────────────
+// ── Published copy (Admin → Copy) ────────────────────────────────────────────────────────────
+const envLocal = async () => {
+    try {
+        const text = await readFile(join(ROOT, ".env.local"), "utf8");
+        return Object.fromEntries(text.split(/\r?\n/).map((l) => l.match(/^\s*([A-Z_]+)\s*=\s*(.*?)\s*$/)).filter(Boolean).map((m) => [m[1], m[2].replace(/^["']|["']$/g, "")]));
+    } catch {
+        return {};
+    }
+};
+const fileEnv = await envLocal();
+const env = (k) => process.env[k] || fileEnv[k] || "";
+const copyMod = await import(pathToFileURL(join(ROOT, "src/data/copy.js")).href);
+const plain = (t) => String(t ?? "").replace(/\*\*([^*\n]+)\*\*/g, "$1").replace(/\*([^*\n]+)\*/g, "$1").replace(/\s*\n\s*/g, " ").trim();
+let copyNote = "";
+const readCopy = async (page) => {
+    const project = env("VITE_FIREBASE_PROJECT_ID");
+    const key = env("VITE_FIREBASE_API_KEY");
+    if (!project || !key || copyNote) return {};
+    try {
+        const url = `https://firestore.googleapis.com/v1/projects/${project}/databases/(default)/documents/copy/${page}?key=${key}`;
+        const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+        if (res.status === 404) return {};
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const fields = (await res.json()).fields?.items?.mapValue?.fields ?? {};
+        return Object.fromEntries(Object.entries(fields).map(([id, v]) => [id, v.mapValue?.fields?.text?.stringValue ?? ""]));
+    } catch (error) {
+        copyNote = `published copy not read (${error.message}); page heads use src/data/seo.js`;
+        return {};
+    }
+};
+// a route's title and description with any published edits (same rules as usePageMeta)
+const withCopy = async (m) => {
+    if (!m.key || !copyMod.COPY[m.key]) return m;
+    const edits = await readCopy(m.key);
+    const titleItem = copyMod.copyItem(m.key, "metaTitle");
+    const descItem = copyMod.copyItem(m.key, "metaDescription");
+    const title = plain(edits.metaTitle).slice(0, titleItem?.max ?? 60);
+    const desc = plain(edits.metaDescription).slice(0, descItem?.max ?? 155);
+    return { ...m, ...(title ? { fullTitle: titleItem?.full ? title : pageTitle(title) } : {}), ...(desc ? { description: desc } : {}) };
+};
+
 const template = await readFile(join(DIST, "index.html"), "utf8");
 const built = new Date().toISOString().slice(0, 10);
 const pages = []; // { path, noindex, priority, changefreq }
@@ -132,7 +177,7 @@ const warnings = [];
 
 // Static routes
 for (const path of Object.keys(ROUTES)) {
-    const m = metaForPath(path);
+    const m = await withCopy(metaForPath(path));
     if (!(await exists(join(ROOT, "public", m.image.replace(/^\//, ""))))) {
         warnings.push(`${path}: ${m.image} not found in public/ (run node scripts/make-og.mjs); using ${DEFAULT_OG_IMAGE}`);
         m.image = DEFAULT_OG_IMAGE;
@@ -241,6 +286,7 @@ Sitemap: ${SITE_URL}/sitemap.xml
 await writeFile(join(DIST, "robots.txt"), robots);
 
 console.log(`seo-pages: ${pages.length} pages in ${DIST} for ${SITE_URL}`);
+if (copyNote) console.log(`  ${copyNote}`);
 console.log(`  static: ${Object.keys(ROUTES).length} · detail: ${detailCounts.join(", ")}`);
 console.log(`  sitemap.xml: ${indexable.length} URLs · robots.txt written`);
 for (const w of warnings) console.warn(`  warning: ${w}`);

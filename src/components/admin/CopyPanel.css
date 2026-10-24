@@ -1,0 +1,22 @@
+/* CopyPanel (Admin → Copy): classes start with .copy-. Colours come from tokens.css. */
+.copy-bar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 16px; }
+.copy-search { flex: 1 1 220px; }
+.copy-filters { flex-wrap: wrap; gap: 8px; }
+.copy-item { display: flex; flex-direction: column; gap: 10px; }
+.copy-item-head, .copy-item-foot { flex-wrap: wrap; gap: 8px; }
+.copy-label { font-weight: 700; font-size: 14px; }
+.copy-label code { margin-left: 6px; font-weight: 400; }
+.copy-tags { gap: 6px; }
+.copy-text {
+  width: 100%; min-height: 44px; padding: 10px 12px; resize: vertical;
+  border: 1px solid var(--line-2); border-radius: var(--fc-radius); background: var(--sheet); color: var(--ink);
+  font: inherit; font-size: 15px; line-height: 1.5;
+}
+.copy-text:focus-visible { outline: 3px solid var(--fc-orange); outline-offset: 1px; }
+.copy-text[aria-invalid="true"] { border-color: var(--fc-rust); }
+.copy-over { color: var(--fc-rust); font-weight: 700; }
+.copy-size { display: inline-flex; align-items: center; gap: 6px; }
+.copy-default { margin: 6px 0 0; white-space: pre-line; }
+.copy-actions { flex-wrap: wrap; gap: 8px; }
+.copy-history { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.copy-history-to { display: block; color: var(--ink-2); }

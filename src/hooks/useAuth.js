@@ -4,7 +4,7 @@ import { useContext } from "react";
 import { AuthContext } from "../context/contexts";
 
 /**
- * @returns {{ user: object|null, isAdmin: boolean, role: "admin"|"marketing"|"editor"|null,
+ * @returns {{ user: object|null, isAdmin: boolean, isOwner: boolean, role: "admin"|"marketing"|"editor"|null,
  *   isMarketing: boolean, isEditor: boolean, loading: boolean,
  *   signIn: () => Promise<string|null>, signOut: () => Promise<void>, openSignIn: () => void }}
  *   user is null when nobody is signed in; loading is true until Firebase has answered once.

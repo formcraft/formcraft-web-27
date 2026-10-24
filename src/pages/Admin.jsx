@@ -16,13 +16,15 @@ import { DetailsPanel } from "../components/admin/DetailsPanel";
 import { MotionPanel } from "../components/admin/MotionPanel";
 import { StudioPanel } from "../components/admin/studio/StudioPanel";
 import { TeamPanel } from "../components/admin/TeamPanel";
+import { CopyPanel } from "../components/admin/CopyPanel";
 import { firebaseConfigured } from "../config/firebase";
 import "./Admin.css";
 
 // The team's control room: leads, which pages are open, the site's content, and what visitors sent.
 // Each item says which team roles see it (custom claims: admin, role "marketing", role "editor");
 // admins see everything. Everything here is enforced again by firestore.rules / storage.rules.
-// To add a section, add an item { key, label, roles, render } to a group.
+// To add a section, add an item { key, label, roles, render } to a group; `owner: true` shows it to the
+// owner only (Team: the owner alone manages who's on the team).
 const TEAM = ["admin", "marketing"];
 
 const SiteDetails = () => {
@@ -51,12 +53,12 @@ const SECTIONS = [
             { key: "pages", label: "Pages", roles: ["admin"], render: () => <PagesPanel /> },
             { key: "details", label: "Site details", roles: ["admin"], render: () => <SiteDetails /> },
             { key: "motion", label: "Motion", roles: ["admin"], render: () => <SiteMotion /> },
-            { key: "team", label: "Team", roles: ["admin"], render: () => <TeamPanel /> },
+            { key: "team", label: "Team", roles: ["admin"], owner: true, render: () => <TeamPanel /> },
         ],
     },
     {
         group: "Content",
-        items: Object.entries(CONTENT).map(([k, v]) => ({ key: k, label: v.label, roles: TEAM, render: () => <ContentPanel key={k} name={k} /> })),
+        items: [{ key: "copy", label: "Copy (site text)", roles: TEAM, render: () => <CopyPanel /> }].concat(Object.entries(CONTENT).map(([k, v]) => ({ key: k, label: v.label, roles: TEAM, render: () => <ContentPanel key={k} name={k} /> }))),
     },
     {
         group: "Inbox",
@@ -64,9 +66,9 @@ const SECTIONS = [
     },
 ];
 
-// The groups and items a role can see (admins: everything)
-const sectionsFor = (role) =>
-    SECTIONS.map((s) => ({ ...s, items: s.items.filter((i) => role === "admin" || i.roles.includes(role)) })).filter((s) => s.items.length > 0);
+// The groups and items a person can see (admins: everything except owner-only items, unless they're the owner)
+const sectionsFor = (role, isOwner) =>
+    SECTIONS.map((s) => ({ ...s, items: s.items.filter((i) => (!i.owner || isOwner) && (role === "admin" || i.roles.includes(role))) })).filter((s) => s.items.length > 0);
 
 const Overview = ({ go }) => {
     const { visibility } = useSite();
@@ -100,11 +102,11 @@ const Overview = ({ go }) => {
 /** The Admin page (/admin): the team's control room, by role (see the panels in src/components/admin/). */
 export const Admin = () => {
     usePageMeta("Admin", "Formcraft team admin.");
-    const { user, isAdmin, isEditor, role, loading, openSignIn } = useAuth();
+    const { user, isAdmin, isOwner, isEditor, role, loading, openSignIn } = useAuth();
     const { hash } = useLocation();
     const navigate = useNavigate();
     const myRole = isAdmin ? "admin" : role;
-    const sections = useMemo(() => sectionsFor(myRole), [myRole]);
+    const sections = useMemo(() => sectionsFor(myRole, isOwner), [myRole, isOwner]);
     const items = useMemo(() => sections.flatMap((s) => s.items), [sections]);
     const [picked, setPicked] = useState(() => hash.slice(1) || null);
     const current = items.find((i) => i.key === picked) ?? items[0] ?? null;
@@ -134,7 +136,7 @@ export const Admin = () => {
         body = (
             <div className="card card-pad stack admin-gate" style={{ "--gap": "14px" }}>
                 <h2 className="h3">This account isn't on the Formcraft team.</h2>
-                <p className="body">You're signed in as {user.email}. An admin can add you in Admin → Team (or with <code>scripts/set-admin.js</code>); sign out and back in afterwards.</p>
+                <p className="body">You're signed in as {user.email}. The owner can add you in Admin → Team (or with <code>scripts/set-admin.js</code>); sign out and back in afterwards.</p>
                 <Link to="/" className="btn btn-line" style={{ alignSelf: "flex-start" }}>Back to the site</Link>
             </div>
         );
@@ -168,7 +170,7 @@ export const Admin = () => {
                         <p className="eyebrow">Sheet U103 · team only</p>
                         <h1 className="h2">Admin</h1>
                     </div>
-                    {isEditor && <span className="tag tag-accent">Signed in as {myRole} · {user?.email}</span>}
+                    {isEditor && <span className="tag tag-accent">Signed in as {isOwner ? "owner" : myRole === "admin" ? "team" : myRole} · {user?.email}</span>}
                 </div>
                 {body}
             </Section>

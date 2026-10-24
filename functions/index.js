@@ -1,9 +1,12 @@
 // Formcraft Cloud Functions (2nd gen). Needs the Blaze plan. Deploy with: firebase deploy --only functions
 // - submitLead:      every public form goes through here once VITE_FORMS_VIA_FUNCTIONS=true —
 //                    App Check, honeypot, validation and rate limits, then the Firestore write.
-// - claimTeamRole:   a signed-in team member picks up their role (admin / marketing / editor)
-//                    from team/{email}, set by an admin in Admin → Team.
-// - onTeamChange:    keeps custom claims in step when an admin adds, changes or removes someone.
+// - claimTeamRole:   a signed-in team member picks up their access from team/{email}, set by the
+//                    owner in Admin → Team.
+// - onTeamChange:    keeps custom claims in step when the owner adds, changes or removes someone.
+// Permissions (owner, 2026-10-24): everyone on the team has the same full access (role "team",
+// claim admin: true); only the owner (claim owner: true, set once with scripts/set-admin.js --owner)
+// manages the team. The limited roles "marketing" and "editor" stay available for later.
 // Payment functions (createCheckout, flutterwaveWebhook) arrive in Phase 3.
 import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
@@ -133,15 +136,19 @@ export const submitLead = onCall({ enforceAppCheck: ENFORCE_APP_CHECK, cors: tru
 });
 
 // ---------- team roles ----------
-const ROLES = ["admin", "marketing", "editor"];
+// "admin" is the old name of "team" (full access); the website can never give or take away `owner`.
+const FULL = ["team", "admin"];
+const ROLES = [...FULL, "marketing", "editor"];
 const claimsFor = (member) => {
-    if (!member || member.active === false || !ROLES.includes(member.role)) return { admin: null, role: null };
-    return { admin: member.role === "admin" ? true : null, role: member.role };
+    const role = member?.role ?? "team";
+    if (!member || member.active === false || !ROLES.includes(role)) return { admin: null, role: null };
+    return FULL.includes(role) ? { admin: true, role: "team" } : { admin: null, role };
 };
 const applyClaims = async (uid, member) => {
     const user = await getAuth().getUser(uid);
     const next = { ...(user.customClaims ?? {}) };
-    const c = claimsFor(member);
+    // the owner always keeps full access, even if their own team entry is removed by mistake
+    const c = next.owner === true ? { admin: true, role: "team" } : claimsFor(member);
     for (const [k, v] of Object.entries(c)) {
         if (v === null) delete next[k];
         else next[k] = v;

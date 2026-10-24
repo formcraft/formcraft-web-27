@@ -1,8 +1,9 @@
 // AuthContext: who is signed in, shared with the whole app (read it with useAuth()).
 //
 // - Listens to Firebase Auth and keeps `user` up to date (null when signed out).
-// - Reads the person's role from their Firebase "custom claims": admin: true for the Formcraft team's
-//   admins, or role "marketing" / "editor". Claims are set on the server (scripts/set-admin.js or the
+// - Reads the person's access from their Firebase "custom claims": admin: true for everyone on the
+//   Formcraft team (full access), owner: true for the owner (who alone manages the team), or a limited
+//   role "marketing" / "editor". Claims are set on the server (scripts/set-admin.js or the
 //   claimTeamRole Cloud Function), never in the browser, so nobody can make themselves an admin.
 // - signIn() opens Google sign-in in a pop-up and turns errors into plain messages.
 // - The sign-in dialog only opens when asked (openSignIn()); the site never forces anyone to sign in.
@@ -31,6 +32,7 @@ const friendlyError = (error) => {
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [isOwner, setIsOwner] = useState(false);
     const [role, setRole] = useState(null); // "admin" | "marketing" | "editor" | null (team roles, custom claims)
     const [loading, setLoading] = useState(true);
     const [signInOpen, setSignInOpen] = useState(false);
@@ -54,9 +56,11 @@ export const AuthProvider = ({ children }) => {
                 }
                 const admin = token.claims.admin === true;
                 setIsAdmin(admin);
+                setIsOwner(token.claims.owner === true);
                 setRole(admin ? "admin" : token.claims.role ?? null);
             } else {
                 setIsAdmin(false);
+                setIsOwner(false);
                 setRole(null);
             }
             setLoading(false);
@@ -84,6 +88,8 @@ export const AuthProvider = ({ children }) => {
         () => ({
             user,
             isAdmin,
+            // the owner manages the team (Admin → Team); set only with scripts/set-admin.js --owner
+            isOwner,
             role,
             // marketing team (studio, leads, content) and editors (drafts) — admins can do both
             isMarketing: isAdmin || role === "marketing",
@@ -93,7 +99,7 @@ export const AuthProvider = ({ children }) => {
             signOut,
             openSignIn,
         }),
-        [user, isAdmin, role, loading, signIn, signOut, openSignIn]
+        [user, isAdmin, isOwner, role, loading, signIn, signOut, openSignIn]
     );
 
     return (

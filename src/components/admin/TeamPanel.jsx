@@ -5,9 +5,10 @@ import { useCollection } from "../../hooks/useCollection";
 import { ROLES, STARTER_TEAM } from "../../data/team";
 import "./TeamPanel.css";
 
-// Admin → Team (admins only): who can use the admin page and with which role. Each person is a
-// Firestore doc team/{email in lower case}; the onTeamChange and claimTeamRole Cloud Functions turn
-// it into custom claims (admin / role), which firestore.rules and storage.rules check.
+// Admin → Team (the owner only): who can use the admin page. Everyone gets the same full access ("team")
+// unless the owner picks a limited role. Each person is a Firestore doc team/{email in lower case}; the
+// onTeamChange and claimTeamRole Cloud Functions turn it into custom claims (admin / role), which
+// firestore.rules and storage.rules check. firestore.rules let only the owner write team/*.
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const fsMod = () => Promise.all([getDb(), import("firebase/firestore")]);
 
@@ -24,12 +25,12 @@ const deleteMember = async (email) => {
     await deleteDoc(doc(db, "team", email.toLowerCase()));
 };
 
-/** Admin → Team: add or remove team members and their role (admin, marketing, editor). Needs Cloud Functions to take effect. */
+/** Admin → Team (owner only): add or remove team members and their access. Needs Cloud Functions to take effect. */
 export const TeamPanel = () => {
-    const { user } = useAuth();
+    const { user, isOwner } = useAuth();
     const me = user?.email?.toLowerCase() ?? "";
     const { docs, loading, error } = useCollection("team");
-    const [form, setForm] = useState({ name: "", email: "", role: "editor", title: "" });
+    const [form, setForm] = useState({ name: "", email: "", role: "team", title: "" });
     const [busy, setBusy] = useState(false);
     const [note, setNote] = useState(null);
     const members = [...docs].sort((a, b) => (a.active === false) - (b.active === false) || String(a.name).localeCompare(String(b.name)));
@@ -44,7 +45,7 @@ export const TeamPanel = () => {
             await fn();
             setNote({ ok: true, text: done });
         } catch (e) {
-            setNote({ ok: false, text: e.code === "permission-denied" ? "Firestore refused: only admins can change the team." : e.message });
+            setNote({ ok: false, text: e.code === "permission-denied" ? "Firestore refused: only the owner can change the team." : e.message });
         } finally {
             setBusy(false);
         }
@@ -58,7 +59,7 @@ export const TeamPanel = () => {
         if (known.has(email)) return setNote({ ok: false, text: `${email} is on the team already — change their role in the list.` });
         run(async () => {
             await writeMember(email, { name: form.name.trim(), role: form.role, title: form.title.trim(), active: true }, user?.email, true);
-            setForm({ name: "", email: "", role: "editor", title: "" });
+            setForm({ name: "", email: "", role: "team", title: "" });
         }, `Added ${email}. Access switches on the next time they sign in.`);
     };
 
@@ -67,6 +68,14 @@ export const TeamPanel = () => {
             for (const m of starterToAdd) await writeMember(m.email, { name: m.name, role: m.role, title: m.title, active: true }, user?.email, true);
         }, `Imported ${starterToAdd.length} team member${starterToAdd.length === 1 ? "" : "s"}.`);
 
+    if (!isOwner)
+        return (
+            <div className="stack" style={{ "--gap": "12px" }}>
+                <h3 className="h3">Team</h3>
+                <p className="body">Only the owner adds people to the team and decides what they can do. Ask Emlyn Atochon.</p>
+            </div>
+        );
+
     return (
         <div className="stack" style={{ "--gap": "20px" }}>
             <div className="stack" style={{ "--gap": "6px" }}>
@@ -74,7 +83,7 @@ export const TeamPanel = () => {
                 <p className="small">Who can use this admin page, and what they can do. Use the Google account each person signs in with.</p>
             </div>
             <div className="alert">
-                Access switches on the next time they sign in. Cloud Functions must be deployed (Blaze plan) for this to work; until then use <code>scripts/set-admin.js</code> (with <code>--role marketing</code> or <code>--role editor</code>).
+                Access switches on the next time they sign in. Cloud Functions must be deployed (Blaze plan) for this to work; until then use <code>scripts/set-admin.js</code> (full access by default, or <code>--role marketing</code> / <code>--role editor</code>).
             </div>
 
             <dl className="team-roles">
@@ -95,7 +104,7 @@ export const TeamPanel = () => {
                     <ul className="team-starter">
                         {STARTER_TEAM.map((m) => (
                             <li key={m.name} className="small">
-                                <strong>{m.name}</strong> · {m.title} · {ROLES[m.role].label} ·{" "}
+                                <strong>{m.name}</strong> · {m.title} · {(ROLES[m.role] ?? ROLES.team).label} ·{" "}
                                 {m.email ? (known.has(m.email.toLowerCase()) ? "on the team" : m.email) : <span className="team-missing">add email</span>}
                             </li>
                         ))}
@@ -134,9 +143,9 @@ export const TeamPanel = () => {
                                             <select
                                                 id={`tr-${m.id}`}
                                                 className="admin-status"
-                                                value={m.role ?? "editor"}
-                                                disabled={busy || (self && m.role === "admin")}
-                                                title={self ? "You can't take away your own admin role" : undefined}
+                                                value={ROLES[m.role] ? m.role : "team"}
+                                                disabled={busy || self}
+                                                title={self ? "You can't change your own access" : undefined}
                                                 onChange={(e) => run(() => writeMember(m.id, { role: e.target.value }, user?.email, false), `Role changed to ${ROLES[e.target.value].label}. It applies at their next sign-in.`)}
                                             >
                                                 {Object.entries(ROLES).map(([k, r]) => <option key={k} value={k}>{r.label}</option>)}

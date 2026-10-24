@@ -109,6 +109,9 @@ a.card, button.card { display: block; text-decoration: none; text-align: left; b
   outline: 1px solid var(--line-2); outline-offset: -10px;
 }
 .placeholder::before { content: ""; flex: none; width: 40px; height: 28px; background: url("/logos/fc-mark-orange.svg") center / contain no-repeat; }
+/* Admin → Copy size presets (useCopy wraps the text): one step down or up the type scale, never free sizes */
+.copy-sm { font-size: .86em; }
+.copy-lg { font-size: 1.16em; }
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 1px; background: var(--line); border-radius: var(--fc-radius); overflow: hidden; }
 .kpis > div { display: flex; flex-direction: column; gap: 8px; padding: 24px 22px; background: var(--tex-sheet); }
 .checklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
