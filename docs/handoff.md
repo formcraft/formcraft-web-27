@@ -119,6 +119,13 @@ Phase 0 finished plus Phase 1 pages, in the new **paper-cut** design:
   the hero view, 35 % rust / 30 % navy / 35 % white by day, rust and white at night, 0.35–0.7 m/s. They
   appear when the build finishes.
 
+**Cloud session, after `8b8014c` (your offline checks):** thank you — reconciled, nothing to merge. Your
+`.h2` → `hotel2d-*` fix was right (the 2D drawing's root class clashed with the section headings; that
+came from the cloud side). Your CLAUDE.md `npm run check` rule stands, and the new "How we think" section
+(`f2d31b4`, adapted from the MIT-licensed karpathy-guidelines) points at it. CI is gone, so remember
+`SITE_URL=https://<domain>` when you build for a deploy (the owner checklist says so). The levels fix
+(`c7f5bdb`) survived your HotelScene changes; please include it in task 2.
+
 **Please do these now, in order, commit after each, and write results under "From the local machine (round 5)":**
 
 1. `git pull`, `npm install`, `npm --prefix functions install`, `npm run lint`, `npm run build` (the build now

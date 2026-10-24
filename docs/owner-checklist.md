@@ -67,7 +67,7 @@
 17. **After a week live**:
     - Check the browser console for "Content-Security-Policy" reports; if clean, switch `Content-Security-Policy-Report-Only` to `Content-Security-Policy` in `firebase.json`. **[CC]**
     - Turn on App Check **enforcement** for Storage and Functions (Firebase console → App Check), and set `ENFORCE_APP_CHECK=true` for the functions. **[CC]**
-18. **Automatic deploys (optional)**: ask Claude Code to add a GitHub Actions deploy job with a Firebase service-account secret, so merging to `main` publishes the site. Every push already runs lint, build and a speed check (`.github/workflows/ci.yml`).
+18. **Automatic deploys (optional)**: ask Claude Code to add a GitHub Actions deploy job with a Firebase service-account secret, so merging to `main` publishes the site. There's no GitHub CI any more (removed to save money); Claude Code on the office computer runs `npm run check` before every push instead.
 
 ## 4. Content only you can provide
 
