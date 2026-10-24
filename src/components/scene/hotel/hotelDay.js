@@ -7,10 +7,12 @@
 import * as THREE from "three";
 import { legacyLight } from "./compat";
 import { createBuild } from "./build";
+import { addWeather3D } from "./weather3d";
 
 // Builds the scene in steps, yielding to the browser between them so the page stays responsive while
 // the model is made (env.signal aborts a build that's no longer wanted). Resolves to a handle:
-// { dispose, setView(name), zoomBy(step), resetView() } — or null if aborted / WebGL is missing.
+// { dispose, setView(name), zoomBy(step), resetView(), setWeather(w) } — or null if aborted / WebGL is missing.
+// env.weather (optional): { kind, wind, amount } adds Kampala's weather (hotel/weather3d.js).
 export async function createHotelScene(canvas, env) {
   env = env || {};
   // the concept was written for three.js before colour management; keep its colour maths
@@ -878,6 +880,7 @@ export async function createHotelScene(canvas, env) {
   function frame() {
     if (!visible) return; // resumes from the observer
     clock.update(); var dt = Math.min(0.05, clock.getDelta()), el = clock.getElapsed();
+    if (wx) wx.update(dt);
     // time starts at the first frame, so the first live frame is exactly the still picture; frozen for the still captures
     if (tStart < 0) tStart = el;
     var t = env.capture ? 0 : el - tStart, moving = !reduced && !env.capture;
@@ -957,6 +960,9 @@ export async function createHotelScene(canvas, env) {
       m.normalMap = normalTex; m.normalScale.set(k, k); m.bumpMap = null; m.needsUpdate = true;
     });
   });
+  // Kampala's weather on the model: leaves flutter, rain, dimmer light (only when HotelScene passes env.weather)
+  var wx = env.weather ? addWeather3D(THREE, { scene: scene, green: model.children.slice(bi1, bi2), lights: [key, fill], weather: env.weather, night: false, small: small, reduced: reduced }) : null;
+  if (wx) cleanup.push(wx.dispose);
   if (R.compileAsync) { try { await R.compileAsync(scene, camera); } catch (err) {} }
   if (stopped()) return null;
   // after compiling (hidden objects aren't compiled): hide the model for the opening build
@@ -977,6 +983,7 @@ export async function createHotelScene(canvas, env) {
     setView: setView,
     zoomBy: zoomBy,
     resetView: resetView,
+    setWeather: function (w) { if (wx) wx.set(w); }, // live changes; needs env.weather at creation
     dispose: function () {
       alive = false;
       window.cancelAnimationFrame(rafId);

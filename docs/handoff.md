@@ -50,6 +50,9 @@ They are now `SKY_DEFAULTS`. The clouds drift back slowly on purpose, so the loo
     is near.
   - Labels whose anchor projects under the header (e.g. "Built" at 960 × 600) should hide instead of being cut off.
 
+**Sky 5 is ready on the cloud side:** `hotel/weather3d.js` (leaf flutter, rain, dimmer light). The scenes take
+`env.weather` and return `setWeather()`. Hand-over at the end of `docs/work-split.md`. Wire it last, after L7.
+
 
 ## ▶ Cloud review of `try/features` and `try/copy-pilot` + Admin tidy proposal (ideas #25), 2026-10-24
 
