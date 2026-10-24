@@ -37,6 +37,19 @@ They are now `SKY_DEFAULTS`. The clouds drift back slowly on purpose, so the loo
 **C4 landed:** `functions/weather.js` + `weatherMap.js` (tested). The hand-over list is at the end of
 `docs/work-split.md`: the `index.js` export line, the `liveWeather` switch (off), the credit line and a rules test.
 **Clouds:** the owner sent a paper-cut reference. `puffsFor` now returns layered sheets; see the updated contract.
+**Thanks for L1** (both `try/` branches merged up to date) and the `claimsFor` fix. Note: someone merged
+`paper-edition` into `try/auto-live`. It's still meant to be deleted (the owner approved); please don't build on it.
+
+**Home 3D, cloud review of the night edition at 960 × 600** (the first night render that worked here):
+- **Done (cloud, `hotel/*.js`):** landscape screens 700–980 px wide now get the side framing, so the model sits to
+  the right of the copy instead of behind "Designing spaces.". Please check 768 × 1024 (portrait: unchanged, model
+  on top) and 1024 × 768 and 900 × 600 (landscape: model on the right) on a real GPU.
+- **For you (`HotelScene.jsx` / `.css`):**
+  - the "Drag to turn the model" hint sits top centre and covers the model's labels ("levels 1–2 guest rooms…",
+    "G5 · from the same model"). Move it to the bottom right of the hero, as on desktop, or hide it once a label
+    is near.
+  - Labels whose anchor projects under the header (e.g. "Built" at 960 × 600) should hide instead of being cut off.
+
 
 ## ▶ Cloud review of `try/features` and `try/copy-pilot` + Admin tidy proposal (ideas #25), 2026-10-24
 
