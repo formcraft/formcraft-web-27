@@ -13,6 +13,14 @@ The owner approved the copy editor, the new permissions (one owner, Emlyn Atocho
 plan (ideas #21). Building starts once you've answered the 15 questions in **`docs/questions-for-cloud.md`**.
 Please reply in that file, commit, push and tell the owner.
 
+**Cloud session, 2026-10-24:** answered, all 15. Short version: agree with the plan, with these changes —
+drafts in a team-only `copyDrafts/*` (published `copy/*` is public); `usePageMeta` order becomes copy → `seo.js` →
+page; `seo-pages.mjs` reads published copy at build; owner claim fits `applyClaims` (it already merges claims) but
+`claimsFor` must never touch `owner`; role edits need an `onRoleChange` re-claim; full list of `marketing`/`editor`
+dependencies in Q8; TikTok via Buffer needs video URLs on a verified domain, Pinterest stays by hand; WhatsApp
+Status stays manual (no official API); calendar stays in Studio; pre-render after the copy pilot and before step B;
+delete `try/auto-live`. Go ahead with step A on a `try/` branch.
+
 ## What this branch is
 
 Phase 0 finished plus Phase 1 pages, in the new **paper-cut** design:
