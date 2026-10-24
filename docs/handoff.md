@@ -147,36 +147,43 @@ screen tall.
 
 ## From the local machine (for the cloud session)
 
-Latest: 2026-10-24, **round 3** (checked `f651610`). Draft PR: https://github.com/formcraft/formcraft-web-27/pull/1
-Rounds 1–2 are done and your round-2 fixes check out (drag hint, Studio table, Header lint, prices).
+Latest: 2026-10-24, **round 4** (checked `d9d6802`). Draft PR: https://github.com/formcraft/formcraft-web-27/pull/1
 
-**Round 3 results**
-- Lint and build pass (see status table). `firebase/firestore` is not in the main chunk.
-- 27 routes × 3 widths × 2 editions: no overflow, one h1 each, meta descriptions, no JS errors.
-  `settings/site` and `stats/public` 404 on an empty emulator (expected; defaults used).
-- Admin (emulator, `formcraftinc@gmail.com` via `set-admin.js`): turning Academy off removes all
-  3 links for a signed-out visitor and `/academy` shows "opens soon"; back on restores them.
-  "Import the starter list" imported 6 products; edit + photo upload to Storage + Save → a fresh
-  signed-out browser sees the new title on `/stores` and the product page.
-- Service worker registers on `npm run preview` (static 31, pages 1, media 7 cached); `/about` and
-  `/stores` reload offline.
+**Not answered yet:** `docs/owner-brief-hero-and-speed.md` (the owner's brief: landscape and sky first,
+building fades in, Home's own sky plus one shared sky, Front/Back/Cutaway/Site views and zoom, device
+levels). Your round 4 crossed with it. Please answer it per section in your next reply and assign the local tasks.
 
-**Please fix**
-1. **Home freezes after it paints.** Text is up at 1.3 s, but one task blocks the main thread for
-   8.1 s (12.3 s total) while the hotel scene starts; nothing is clickable meanwhile. Headless Edge
-   uses software WebGL, so a real GPU will be faster, but please split the scene build into chunks
-   (yield between floors/meshes, or build in a worker) and measure on a real mid-range phone.
-2. **Offline Home is a blank page.** After one visit, going offline and reloading `/` shows nothing:
-   the service worker doesn't have `/assets/index-*.js` because the first page load wasn't
-   controlled. Precache the entry bundle and CSS at install (read them from `index.html` or a build
-   manifest), and make sure Home renders without the 3D chunks. Even after three visits, `/` stayed
-   blank offline while `/about` and `/stores` worked.
-3. **Extra product photos never show.** Firestore holds `images: ["chair", "<storage url>"]`, but
-   `/stores/:slug` renders only `images[0]`. Show a gallery (or thumbnails) for the rest.
-4. **Lint warnings** in `admin/InboxPanel.jsx:14` and `page/Photo.jsx:6` (`only-export-components`).
-
-**Not done here:** a real mid-range phone (step 5 of round 3). Pointer-follow and pause-when-hidden on
-the 3D scene still need a person in a real browser.
+**Round 4 results**
+1. **Lint** passes (3 `only-export-components` warnings: `page/Photo.jsx:6`, `scene/HotelScene.jsx:58`,
+   `admin/InboxPanel.jsx:14`). **Build** passes: main JS **80 kB** gz; three.js (140 kB) and the Firestore
+   SDK (162 kB) are still separate, not preloaded. `functions/`: `npm --prefix functions install` OK,
+   `node --check` OK; `functions/package-lock.json` committed.
+2. **Opening animation**, tested with `navigator.webdriver` hidden (Edge, 360 and 1440, both editions):
+   - Modes are right: full on the first visit, none on a reload in the same tab, quick in a new tab,
+     fade with reduced motion. A tap at 0.4 s cuts full from about 3.5 s to 1.8–2.3 s.
+   - **Landing:** the mark ends on the header logo in 7 of 8 runs (0 px off). In 360 night quick it ends
+     4–5 px off and slightly too large (26 vs 19 px tall), because it was removed before its 0.5 s fly
+     finished.
+   - **Night first visit takes 9–11 s** (day about 3.5 s). At 1440 night the tear starts at 1.5 s, but the
+     overlay only leaves at 11.2 s: its timers can't run while the night scene is being built (the
+     main-thread freeze from round 3). So the opening sits frozen mid-tear. Building the scene in
+     small steps (brief §4) fixes this as well. Until then, consider starting the 3D only after the
+     opening has finished (`fci` removed).
+3. **Real phone:** not done yet (owner).
+4. **Stills re-rendered on the real GPU** (NVIDIA Quadro T1000) and committed: same sizes and WebP
+   quality 72; 39–84 kB each.
+   - `scripts/render-hotel-stills.mjs` needed three changes to work here:
+     a) Windows gives browsers the Intel iGPU unless Chromium gets `--force_high_performance_gpu`;
+     b) a headed window adds a **scrollbar strip** to the screenshot; hide it
+        (`html{scrollbar-width:none}`);
+     c) `python3`/Pillow isn't available on this machine, so `sharp` was used for WebP.
+     Worth putting a), b) and a Node-only conversion into the script.
+   - **The moon follows the Kampala clock**, so a still taken at one hour won't match the live scene at
+     another. The old portrait-night still has the moon top left; the new one has none. Make the
+     `?still=1` frame and the live first frame use the same sky (fixed moon/sun position, or no moon
+     in both), or the handover will jump.
+   - **The background panel's edge shows** on the left of both landscape stills (the flat torn-paper sky
+     ends in a hard vertical edge). Part of the landscape/sky work in the brief.
 
 ## From the cloud session (reply)
 
