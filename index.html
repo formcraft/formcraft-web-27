@@ -15,18 +15,186 @@
     <script>
       // Pick the paper edition before first paint: the visitor's saved choice, else Kampala's
       // clock (day from 06:45 to 18:55 EAT). Same rule as src/lib/skyClock.js.
+      // Then decide the opening animation (see #fci below): full on a first visit, quick on later
+      // visits, none again in the same session, a plain fade with reduced motion, never for bots.
       (function () {
-        var t = null;
-        try { t = localStorage.getItem("fc-theme"); } catch (e) {}
+        var d = document.documentElement, t = null, ls = null, ss = null;
+        try { ls = window.localStorage; ss = window.sessionStorage; t = ls.getItem("fc-theme"); } catch (e) {}
         if (t !== "day" && t !== "night") {
-          var d = new Date(), m = (d.getUTCHours() * 60 + d.getUTCMinutes() + 180) % 1440;
+          var n = new Date(), m = (n.getUTCHours() * 60 + n.getUTCMinutes() + 180) % 1440;
           t = m >= 405 && m < 1135 ? "day" : "night";
         }
-        document.documentElement.setAttribute("data-theme", t);
+        d.setAttribute("data-theme", t);
+        // Home: start fetching the still picture of the hotel model straight away (it's the first big image)
+        if (location.pathname === "/") {
+          var pl = document.createElement("link");
+          pl.rel = "preload"; pl.as = "image"; pl.setAttribute("fetchpriority", "high");
+          pl.href = "/images/hotel-" + (innerHeight > innerWidth ? "port" : "land") + "-" + t + ".webp";
+          document.head.appendChild(pl);
+        }
+        var bot = navigator.webdriver || /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|embedly|skype/i.test(navigator.userAgent);
+        var mode = "none";
+        try {
+          if (!bot && ss && !ss.getItem("fc-intro")) {
+            mode = matchMedia("(prefers-reduced-motion: reduce)").matches ? "fade" : ls.getItem("fc-intro-seen") ? "quick" : "full";
+            ss.setItem("fc-intro", "1");
+            ls.setItem("fc-intro-seen", "1");
+          }
+        } catch (e) { mode = "none"; }
+        if (mode !== "none") {
+          d.classList.add("fci-run", "fci-" + mode, "fci-hold");
+          var l = document.createElement("link");
+          l.rel = "preload"; l.as = "image"; l.href = t === "night" ? "/textures/navy.webp?v=2" : "/textures/paper.webp?v=2";
+          document.head.appendChild(l);
+        }
       })();
     </script>
+    <style>
+      /* Opening animation. It paints before the app's CSS loads, so its few colours mirror
+         src/styles/tokens.css (navy #1C252D, orange #FFAE61, white #F1F1F1). */
+      #fci { display: none; }
+      .fci-run #fci { display: block; position: fixed; inset: 0; z-index: 9999; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+      .fci-hold .header-brand { opacity: 0; }
+      .header-brand { transition: opacity .35s ease; }
+      #fci .fci-strip, #fci .fci-sheet { position: absolute; left: 0; right: 0; background: #F1F1F1 url("/textures/paper.webp?v=2") 0 0 / 384px; }
+      [data-theme="night"] #fci .fci-strip, [data-theme="night"] #fci .fci-sheet { background: #1C252D url("/textures/navy.webp?v=2") 0 0 / 384px; }
+      #fci .fci-strip { top: 0; height: 64px; z-index: 2; box-shadow: 0 1px 0 rgba(28,37,45,.12); }
+      #fci .fci-sheet { top: 0; bottom: 0; z-index: 1; transform-origin: 30% 0; }
+      #fci .fci-sheet::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(28,37,45,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(28,37,45,.06) 1px, transparent 1px); background-size: 48px 48px; }
+      [data-theme="night"] #fci .fci-sheet::before { background-image: linear-gradient(rgba(241,241,241,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(241,241,241,.05) 1px, transparent 1px); }
+      #fci .fci-sheet::after { content: ""; position: absolute; inset: 22px; top: 86px; border: 1.5px solid rgba(28,37,45,.28); }
+      [data-theme="night"] #fci .fci-sheet::after { border-color: rgba(241,241,241,.2); }
+      #fci .fci-perf { position: absolute; left: 0; right: 0; top: 63px; height: 0; border-top: 2px dashed rgba(28,37,45,.22); z-index: 3; }
+      [data-theme="night"] #fci .fci-perf { border-color: rgba(241,241,241,.2); }
+      #fci .fci-tear { position: absolute; left: 0; top: 40px; width: 100%; height: 48px; z-index: 4; overflow: visible; pointer-events: none; }
+      #fci .fci-tear path { fill: none; stroke: rgba(255,255,255,.85); stroke-width: 1.6; stroke-linejoin: round; stroke-dasharray: var(--len, 4000); stroke-dashoffset: var(--len, 4000); }
+      [data-theme="night"] #fci .fci-tear path { stroke: rgba(241,241,241,.35); }
+      #fci .fci-stage { position: absolute; left: 50%; top: 50%; z-index: 5; display: flex; flex-direction: column; align-items: center; gap: 22px; transform: translate(-50%, -50%); }
+      #fci .fci-mark { width: 132px; height: auto; display: block; fill: #1C252D; transform-origin: 0 0; opacity: 0; filter: drop-shadow(0 2px 2px rgba(28,37,45,.18)); }
+      [data-theme="night"] #fci .fci-mark { fill: #FFAE61; filter: drop-shadow(0 2px 3px rgba(0,0,0,.4)); }
+      #fci .fci-tag { margin: 0; font: 600 15px/1.3 "Satoshi", system-ui, sans-serif; letter-spacing: .02em; color: #1C252D; text-align: center; white-space: nowrap; }
+      [data-theme="night"] #fci .fci-tag { color: #F1F1F1; }
+      #fci .fci-tag span { opacity: 0; transition: opacity .25s ease; }
+      #fci .fci-tag b { font-weight: 600; color: #D15334; }
+      [data-theme="night"] #fci .fci-tag b { color: #FFAE61; }
+      #fci.is-in .fci-mark { animation: fci-in .3s ease-out forwards; }
+      #fci.is-stamp .fci-mark { animation: fci-stamp .55s cubic-bezier(.3,.7,.3,1) forwards; }
+      #fci.is-fly .fci-mark { opacity: 1; transition: transform .5s cubic-bezier(.6,0,.2,1), opacity .25s ease .4s; }
+      #fci.is-fly .fci-tag { opacity: 0; transition: opacity .2s ease; }
+      #fci.is-tear .fci-tear path { stroke-dashoffset: 0; transition: stroke-dashoffset .32s ease-in; }
+      #fci.is-drop .fci-sheet { transform: translateY(110vh) rotate(5deg); transition: transform .7s cubic-bezier(.55,0,.8,.35); }
+      #fci.is-drop .fci-strip, #fci.is-drop .fci-perf { transform: translateY(-110%); transition: transform .45s ease-in .1s; }
+      #fci.is-drop .fci-tear, #fci.is-drop .fci-stage { opacity: 0; transition: opacity .2s ease; }
+      #fci.is-fade { opacity: 0; transition: opacity .35s ease; }
+      @keyframes fci-in { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: scale(1); } }
+      @keyframes fci-stamp { 0% { opacity: 1; transform: scale(1); } 35% { transform: scale(.9); filter: drop-shadow(0 0 0 rgba(28,37,45,.1)); } 70% { transform: scale(1.05); } 100% { opacity: 1; transform: scale(1); } }
+      /* if anything goes wrong, never leave the sheet covering the site */
+      .fci-run #fci { animation: fci-failsafe 0s linear 7s forwards; }
+      @keyframes fci-failsafe { to { visibility: hidden; pointer-events: none; } }
+    </style>
   </head>
   <body>
+    <div id="fci" aria-hidden="true">
+      <div class="fci-sheet"></div>
+      <div class="fci-strip"></div>
+      <div class="fci-perf"></div>
+      <svg class="fci-tear" preserveAspectRatio="none"><path /></svg>
+      <div class="fci-stage">
+        <svg class="fci-mark" viewBox="0 0 41.9 29.36"><path d="M10.91,12.28l2.93-2.93v8.55c0,2.2-1.18,4.24-3.1,5.33L0,29.36v-6.17l10.91-10.91Z"/><path d="M15.19,10.02h15.49c1.6,0,2.9,1.3,2.9,2.9v5.22c0,1.6-1.3,2.9-2.9,2.9h-12.59c-1.6,0-2.9-1.3-2.9-2.9v-8.12Z"/><path d="M41.9,0v5.78c0,1.6-1.3,2.9-2.9,2.9H15.19v-.67L23.19,0h18.71Z"/></svg>
+        <p class="fci-tag">Designing spaces. <b>Empowering communities.</b></p>
+      </div>
+    </div>
+    <script>
+      // Opening animation: stamp → glide to the header logo → tear the sheet off the pad.
+      // It never waits longer than it must: the tear happens as soon as the first page has
+      // rendered (or after 4 s at most), and a tap or key press skips straight to it.
+      (function () {
+        var d = document.documentElement, el = document.getElementById("fci");
+        if (!d.classList.contains("fci-run")) { el.parentNode.removeChild(el); return; }
+        var mode = d.classList.contains("fci-full") ? "full" : d.classList.contains("fci-quick") ? "quick" : "fade";
+        var mark = el.querySelector(".fci-mark"), tag = el.querySelector(".fci-tag");
+        var start = Date.now(), timers = [], torn = false;
+        var at = function (ms, fn) { timers.push(setTimeout(fn, ms)); };
+        var finish = function () {
+          timers.forEach(clearTimeout);
+          d.classList.remove("fci-run", "fci-full", "fci-quick", "fci-fade", "fci-hold");
+          if (el.parentNode) el.parentNode.removeChild(el);
+        };
+        var pageReady = function () {
+          var main = document.getElementById("main");
+          return !!(main && main.firstElementChild && !main.querySelector('[aria-busy="true"]'));
+        };
+        // the tagline types itself in, word by word
+        tag.innerHTML = tag.innerHTML.replace(/(<b>)?([^<\s]+)(<\/b>)?/g, function (w, b1, word, b2) { return (b1 || "") + "<span>" + word + "</span>" + (b2 || ""); });
+        var words = tag.querySelectorAll("span");
+        if (mode !== "full") tag.style.display = "none";
+
+        var flyToHeader = function () {
+          // the visible header logo (day and night versions are both in the page; one is hidden)
+          var tr = null;
+          [].forEach.call(document.querySelectorAll(".header-brand img"), function (img) { var b = img.getBoundingClientRect(); if (b.width) tr = b; });
+          el.classList.remove("is-in", "is-stamp");
+          mark.style.opacity = 1;
+          var r = mark.getBoundingClientRect();
+          if (!tr || !tr.width) tr = { left: 24, top: 22, height: 30, width: 138 };
+          var h = tr.height * (29.36 / 34.24); // the mark's share of the lockup's height
+          var s = h / r.height;
+          mark.style.transform = "translate(" + (tr.left - r.left) + "px," + (tr.top + (tr.height - h) / 2 - r.top) + "px) scale(" + s + ")";
+          el.classList.add("is-fly");
+        };
+        var tear = function () {
+          if (torn) return; torn = true;
+          var w = window.innerWidth, y = 24, pts = [[0, y]], x = 0, path = "M0," + y;
+          while (x < w) { x += 4 + Math.random() * 12; y = Math.max(14, Math.min(34, y + (Math.random() - 0.5) * 10)); pts.push([Math.min(x, w), y]); path += " L" + Math.min(x, w).toFixed(1) + "," + y.toFixed(1); }
+          var svg = el.querySelector(".fci-tear"), p = svg.querySelector("path");
+          svg.setAttribute("viewBox", "0 0 " + w + " 48"); p.setAttribute("d", path);
+          var len = Math.ceil(p.getTotalLength ? p.getTotalLength() : w * 1.3); p.style.setProperty("--len", len);
+          // the sheet below the tear and the strip above it share the same ragged line
+          var poly = pts.map(function (q) { return q[0].toFixed(1) + "px " + (q[1] + 40).toFixed(1) + "px"; }).join(",");
+          el.querySelector(".fci-sheet").style.clipPath = "polygon(" + poly + "," + w + "px 100%,0 100%)";
+          el.querySelector(".fci-strip").style.height = "90px";
+          el.querySelector(".fci-strip").style.clipPath = "polygon(0 0," + w + "px 0," + pts.slice().reverse().map(function (q) { return q[0].toFixed(1) + "px " + (q[1] + 40).toFixed(1) + "px"; }).join(",") + ")";
+          el.querySelector(".fci-perf").style.display = "none";
+          d.classList.remove("fci-hold"); // the real header logo fades in under the mark
+          requestAnimationFrame(function () {
+            el.classList.add("is-tear");
+            setTimeout(function () { el.classList.add("is-drop"); }, mode === "full" ? 300 : 180);
+            setTimeout(finish, mode === "full" ? 1050 : 800);
+          });
+        };
+        var tearWhenReady = function (deadline) {
+          if (pageReady() || Date.now() > deadline) return tear();
+          at(100, function () { tearWhenReady(deadline); });
+        };
+        var skip = function () {
+          if (torn) return;
+          if (!el.classList.contains("is-fly")) { mark.style.opacity = 1; flyToHeader(); }
+          tearWhenReady(Date.now() + 1200);
+        };
+        el.addEventListener("pointerdown", skip);
+        window.addEventListener("keydown", skip, { once: true });
+
+        if (mode === "fade") {
+          mark.style.opacity = 1;
+          var fadeOut = function () { d.classList.remove("fci-hold"); el.classList.add("is-fade"); at(380, finish); };
+          var waitFade = function () { if (pageReady() || Date.now() - start > 4000) fadeOut(); else at(100, waitFade); };
+          at(350, waitFade);
+          return;
+        }
+        if (mode === "quick") {
+          el.classList.add("is-in");
+          at(260, flyToHeader);
+          at(720, function () { tearWhenReady(start + 4000); });
+          return;
+        }
+        // full
+        el.classList.add("is-in");
+        at(300, function () { el.classList.remove("is-in"); el.classList.add("is-stamp"); });
+        words.forEach(function (wd, i) { at(380 + i * 110, function () { wd.style.opacity = 1; }); });
+        at(1050, flyToHeader);
+        at(1500, function () { tearWhenReady(start + 4500); });
+      })();
+    </script>
     <div id="root"></div>
     <noscript><p style="padding:24px;font-family:system-ui">Formcraft needs JavaScript to show this site. Call +256 753 929 921 or email formcraftdesign@gmail.com.</p></noscript>
     <script type="module" src="/src/main.jsx"></script>

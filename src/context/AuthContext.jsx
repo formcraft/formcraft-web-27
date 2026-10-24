@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AuthContext } from "./contexts";
 import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut, GoogleAuthProvider } from "firebase/auth";
-import { auth } from "../config/firebase";
+import { auth, getFunctionsService } from "../config/firebase";
 import { SignInDialog } from "../components/auth/SignInDialog";
 
 
@@ -22,6 +22,7 @@ const friendlyError = (error) => {
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [role, setRole] = useState(null); // "admin" | "marketing" | "editor" | null (team roles, custom claims)
     const [loading, setLoading] = useState(true);
     const [signInOpen, setSignInOpen] = useState(false);
 
@@ -30,10 +31,24 @@ export const AuthProvider = ({ children }) => {
             setUser(currentUser);
             if (currentUser) {
                 setSignInOpen(false);
-                const token = await currentUser.getIdTokenResult();
-                setIsAdmin(token.claims.admin === true);
+                let token = await currentUser.getIdTokenResult();
+                // Team members added in Admin → Team pick up their role on sign-in (Cloud Function
+                // claimTeamRole); only when functions are deployed (VITE_FUNCTIONS_ENABLED=true).
+                if (import.meta.env.VITE_FUNCTIONS_ENABLED === "true" && !token.claims.role && !token.claims.admin) {
+                    try {
+                        const [functions, { httpsCallable }] = await Promise.all([getFunctionsService(), import("firebase/functions")]);
+                        const { data } = await httpsCallable(functions, "claimTeamRole")();
+                        if (data?.role) token = await currentUser.getIdTokenResult(true);
+                    } catch (error) {
+                        console.warn("Couldn't check team role.", error);
+                    }
+                }
+                const admin = token.claims.admin === true;
+                setIsAdmin(admin);
+                setRole(admin ? "admin" : token.claims.role ?? null);
             } else {
                 setIsAdmin(false);
+                setRole(null);
             }
             setLoading(false);
         });
@@ -56,8 +71,19 @@ export const AuthProvider = ({ children }) => {
     const closeSignIn = useCallback(() => setSignInOpen(false), []);
 
     const value = useMemo(
-        () => ({ user, isAdmin, loading, signIn, signOut, openSignIn }),
-        [user, isAdmin, loading, signIn, signOut, openSignIn]
+        () => ({
+            user,
+            isAdmin,
+            role,
+            // marketing team (studio, leads, content) and editors (drafts) — admins can do both
+            isMarketing: isAdmin || role === "marketing",
+            isEditor: isAdmin || role === "marketing" || role === "editor",
+            loading,
+            signIn,
+            signOut,
+            openSignIn,
+        }),
+        [user, isAdmin, role, loading, signIn, signOut, openSignIn]
     );
 
     return (

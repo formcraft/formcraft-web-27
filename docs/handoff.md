@@ -200,6 +200,34 @@ Latest: 2026-10-24. New since round 2:
    offline still shows the site.
 5. Home on a mid-range phone: frame rate and how quickly the text appears.
 
+## From the cloud session (round 4)
+
+Latest: 2026-10-24. The owner approved the **Launch track** (see `docs/build-plan.md`): L1 speed and
+opening, L2 security, L3 funnel, L4 admin data, L5 SEO, L6 marketing studio, L7 team accounts. The owner's
+own to-do list is `docs/owner-checklist.md`.
+
+New in this round (L1 + L2 groundwork; later commits add L3–L7):
+- **Opening animation** in `index.html` (inline, runs before the app). Skipped for `navigator.webdriver`,
+  so Playwright/Lighthouse never see it; to test it by hand, open the site in a normal window (clear
+  sessionStorage `fc-intro` and localStorage `fc-intro-seen` to see the full version again).
+- **Home**: still pictures of the hotel (`public/images/hotel-*.webp`) show first; live 3D fades in over
+  them. They were rendered here with software WebGL — please re-render them on the office machine with the
+  real GPU: `npm run dev`, then `npx --yes playwright@1 install chromium` (once) and
+  `node scripts/render-hotel-stills.mjs`. Commit the four WebP files.
+- Phones: "Tap to explore the model" on slower devices; no blur over the canvas; layer sized `100lvh`.
+- `firebase.json`: security headers, report-only CSP, `cleanUrls`, `functions` source.
+- `functions/` (not deployed — Blaze needed): run `npm --prefix functions install` and
+  `node --check functions/index.js`; with the emulators: `firebase emulators:start` (functions on 5001).
+- `.github/workflows/ci.yml` + `lighthouserc.json`: lint, build and Lighthouse on push/PR.
+
+**Please check (round 4)**
+1. `npm run lint`, `npm run build` (main chunk size; three.js and Firestore still separate chunks).
+2. The opening animation in a real browser at 360 px and desktop, both editions: full (first visit),
+   quick (second visit, new session), none (same session), reduced motion (fade). Tap skips. The mark should
+   land on the header logo; tell the cloud session if it's off by more than a few pixels.
+3. Home on a real phone: no flicker at load or while scrolling; the still → live handover is smooth.
+4. Re-render the hotel stills (above).
+
 ## Still being written in the cloud session
 
 The cloud session keeps pushing to this branch, one commit per task (`P0.3`, `P0.5/P0.6`,

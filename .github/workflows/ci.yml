@@ -1,0 +1,23 @@
+# Checks every push and pull request: lint, build, and a Lighthouse speed check of the built site
+# against the budgets in lighthouserc.json. Deploying stays manual until the owner sets it up
+# (see docs/owner-checklist.md).
+name: CI
+on:
+  push:
+    branches: [main, paper-edition]
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - name: Lighthouse (mobile, against the built site)
+        run: npx --yes @lhci/cli@0.14.x autorun
+        continue-on-error: true

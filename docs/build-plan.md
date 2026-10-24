@@ -4,7 +4,7 @@
 > `CLAUDE.md` loads it into every Claude Code session.
 > Companion docs: `CLAUDE.md` (rules that are never broken) and `docs/current-code.md`
 > (what the code does today, kept up to date by Claude Code after every change).
-> Last updated: 2026-10-09 · Current phase: **Phase 0**
+> Last updated: 2026-10-24 · Current phase: **Launch track** (Phase 0 and the Phase 1 pages are built; see "Launch track" below)
 
 Build formcraft as a fast React single-page app (Vite) on Firebase (Hosting, Auth, Firestore, Storage, Cloud Functions) with a pitch-style home page, four division pages, a shop, a members' community, an investors page and a floating plant-a-tree donate button.
 
@@ -446,6 +446,24 @@ Reuse, don't rewrite: the Shop sections, product modal, cart logic and auth wiri
 
 *Phase 0 done when:* `npm run lint` and `npm run build` pass, no forced sign-in, every link works with the keyboard, no colour outside `tokens.css`, cart survives navigation, old URLs redirect, and `docs/current-code.md` describes the new code.
 
+### Launch track (agreed with the owner, 2026-10-24)
+
+Phase 0 is done and every designed page exists (pages can be switched on/off from Admin). Before the
+remaining phases, the owner agreed this order so the site is fast, safe and works as the top of the
+sales funnel. Everything stays easy to change after the owner's review on a phone.
+
+| Step | What | Key decisions |
+| --- | --- | --- |
+| L1 | **Smooth opening and speed** | Opening animation in `index.html` (paints before the app loads): the drawing sheet, FC mark stamped with a pulse and the tagline, mark glides to the header logo and the wordmark joins it, then the sheet tears off the top edge like a drawing pad. ~1.8 s; full on first visit, quick on later visits, none in the same session; tap/key skips; fade only with reduced motion; never shown to bots. Home: still picture of the hotel (the 3D scene's own first frame) shows at once, live 3D fades in on top; on slower phones the still stays with a "Tap to explore the model" button. Fix the phone flicker (handover, address-bar resizes, blur on phones, textures baked as images). Targets: LCP < 2.5 s on 4G mid-range Android, CLS < 0.1, INP < 200 ms. |
+| L2 | **Security** | Spam protection (honeypot now; App Check + `submitLead` callable function with rate limits once on Blaze), security headers in `firebase.json` (CSP report-only first), API key restricted to the domain, admins use 2-step Google accounts, nightly Firestore export, rules tests. |
+| L3 | **Funnel** | Tagged links (first/last touch saved, attached to every lead), email capture (`subscribers`, consent, free downloads — template catalogue first), gentle scroll prompt, `/links` link-in-bio page, contact-click tracking, cookie consent + Analytics after consent, `/privacy`. Emails collected in Firestore and exported; Brevo later. |
+| L4 | **Admin data** | One Leads screen (all forms + subscribers + clicks), status pipeline, charts, CSV export, link builder, editable site details (WhatsApp, address, socials). |
+| L5 | **SEO** | Build-time HTML per route with title/description/canonical/Open Graph/JSON-LD (`scripts/seo-pages.mjs`), branded preview images (`public/og/`), sitemap and robots, keyword-led titles (clusters in `src/data/seo.js`), Google Business Profile and Search Console (owner). Domain: one setting (`SITE_URL`). |
+| L6 | **Marketing studio** | Social media planning in Admin: open-ended channel list (Instagram, Facebook, X, LinkedIn, TikTok, Pinterest, more added in Admin), occasions calendar from the Template Master Register (~60 occasions, template codes FMC-MKT-HOL/AWR/DAY, care notes), topic bank and content pillars, posting targets per channel, "generate the year" drafts, bulk CSV import/export, approvals, publishing through Buffer (server-side secret) or a manual "today's posts" queue, results per post via tagged links. Occasions can also drive seasonal site themes (accent only; occasion palette needs brand approval). |
+| L7 | **Team accounts** | Roles by custom claim: `admin` (everything), `role: marketing` (studio, leads, content), `role: editor` (drafts). Admins add people by email in Admin → Team; a Cloud Function sets the claim. Owner, co-founder and head of sales & marketing are admins. |
+
+Caching: no Redis — Firebase Hosting CDN + pre-built pages + service worker + browser caches + localStorage content cache.
+
 ### Phases 1–5
 
 1. **Foundation and pitch (weeks 1–2).** Home (pitch content replaces the form-builder cards), About (rewrite `AboutUs.jsx` from the Company Profile), four division pages (Studio, Construction, Concrete, Stores), Projects (from `Portfolio.jsx`), Contact form. Per-route `<title>`/meta via `usePageMeta`. First deploy to Firebase Hosting.
@@ -457,6 +475,11 @@ Reuse, don't rewrite: the Shop sections, product modal, cart logic and auth wiri
 **Done means:** works on a mid-range Android phone on 3G, every form lands in Firestore, a test payment turns an order to `paid`, and the rules block a signed-out user from reading orders.
 
 ## Open questions and brand-guide fixes
+
+- [ ] **Domain and email:** the social posters use formcraftdesign.com and formcraft@gmail.com; the site and business cards use formcraftdesign@gmail.com. Confirm the domain (sets `SITE_URL`) and the public email.
+- [ ] **Team details:** sign-in emails for Peter Isingoma and Esther Ahumuza (head of sales & marketing).
+- [ ] **Occasion palette:** colours for seasonal themes need brand approval before they go live.
+- [ ] **Posting targets:** posts per week per channel (set in Admin → Studio).
 
 - [ ] **Formcraft Blue = Formcraft Green:** the guide gives both #7FC7BE. Stores needs its own blue.
 - [ ] **"Formcraft White" listed twice:** page 27 labels the rust #D15334 as "Formcraft White"; the real white is #F1F1F1. Name the rust.

@@ -9,7 +9,7 @@
 >   "How to keep this file up to date").
 >
 > Baseline written: 2026-10-09 from a full read of the code · Last updated: 2026-10-24
-> · Phase: **0 done; every designed page built; admin control room, page switches, content in Firestore**
+> · Phase: **Launch track L1 (opening animation, still → 3D, phone speed fixes) and L2 groundwork (security headers, functions) done**; every designed page built; admin control room
 > (branch `paper-edition`; the latest commits were compiled with esbuild only — run lint/build locally, see `docs/handoff.md`)
 
 ---
@@ -55,14 +55,18 @@ Scripts: `npm run dev`, `npm run build`, `npm run lint`, `npm run preview`. Text
 
 ```
 formcraft-web-27/
-├─ index.html                 # picks the edition before first paint (saved choice, else Kampala clock); meta, font preloads
+├─ index.html                 # edition before first paint (saved choice, else Kampala clock); opening animation (#fci); preloads
 ├─ firebase.json  .firebaserc  firestore.rules  storage.rules  firestore.indexes.json  .env.example
-├─ docs/  build-plan.md  current-code.md  handoff.md
+├─ docs/  build-plan.md  current-code.md  handoff.md  owner-checklist.md (accounts, payments, setup only the owner can do)
+├─ functions/  index.js (submitLead, claimTeamRole, onTeamChange)  package.json   # Cloud Functions, need Blaze
+├─ .github/workflows/ci.yml  lighthouserc.json        # lint + build + Lighthouse on every push/PR
 ├─ scripts/   set-admin.js (admin custom claim)  make-textures.py (paper textures)
 ├─ public/
 │  ├─ sw.js        service worker (offline cache, fast repeat visits)
 │  ├─ fonts/  logos/  images/ (WebP renders, 1600 + -800)
-│  └─ textures/    paper, navy, black, orange: 768 px tileable coarse paper (shown at 384 px)
+│  ├─ textures/    paper, navy, black, orange: 768 px tileable coarse paper (shown at 384 px);
+│  │               hotel-paper(-512).webp, hotel-bump-512.webp: baked textures for the 3D model
+│  └─ images/      … plus hotel-{land|port}-{day|night}.webp: still pictures of the 3D hotel
 └─ src/
    ├─ main.jsx (registers sw.js in production)  App.jsx  routes.jsx (lazy pages, PageGate, redirects, prefetchRoute)
    ├─ config/firebase.js
@@ -139,8 +143,14 @@ All copy comes from the owner's designs and the Company Profile; anything unknow
 ### Scene: sky, hills, trees, motifs
 `PaperLayers` draws the paper landscape. The **sun (day edition) or moon (night edition) follows Kampala's clock** (`lib/skyClock.js`: sunrise 06:45, sunset 18:55 EAT, corrected by the server time when known): it rises on the left, is overhead at noon/midnight and sets on the right. It's placed in screen space so it's always in view, and rests low and rust-coloured when it's below the horizon. **Trees** (broadleaf, umbrella acacia, cypress and banana) are cut from the same sheet as their hill: small on the middle hills, a belt on the near hill and two big ones framing the front. Motifs per page: `design`, `construction`, `precast`, `workshop`, `plots` (template homes on pegged plots), `estate`, `forest` (staked saplings in front of grown trees), `academy`, `market`; others use the `city` skyline. With no saved choice, **the edition itself follows Kampala's clock** (day 06:45–18:55) and switches at dusk and dawn.
 
+### Opening animation (`index.html`)
+Inline CSS and two small scripts, so it paints before the app's code arrives. The head script picks the edition and a mode: **full** on a first visit, **quick** on later visits, **none** again in the same session (sessionStorage `fc-intro`, localStorage `fc-intro-seen`), **fade** with reduced motion, never for bots (`navigator.webdriver` or crawler user agents). Full: a drawing sheet (paper texture, grid, border, a perforation near the top) → the FC mark fades in and pulses like a stamp while "Designing spaces. Empowering communities." appears word by word → the mark glides to the header logo's exact position (the real logo is hidden with `.fci-hold` until then) → a ragged tear runs along the perforation and the sheet drops away while the top strip lifts off. The tear waits until the first page has rendered (`main#main` has content without `aria-busy`), at most 4–4.5 s; a tap or key press skips to it; a CSS failsafe hides the sheet after 7 s whatever happens. Its few colours mirror `tokens.css` because it runs before the stylesheet loads (deliberate exception to the tokens rule). On `/`, the head script also preloads the right still picture of the hotel.
+
 ### Home 3D scene and speed
-`HotelScene` paints the paper landscape first, waits for the browser to be idle, then loads the day or night three.js script. The scripts render only while a see-through `.home-window` section is on screen, refresh shadows every third frame, cap the pixel ratio (1.25 phones, 1.5 desktop), turn off antialiasing on phones, use 1024/2048 shadow maps, and drop the pixel ratio further (down to 0.75) if frames keep running slow.
+`HotelScene` picks a mode: **live** (three.js), **tap** (still picture plus a "Tap to explore the model" button: reduced motion, Save-Data, 2G/3G, or a small screen with < 4 GB memory or < 6 cores), or **still** (no WebGL). The still picture (`/images/hotel-{land|port}-{day|night}.webp`, rendered from the scene's own first frame) shows at once and stays underneath; the canvas fades in on top only after its first frame is drawn, so nothing flashes. The layer is sized to the largest viewport (`100lvh`), so the phone's address bar never resizes it. Live mode waits for an idle moment, loads the edition's script plus baked paper textures (phones: 512 px paper and bump maps; desktop: 1024 px paper, bump drawn in the browser), renders only while a `.home-window` section is on screen, refreshes shadows every third frame, caps the pixel ratio (1.25 phones, 1.5 desktop), turns off antialiasing on phones, uses 1024/2048 shadow maps and lowers the pixel ratio (to 0.75) if frames run slow. On phones and touch screens the frosted-glass blur over the canvas (header, value-chain cards, labels) is replaced by near-solid paper. `HotelExplore` (the button) is placed in the hero by `Home.jsx`; `data-hotel` on `<html>` tells CSS which mode is on.
+
+### Security (L2 groundwork)
+`firebase.json` sends security headers on every response: `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options: SAMEORIGIN`, `Permissions-Policy`, HSTS, and a **report-only** Content-Security-Policy (switch to enforcing once the console shows no reports; see `docs/owner-checklist.md`). `cleanUrls` serves the pre-built pages. `functions/index.js` (deploy needs Blaze): `submitLead` (callable; validates and writes messages/quotes/investorLeads/subscribers with honeypot, per-connection and per-email rate limits in `rateLimits/`, App Check enforced when `ENFORCE_APP_CHECK=true`), `claimTeamRole` (sets a signed-in member's role from `team/{email}`), `onTeamChange` (keeps claims in step when an admin edits `team`). `AuthContext` exposes `role`, `isMarketing` and `isEditor`, and calls `claimTeamRole` after sign-in when `VITE_FUNCTIONS_ENABLED=true`. `scripts/set-admin.js` also takes `--role marketing|editor`.
 
 ### Caching
 `public/sw.js` (production only): pages network-first with an offline copy; `/assets/` cache-first; fonts, textures, logos and images stale-while-revalidate (images capped at 160). Firebase Hosting: `/assets`, fonts and textures cached for a year (textures are versioned with `?v=`), logos 30 days, images 30 days + stale-while-revalidate, `index.html` and `sw.js` no-cache. Content and page switches are cached in localStorage.
@@ -202,6 +212,8 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 - `useContent` replaces the starter list as soon as a collection has **any** Firestore document, so importing or adding one item hides the rest of the starter list (the Admin page says so).
 - The service worker only registers in production builds. After a deploy, returning visitors get the new site on the next navigation (pages are network-first); bump `VERSION` in `public/sw.js` when its caching rules change.
 - The Home 3D scene doesn't follow the Kampala sky clock yet (its day and night scripts keep their own lighting); the paper scenes do.
+- The hotel still pictures were rendered in a headless browser with software WebGL (slightly harsher shadows than a real GPU). Re-render them after any change to the scene: see `docs/handoff.md` (round 4).
+- Functions are written but not deployed (Blaze plan needed). Until then forms write to Firestore directly and team roles come from `scripts/set-admin.js`.
 - `pages/ComingSoon.jsx` is no longer routed (hidden pages use `PageGate`); kept for later phases.
 - The Firestore emulator runs on port **8081**, not the default 8080, because the Revit MCP plugin uses 8080 on the owner's machine. Keep `firebase.json` and `config/firebase.js` in step.
 - `npm audit`: 4 high in `@grpc/grpc-js` (pulled in by `firebase`, Node-only, not in the browser build) and 2 moderate in `react-router` 6 (fixed only in v7, a later task).
@@ -219,6 +231,7 @@ Newest first. One row per commit or task.
 
 | Date | Task | What changed | Files |
 | --- | --- | --- | --- |
+| 2026-10-24 | L1, L2 | Opening animation in `index.html` (drawing sheet → stamp → glide to the header logo → tear off the pad; full/quick/none/fade). Home: still pictures of the hotel shown first, 3D fades in over them; tap/still modes for slower phones; layer sized to `100lvh`; baked hotel textures; no blur on phones. Security headers + report-only CSP, `cleanUrls`. `functions/` (submitLead, claimTeamRole, onTeamChange); AuthContext roles; `set-admin.js --role`. CI workflow + Lighthouse budgets. Build plan: Launch track L1–L7. `docs/owner-checklist.md`. | `index.html`, `src/components/scene/HotelScene.*`, `hotel/*.js`, `src/pages/Home.*`, `Header.css`, `firebase.json`, `functions/*`, `src/context/AuthContext.jsx`, `scripts/set-admin.js`, `.github/workflows/ci.yml`, `lighthouserc.json`, `public/images/hotel-*`, `public/textures/hotel-*`, docs |
 | 2026-10-24 | local check | Round 3 checks of `f651610`: lint, build, all routes, forms, admin (claim via `scripts/set-admin.js`, page switches, product import/edit/upload), service worker and offline. No code changes; findings in `docs/handoff.md`. | docs |
 | 2026-10-24 | P1 paper & speed | Coarse paper textures (`scripts/make-textures.py`, 768 px tiles at 384 px, `?v=2`), thinner tint overlays, torn edges cut from the section's own textured paper with a fibre line. Sun/moon follow Kampala's clock (`lib/skyClock.js`, `useSky`); with no saved choice the edition follows the clock too. Green tree silhouettes on every scene (`plantTrees`, `treeShape`) and new motifs `plots`, `estate`, `forest`, `academy`, `market`. Plant-a-tree button is a 50 px circle. Home 3D: idle loading, paper landscape until ready, renders only while visible, adaptive pixel ratio, smaller shadow maps. Service worker `public/sw.js`, new Hosting cache headers. Round-2 fixes: drag hint at 360 px, Studio table region + scroll shadows. | `src/styles/*`, `src/components/scene/*`, `src/components/ui/TornEdge.jsx`, `src/components/layout/DonateFab.*`, `src/lib/skyClock.js`, `src/hooks/useSky.js`, `src/context/ThemeContext.jsx`, `index.html`, `public/textures/*`, `public/sw.js`, `src/main.jsx`, `firebase.json`, `src/pages/Home.*`, `src/pages/Studio.jsx` |
 | 2026-10-24 | P1 all pages + admin | Every page from the design: Templates, TemplateDesign, Checkout, OrderConfirmed, Community, Academy, Journal, Post, Invest, RealEstate, RealEstateProject, Donate, DonateThanks, Account, SignIn, Admin (starter data in `src/data/`). Page switches (`data/pages.js`, `SiteContext`, `PageGate`, `useShowLink`; Firestore `settings/site`). Content layer (`data/content.js`, `useContent`, REST reads in `lib/firestoreRest.js`); Stores, product pages, Projects and project pages read it. Admin control room (pages, content editor with photo uploads, inbox). `useCollection`, `usePublicDoc`, `lib/images.js`, `lib/adminContent.js`, `scripts/set-admin.js`. Header groups moved to `data/nav.js`, `ThemeSwitch` to its own file (clears the lint warning); admin icon in the header for admins. Rules: `templates`, `developments`, `settings`; admin update on `messages`, `investorLeads`, `members`; donors read their own `donations`. | `src/pages/*`, `src/data/*`, `src/context/SiteContext.jsx`, `src/components/admin/*`, `src/components/layout/*`, `src/hooks/*`, `src/lib/*`, `src/routes.jsx`, `src/App.jsx`, `firestore.rules`, `scripts/set-admin.js` |

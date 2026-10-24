@@ -87,13 +87,22 @@ export function createHotelScene(canvas, env) {
     }
     g.putImageData(img, 0, 0);
   }
-  var paperTex = canvasTex(1024, 1024, function (g, w, h) {
+  // Paper and bump textures: baked images when HotelScene passes them (env.textures, saves the
+  // phone from drawing a megapixel of noise on start-up); otherwise drawn here as in the concept.
+  function imageTex(img, color) {
+    var t = new THREE.Texture(img); t.needsUpdate = true;
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    if (color !== false) t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = ANISO; return t;
+  }
+  var baked = env.textures || {};
+  var paperTex = baked.paper ? imageTex(baked.paper) : canvasTex(1024, 1024, function (g, w, h) {
     g.fillStyle = '#f4f3f0'; g.fillRect(0, 0, w, h);
     pulp(g, w, h, 46, 22);
     fibres(g, w, h, 1400, 'rgba(255,255,255,.75)', 'rgba(70,62,55,.28)');
     for (var i = 0; i < 2500; i++) { g.fillStyle = 'rgba(80,70,60,' + (0.1 + rnd() * 0.2) + ')'; g.beginPath(); g.arc(rnd() * w, rnd() * h, 0.6 + rnd() * 1.1, 0, 6.3); g.fill(); }
   }, 1, 1);
-  var bumpTex = canvasTex(1024, 1024, function (g, w, h) {
+  var bumpTex = baked.bump ? imageTex(baked.bump, false) : canvasTex(1024, 1024, function (g, w, h) {
     g.fillStyle = '#808080'; g.fillRect(0, 0, w, h);
     pulp(g, w, h, 90, 120);
     fibres(g, w, h, 1100, 'rgba(255,255,255,.7)', 'rgba(0,0,0,.6)');
