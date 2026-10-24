@@ -14,6 +14,10 @@ If they disagree: the rules in this file always win; then the plan for what to b
 
 @docs/current-code.md
 
+@docs/handoff.md
+
+**Handoff:** if `docs/handoff.md` has unticked steps, start there (install, lint, build, check), then continue with the plan.
+
 If the user says the plan changed, re-read `docs/build-plan.md` before continuing.
 
 ## How we work
