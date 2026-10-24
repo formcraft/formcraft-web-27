@@ -117,6 +117,8 @@
   --sky-wash-overcast: rgba(148, 152, 155, .22);
   --sky-wash-rain: rgba(28, 37, 45, .18);
   --sky-wash-storm: rgba(28, 37, 45, .30);
+  --cloud-back: #E3E7E7;
+  --cloud-shadow: rgba(28, 37, 45, .22);
   --cloud-deck-back: #E4E6E6;
   --cloud-deck-front: #D2D6D7;
   --cloud-storm-back: #B9C0C4;
@@ -248,6 +250,8 @@
   --sky-wash-overcast: rgba(42, 53, 64, .35);
   --sky-wash-rain: rgba(9, 13, 18, .40);
   --sky-wash-storm: rgba(9, 13, 18, .55);
+  --cloud-back: #24303A;
+  --cloud-shadow: rgba(0, 0, 0, .38);
   --cloud-deck-back: #26313B;
   --cloud-deck-front: #303C47;
   --cloud-storm-back: #1E272F;

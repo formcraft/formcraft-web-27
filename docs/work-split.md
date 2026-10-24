@@ -93,8 +93,10 @@ const kind = fallbackScene(stats.kind, features.weather);  // switched-off scene
 const sc = SCENES[kind];        // { wash, glowK, decks, puffs, storm, mist, rain, wet, stars, sun, moon, minWind }
 const wind = windFromMs(stats.windMs, motion.wind, kind) * dir;  // dir = -1 for an easterly wind
 deckFor(kind, w, h)             // [{ d, tone }] in drawing order; fill with var(--cloud-deck-back | -front | --cloud-storm-back | -front)
-puffsFor(kind, w, h)            // [{ d, cx, cy, w }]; fill var(--sc-cloud); drift 4 px/s × wind
-stormCloud(w, h)                // { d, glow: { cx, cy, r } }; clip a radial gradient of var(--storm-glow) to d
+puffsFor(kind, w, h)            // [{ sheets: [{ d, tone: "back"|"front" }], cx, cy, w }]: layered paper clouds (owner's reference);
+                                //   fill front var(--sc-cloud), back var(--cloud-back); each sheet filter: drop-shadow(0 5px 6px var(--cloud-shadow));
+                                //   one <g> per cloud, drift 4 px/s × wind
+stormCloud(w, h)                // { sheets, d, glow: { cx, cy, r } }; sheets toned storm-back / storm-front; clip the var(--storm-glow) gradient to d
 mistBand({ w, h, horizon })     // { d, top, bottom }; fill with a vertical gradient of var(--mist); put it between the mid and near hills
 const glow = createStormGlow(); glow.step(dt)            // → opacity 0–1 this frame (skip with reduced motion)
 const rain = createRain({ w, h, amount: sc.rain, wind, budget, ridge: (x) => frontHillY(x) });
@@ -105,3 +107,7 @@ Layer order in the hero, back to front: sky gradient (opacity follows `glowK`), 
 (opacity `sc.stars`), the sun or moon (opacity `sc.sun` / `sc.moon`), storm glow + storm cloud, deck strips, puffs,
 hills (with mist between mid and near, and a `var(--wet)` copy of the near and front hills when `sc.wet`), rain
 canvas, hero text. With reduced motion: draw one still frame of rain, no glow, no drift.
+
+**Cloud look (owner, 2026-10-24):** paper-cut clouds like the owner's reference picture: layered sheets with soft
+shadows between them, white by day and navy-grey by night. The old one-piece `puffCloud` is gone; use `cloudGroup`
+or `puffsFor`.

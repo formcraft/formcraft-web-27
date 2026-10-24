@@ -1,7 +1,8 @@
 // weatherShapes: the paper weather for the page heroes (ideas #23, docs/brief-living-sky.md Q4–Q6).
 // Six scenes: clear, partly cloudy, overcast, mist, rain and storm. Everything is cut paper: torn strips for the
 // cloud deck, puffy paper clouds, a tall storm cloud lit softly from inside (never a flash), a sheet of tracing paper
-// for morning mist, and rain as thin paper slivers that splash on the front hill.
+// for morning mist, and rain as thin paper slivers that splash on the front hill. Clouds follow the owner's paper-cut
+// reference: layered sheets with soft shadows between them.
 // Plain JavaScript: shapes come back as SVG path strings in the hero's CSS pixels; rain draws on a canvas context the
 // caller passes in. Colours are never here: the caller fills with the weather tokens in src/styles/tokens.css.
 
@@ -100,42 +101,59 @@ export const deckFor = (kind, w, h, seed = 7) => {
 };
 
 /**
- * One puffy paper cloud as overlapping circles with a flat base, centred on (cx, cy).
+ * One paper-cut cloud sheet, centred on (cx, cy): a flat base with rounded ends and domes of different sizes sitting
+ * on it (a big one in the middle, smaller shoulders, small ends), the look of the owner's reference (2026-10-24).
  * @param {{ cx: number, cy: number, w: number, seed?: number }} o  w: overall width in px
- * @returns {string}
+ * @returns {string}  SVG path (every piece drawn clockwise, so overlaps never cut holes)
  */
-export const puffCloud = ({ cx, cy, w, seed = 1 }) => {
-    const r = seeded(seed), s = w / 200, base = cy + 18 * s;
-    const bumps = [[-70, -2, 26], [-38, -20, 34], [4, -26, 38], [44, -14, 30], [74, 0, 22]];
+export const paperCloud = ({ cx, cy, w, seed = 1 }) => {
+    const r = seeded(seed), s = w / 200, floor = 20; // in a 200-wide unit box; every dome rests on the floor line
+    const domes = [[-70, 22], [-36, 34], [6, 46], [48, 32], [78, 20]];
     let d = "";
-    for (const [x, y, rr] of bumps) {
-        const k = rr * s * (0.88 + r() * 0.24), X = cx + x * s, Y = cy + y * s;
-        // clockwise, like the base below: opposite windings would cut holes where the shapes overlap
+    for (const [x, rr] of domes) {
+        const k = rr * (0.88 + r() * 0.24) * s, X = cx + (x + (r() - 0.5) * 8) * s, Y = cy + floor * s - k;
         d += `M${f1(X - k)},${f1(Y)}a${f1(k)},${f1(k)} 0 1,1 ${f1(2 * k)},0a${f1(k)},${f1(k)} 0 1,1 ${f1(-2 * k)},0`;
     }
-    const l = cx - 92 * s, rgt = cx + 92 * s, t = base - 9 * s;
-    return d + `M${f1(l)},${f1(t)}H${f1(rgt)}a${f1(9 * s)},${f1(9 * s)} 0 0 1 0,${f1(18 * s)}H${f1(l)}a${f1(9 * s)},${f1(9 * s)} 0 0 1 0,${f1(-18 * s)}Z`;
+    const q = 13 * s, l = cx - 92 * s + q, rgt = cx + 92 * s - q, top = cy + floor * s - 2 * q;
+    return d + `M${f1(l)},${f1(top)}H${f1(rgt)}a${f1(q)},${f1(q)} 0 0 1 0,${f1(2 * q)}H${f1(l)}a${f1(q)},${f1(q)} 0 0 1 0,${f1(-2 * q)}Z`;
 };
 
-/** Puffy clouds for a scene, kept to the right 55 % of the sky and the top band (away from the headline). */
+/**
+ * A layered paper cloud: a smaller sheet behind (raised, a shade darker) and the main sheet in front, sometimes a
+ * little one tucked in at the lower left. Each sheet casts a soft shadow on what's behind it (CSS drop-shadow).
+ * @param {{ cx: number, cy: number, w: number, seed?: number }} o
+ * @returns {{ sheets: { d: string, tone: "back" | "front" }[], cx: number, cy: number, w: number }}  back to front
+ */
+export const cloudGroup = ({ cx, cy, w, seed = 1 }) => {
+    const r = seeded(seed + 99);
+    const sheets = [
+        { d: paperCloud({ cx: cx + w * (0.1 + r() * 0.1), cy: cy - w * 0.17, w: w * 0.78, seed: seed + 1 }), tone: "back" },
+        { d: paperCloud({ cx, cy, w, seed }), tone: "front" },
+    ];
+    if (r() < 0.7) sheets.push({ d: paperCloud({ cx: cx - w * 0.3, cy: cy + w * 0.13, w: w * 0.48, seed: seed + 2 }), tone: "front" });
+    return { sheets, cx, cy, w };
+};
+
+/** Layered paper clouds for a scene, kept to the right 55 % of the sky and the top band (away from the headline). */
 export const puffsFor = (kind, w, h, seed = 7) => {
     const n = SCENES[kind]?.puffs ?? 0, small = w < 600;
-    const spots = [[0.7, 0.14, 1], [0.92, 0.3, 0.75], [0.56, 0.07, 0.62], [0.83, 0.2, 0.85]];
-    return spots.slice(0, n).map(([x, y, s], i) => {
-        const cw = 220 * s * (small ? 0.62 : 1);
-        return { d: puffCloud({ cx: x * w, cy: y * h + cw * 0.2, w: cw, seed: seed + 20 + i }), cx: x * w, cy: y * h + cw * 0.2, w: cw };
+    const spots = [[0.7, 0.15, 1], [0.92, 0.32, 0.72], [0.62, 0.05, 0.55], [0.86, 0.22, 0.85]];
+    return spots.slice(0, n).map(([x, y, sz], i) => {
+        const cw = 220 * sz * (small ? 0.62 : 1);
+        return cloudGroup({ cx: x * w, cy: y * h + cw * 0.22, w: cw, seed: seed + 20 + i * 7 });
     });
 };
 
 /**
- * The tall storm cloud on the right: three rows of stacked puffs, plus where its inner glow sits.
- * @returns {{ d: string, glow: { cx: number, cy: number, r: number } }}
+ * The tall storm cloud on the right: layered sheets stacked in three rows (darker at the bottom), plus where its
+ * inner glow sits and one path of the whole outline to clip the glow to.
+ * @returns {{ sheets: { d: string, tone: "storm-back" | "storm-front" }[], d: string, glow: { cx: number, cy: number, r: number } }}
  */
 export const stormCloud = (w, h, seed = 7) => {
     const cx = w * (w < 600 ? 0.78 : 0.8), cw = Math.min(360, w * 0.32);
-    const rows = [[h * 0.4, 1], [h * 0.27, 0.82], [h * 0.15, 0.62]];
-    const d = rows.map(([y, s], i) => puffCloud({ cx: cx + (i % 2 ? -cw * 0.06 : cw * 0.04), cy: y, w: cw * s, seed: seed + 40 + i })).join("");
-    return { d, glow: { cx, cy: h * 0.28, r: cw * 0.55 } };
+    const rows = [[h * 0.15, 0.62, "storm-back"], [h * 0.27, 0.82, "storm-back"], [h * 0.4, 1, "storm-front"]];
+    const sheets = rows.map(([y, sz, tone], i) => ({ d: paperCloud({ cx: cx + (i % 2 ? -cw * 0.06 : cw * 0.04), cy: y, w: cw * sz, seed: seed + 40 + i }), tone }));
+    return { sheets, d: sheets.map((x) => x.d).join(""), glow: { cx, cy: h * 0.28, r: cw * 0.55 } };
 };
 
 /**
