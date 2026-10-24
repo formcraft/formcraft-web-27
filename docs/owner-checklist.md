@@ -17,6 +17,7 @@
 | 1.6 | **Posting targets** — posts per week per platform (agree with Esther). | "Generate the year" fills the calendar to these targets. | Admin → Studio → Channels |
 | 1.7 | **Occasion colours** — approve the small seasonal palette (holiday/awareness accents) for the brand guide. | Seasonal site themes stay off until approved. | Admin → Studio → Occasions |
 | 1.8 | **WhatsApp business number, office address, opening hours.** | WhatsApp buttons only appear once a number is set. | Admin → Site details |
+| 1.10 | **Animation timing** — watch the opening, the Home model build and the page reveals, then set them in Admin → Motion (sliders, 1× = default). | The opening uses the saved timing from a visitor's second visit on. | Admin → Motion |
 | 1.9 | **Prices** — products, template home plans, design fees shown publicly, tree price + planting partner. | The site shows "UGX [price]" until real prices exist. Never guessed. | Admin → Content |
 
 ## 2. Accounts and payments

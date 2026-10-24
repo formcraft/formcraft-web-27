@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { usePublicDoc } from "../hooks/usePublicDoc";
 import { useShowLink } from "../hooks/useSite";
-import { HotelScene, HotelTags, HotelExplore, HotelControls } from "../components/scene/HotelScene";
+import { HotelScene, HotelTags, HotelControls } from "../components/scene/HotelScene";
 import { Section, SectionHead } from "../components/page/Section";
 import { Photo } from "../components/page/Photo";
 import { Reveal, Kinetic } from "../components/ui/Reveal";
@@ -57,10 +57,7 @@ export const Home = () => {
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M8 12h8M5 9l-3 3 3 3M19 9l3 3-3 3" /></svg>
                     Drag to turn the model
                 </div>
-                <div className="home-explore">
-                    <HotelExplore />
-                    <HotelControls />
-                </div>
+                <HotelControls />
                 <div className="wrap home-hero-inner">
                     <div className="home-hero-copy">
                         <p className="eyebrow rise" style={{ "--delay": "0s" }}>Design &amp; Construction · Kampala, Uganda</p>

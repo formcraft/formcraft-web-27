@@ -25,13 +25,14 @@
           t = m >= 405 && m < 1135 ? "day" : "night";
         }
         d.setAttribute("data-theme", t);
-        // Home: start fetching the still picture of the hotel model straight away (it's the first big image)
-        if (location.pathname === "/") {
-          var pl = document.createElement("link");
-          pl.rel = "preload"; pl.as = "image"; pl.setAttribute("fetchpriority", "high");
-          pl.href = "/images/hotel-" + (innerHeight > innerWidth ? "port" : "land") + "-" + t + ".webp";
-          document.head.appendChild(pl);
-        }
+        // animation timing from Admin → Motion (cached by the app on the last visit; src/data/motion.js)
+        var mo = {};
+        try { mo = JSON.parse(ls.getItem("fc-site-motion") || "{}") || {}; } catch (e) {}
+        var k = function (v) { v = Number(v); return v >= 0.5 && v <= 3 ? v : 1; };
+        window.__fcMotion = { intro: k(mo.intro), tear: k(mo.tear) };
+        d.style.setProperty("--fc-motion", k(mo.reveal));
+        d.style.setProperty("--fc-motion-build", k(mo.build));
+        d.style.setProperty("--fci-k", window.__fcMotion.intro);
         var bot = navigator.webdriver || /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|embedly|skype/i.test(navigator.userAgent);
         var mode = "none";
         try {
@@ -59,7 +60,9 @@
       #fci .fci-strip, #fci .fci-sheet { position: absolute; left: 0; right: 0; background: #F1F1F1 url("/textures/paper.webp?v=2") 0 0 / 384px; }
       [data-theme="night"] #fci .fci-strip, [data-theme="night"] #fci .fci-sheet { background: #1C252D url("/textures/navy.webp?v=2") 0 0 / 384px; }
       #fci .fci-strip { top: 0; height: 64px; z-index: 2; box-shadow: 0 1px 0 rgba(28,37,45,.12); }
-      #fci .fci-sheet { top: 0; bottom: 0; z-index: 1; transform-origin: 30% 0; }
+      #fci .fci-sheet { top: 0; bottom: 0; z-index: 1; will-change: transform; }
+      #fci .fci-sheet-a { z-index: 1; }  /* the part already torn away (it swings down from the tear front) */
+      #fci .fci-sheet-b { z-index: 0; }  /* the part still attached */
       #fci .fci-sheet::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(28,37,45,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(28,37,45,.06) 1px, transparent 1px); background-size: 48px 48px; }
       [data-theme="night"] #fci .fci-sheet::before { background-image: linear-gradient(rgba(241,241,241,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(241,241,241,.05) 1px, transparent 1px); }
       #fci .fci-sheet::after { content: ""; position: absolute; inset: 22px; top: 86px; border: 1.5px solid rgba(28,37,45,.28); }
@@ -74,28 +77,27 @@
       [data-theme="night"] #fci .fci-mark { fill: #FFAE61; filter: drop-shadow(0 2px 3px rgba(0,0,0,.4)); }
       #fci .fci-tag { margin: 0; font: 600 15px/1.3 "Satoshi", system-ui, sans-serif; letter-spacing: .02em; color: #1C252D; text-align: center; white-space: nowrap; }
       [data-theme="night"] #fci .fci-tag { color: #F1F1F1; }
-      #fci .fci-tag span { opacity: 0; transition: opacity .25s ease; }
+      #fci .fci-tag span { opacity: 0; transition: opacity .3s ease; }
       #fci .fci-tag b { font-weight: 600; color: #D15334; }
       [data-theme="night"] #fci .fci-tag b { color: #FFAE61; }
-      #fci.is-in .fci-mark { animation: fci-in .3s ease-out forwards; }
-      #fci.is-stamp .fci-mark { animation: fci-stamp .55s cubic-bezier(.3,.7,.3,1) forwards; }
-      #fci.is-fly .fci-mark { opacity: 1; transition: transform .5s cubic-bezier(.6,0,.2,1), opacity .25s ease .4s; }
-      #fci.is-fly .fci-tag { opacity: 0; transition: opacity .2s ease; }
-      #fci.is-tear .fci-tear path { stroke-dashoffset: 0; transition: stroke-dashoffset .32s ease-in; }
-      #fci.is-drop .fci-sheet { transform: translateY(110vh) rotate(5deg); transition: transform .7s cubic-bezier(.55,0,.8,.35); }
-      #fci.is-drop .fci-strip, #fci.is-drop .fci-perf { transform: translateY(-110%); transition: transform .45s ease-in .1s; }
-      #fci.is-drop .fci-tear, #fci.is-drop .fci-stage { opacity: 0; transition: opacity .2s ease; }
+      #fci.is-in .fci-mark { animation: fci-in calc(.4s * var(--fci-k, 1)) ease-out forwards; }
+      #fci.is-stamp .fci-mark { animation: fci-stamp calc(.65s * var(--fci-k, 1)) cubic-bezier(.3,.7,.3,1) forwards; }
+      #fci.is-fly .fci-mark { opacity: 1; transition: transform calc(.65s * var(--fci-k, 1)) cubic-bezier(.6,0,.2,1), opacity .3s ease calc(.5s * var(--fci-k, 1)); }
+      #fci.is-fly .fci-tag { opacity: 0; transition: opacity .25s ease; }
+      #fci.is-drop .fci-strip, #fci.is-drop .fci-perf, #fci.is-drop .fci-tear { transform: translateY(-110%); transition: transform .5s ease-in .1s; }
+      #fci.is-drop .fci-stage { opacity: 0; transition: opacity .2s ease; }
       #fci.is-fade { opacity: 0; transition: opacity .35s ease; }
       @keyframes fci-in { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: scale(1); } }
       @keyframes fci-stamp { 0% { opacity: 1; transform: scale(1); } 35% { transform: scale(.9); filter: drop-shadow(0 0 0 rgba(28,37,45,.1)); } 70% { transform: scale(1.05); } 100% { opacity: 1; transform: scale(1); } }
       /* if anything goes wrong, never leave the sheet covering the site */
-      .fci-run #fci { animation: fci-failsafe 0s linear 7s forwards; }
+      .fci-run #fci { animation: fci-failsafe 0s linear 16s forwards; }
       @keyframes fci-failsafe { to { visibility: hidden; pointer-events: none; } }
     </style>
   </head>
   <body>
     <div id="fci" aria-hidden="true">
-      <div class="fci-sheet"></div>
+      <div class="fci-sheet fci-sheet-b"></div>
+      <div class="fci-sheet fci-sheet-a"></div>
       <div class="fci-strip"></div>
       <div class="fci-perf"></div>
       <svg class="fci-tear" preserveAspectRatio="none"><path /></svg>
@@ -114,7 +116,8 @@
         var mode = d.classList.contains("fci-full") ? "full" : d.classList.contains("fci-quick") ? "quick" : "fade";
         var mark = el.querySelector(".fci-mark"), tag = el.querySelector(".fci-tag");
         var start = Date.now(), timers = [], torn = false;
-        var at = function (ms, fn) { timers.push(setTimeout(fn, ms)); };
+        var M = window.__fcMotion || { intro: 1, tear: 1 };
+        var at = function (ms, fn) { timers.push(setTimeout(fn, ms * M.intro)); };
         var finish = function () {
           timers.forEach(clearTimeout);
           d.classList.remove("fci-run", "fci-full", "fci-quick", "fci-fade", "fci-hold");
@@ -142,25 +145,52 @@
           mark.style.transform = "translate(" + (tr.left - r.left) + "px," + (tr.top + (tr.height - h) / 2 - r.top) + "px) scale(" + s + ")";
           el.classList.add("is-fly");
         };
+        // The sheet is ripped off the pad from the left: the tear runs along the perforation, the torn
+        // part swings down from the tear front while the rest stays attached, then the whole sheet
+        // falls away. Timing: Admin → Motion ("Tearing the sheet off").
         var tear = function () {
           if (torn) return; torn = true;
-          var w = window.innerWidth, y = 24, pts = [[0, y]], x = 0, path = "M0," + y;
+          var w = window.innerWidth, h = window.innerHeight, y = 24, pts = [[0, y]], x = 0, path = "M0," + y;
           while (x < w) { x += 4 + Math.random() * 12; y = Math.max(14, Math.min(34, y + (Math.random() - 0.5) * 10)); pts.push([Math.min(x, w), y]); path += " L" + Math.min(x, w).toFixed(1) + "," + y.toFixed(1); }
           var svg = el.querySelector(".fci-tear"), p = svg.querySelector("path");
           svg.setAttribute("viewBox", "0 0 " + w + " 48"); p.setAttribute("d", path);
           var len = Math.ceil(p.getTotalLength ? p.getTotalLength() : w * 1.3); p.style.setProperty("--len", len);
-          // the sheet below the tear and the strip above it share the same ragged line
-          var poly = pts.map(function (q) { return q[0].toFixed(1) + "px " + (q[1] + 40).toFixed(1) + "px"; }).join(",");
-          el.querySelector(".fci-sheet").style.clipPath = "polygon(" + poly + "," + w + "px 100%,0 100%)";
-          el.querySelector(".fci-strip").style.height = "90px";
-          el.querySelector(".fci-strip").style.clipPath = "polygon(0 0," + w + "px 0," + pts.slice().reverse().map(function (q) { return q[0].toFixed(1) + "px " + (q[1] + 40).toFixed(1) + "px"; }).join(",") + ")";
-          el.querySelector(".fci-perf").style.display = "none";
+          var line = pts.map(function (q) { return q[0].toFixed(1) + "px " + (q[1] + 40).toFixed(1) + "px"; });
+          var strip = el.querySelector(".fci-strip"), perf = el.querySelector(".fci-perf");
+          var sa = el.querySelector(".fci-sheet-a"), sb = el.querySelector(".fci-sheet-b");
+          strip.style.height = "90px";
+          strip.style.clipPath = "polygon(0 0," + w + "px 0," + line.slice().reverse().join(",") + ")";
+          // the sheet below the ragged line, cut at the tear front fx: a = left of it, b = right of it
+          var cut = function (fx) {
+            var left = [], right = [];
+            pts.forEach(function (q, i) { if (q[0] <= fx) left.push(line[i]); else right.push(line[i]); });
+            var fy = 64;
+            sa.style.clipPath = left.length ? "polygon(" + left.join(",") + "," + fx.toFixed(1) + "px " + fy + "px," + fx.toFixed(1) + "px " + h + "px,0 " + h + "px)" : "inset(0 100% 0 0)";
+            sb.style.clipPath = right.length ? "polygon(" + fx.toFixed(1) + "px " + fy + "px," + right.join(",") + "," + w + "px " + h + "px," + fx.toFixed(1) + "px " + h + "px)" : "inset(0 0 0 100%)";
+            perf.style.clipPath = "inset(0 0 0 " + fx.toFixed(1) + "px)";
+            sa.style.transformOrigin = fx.toFixed(1) + "px 64px";
+          };
+          cut(0);
+          if (w > 800) sa.style.filter = "drop-shadow(0 10px 16px rgba(28,37,45,.2))"; // depth on larger screens (costly on phones)
           d.classList.remove("fci-hold"); // the real header logo fades in under the mark
-          requestAnimationFrame(function () {
-            el.classList.add("is-tear");
-            setTimeout(function () { el.classList.add("is-drop"); }, mode === "full" ? 300 : 180);
-            setTimeout(finish, mode === "full" ? 1050 : 800);
-          });
+          var dur = (mode === "full" ? 1300 : 800) * M.tear, t0 = 0;
+          var ease = function (q) { return q < 0.5 ? 4 * q * q * q : 1 - Math.pow(-2 * q + 2, 3) / 2; };
+          var rip = function (now) {
+            if (!t0) t0 = now;
+            var q = Math.min(1, (now - t0) / dur), e = ease(q), fx = e * w;
+            cut(fx);
+            // the torn part swings further as the tear runs on, and sags a little
+            sa.style.transform = "translateY(" + (e * 10).toFixed(1) + "px) rotate(" + (-11 * Math.pow(e, 1.4)).toFixed(2) + "deg)";
+            p.style.strokeDashoffset = String(len * (1 - e));
+            if (q < 1) return requestAnimationFrame(rip);
+            // free: the whole sheet falls away, the stub at the top lifts off
+            sa.style.transition = "transform " + (0.75 * M.tear).toFixed(2) + "s cubic-bezier(.55,0,.8,.35)";
+            sa.style.transformOrigin = w + "px 64px";
+            sa.style.transform = "translate(" + (-0.08 * w).toFixed(0) + "px," + (h * 1.15).toFixed(0) + "px) rotate(-24deg)";
+            el.classList.add("is-drop");
+            setTimeout(finish, (850 * M.tear) + 100);
+          };
+          requestAnimationFrame(rip);
         };
         var tearWhenReady = function (deadline) {
           if (pageReady() || Date.now() > deadline) return tear();
@@ -169,6 +199,7 @@
         var skip = function () {
           if (torn) return;
           if (!el.classList.contains("is-fly")) { mark.style.opacity = 1; flyToHeader(); }
+          M = { intro: M.intro, tear: M.tear * 0.5 }; // a tap or key press: rip it off quicker
           tearWhenReady(Date.now() + 1200);
         };
         el.addEventListener("pointerdown", skip);
@@ -183,16 +214,16 @@
         }
         if (mode === "quick") {
           el.classList.add("is-in");
-          at(260, flyToHeader);
-          at(720, function () { tearWhenReady(start + 4000); });
+          at(320, flyToHeader);
+          at(900, function () { tearWhenReady(start + 4000 * M.intro); });
           return;
         }
-        // full
+        // full (≈ 2.6 s before the tear at 1×; Admin → Motion "Opening animation" scales it)
         el.classList.add("is-in");
-        at(300, function () { el.classList.remove("is-in"); el.classList.add("is-stamp"); });
-        words.forEach(function (wd, i) { at(380 + i * 110, function () { wd.style.opacity = 1; }); });
-        at(1050, flyToHeader);
-        at(1500, function () { tearWhenReady(start + 4500); });
+        at(380, function () { el.classList.remove("is-in"); el.classList.add("is-stamp"); });
+        words.forEach(function (wd, i) { at(480 + i * 150, function () { wd.style.opacity = 1; }); });
+        at(1500, flyToHeader);
+        at(2200, function () { tearWhenReady(start + 5000 * M.intro); });
       })();
     </script>
     <div id="root"></div>

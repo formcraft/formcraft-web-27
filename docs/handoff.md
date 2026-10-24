@@ -5,7 +5,7 @@
 > linting and builds. Work through the checklist top to bottom, fix what fails, then tick it off
 > in this file and commit. Keep following `CLAUDE.md` (rules) and `docs/build-plan.md` (scope).
 
-Last updated: 2026-10-24
+Last updated: 2026-10-24 (round 5)
 
 ## What this branch is
 
@@ -75,7 +75,79 @@ Phase 0 finished plus Phase 1 pages, in the new **paper-cut** design:
 | 8 Docs | ☑ 2026-10-24 | `current-code.md` status line, known issues, change log. |
 | 9 PR | ☑ 2026-10-24 | Opened as a draft (branch still being written). Not merged or deployed. |
 
-## ▶ Tasks for the local Claude Code — start here (round 4, 2026-10-24)
+## ▶ Tasks for the local Claude Code — start here (round 5, 2026-10-24)
+
+**The owner changed direction on the Home hero (2026-10-24, to the cloud session):**
+
+> I don't like the image loading onto the screen; it isn't fluid. Capable devices: the background first,
+> then the 3D model slowly builds on it. Everything else: a 2D version only. Keep the textures, lines and
+> the whole look crisp on every device. The 3D controls go on the left, stacked vertically, as minimal as
+> possible. The animations are too fast: put animation settings in Admin. The opening tear is too much:
+> it should rip from one side, like a page being torn out of a pad, not all at once.
+
+**What changed (commits `cc73970` L3–L7, then the Home commit after it):**
+- **No still pictures any more.** `public/images/hotel-*.webp` and `scripts/render-hotel-stills.mjs` are
+  deleted; nothing references them (the stills tasks in round 4 and on `try/auto-live` are dropped).
+- **Levels:** `full` / `standard` (3D) or `2d`. The 3D always draws at the screen's own sharpness (pixel
+  ratio up to 2; antialiasing only below 1.5×). There is no blurry downscaling any more: a device whose
+  frames stay slow (below ~30 fps, counted only after the build and 120 settled frames) gets the 2D
+  drawing, remembered for 30 days. No "Tap to explore" anywhere (owner decision B kept).
+- **Background first, then the build** (`src/components/scene/hotel/build.js`): the layer shows
+  `--hotel-bg` plus one paper grain at once; when the 3D is ready, the torn backdrop sheets rise one by one,
+  the board settles, the hotel goes up floor by floor (tall walls grow alongside), trees grow, night lamps
+  pop on; ~6 s at 1×, Admin → Motion scales it; scrolling away or touching the model hurries it. Labels
+  appear when it's done (`data-hotel-built`). The 3D starts only after the opening animation has gone.
+- **2D drawing** (`Hotel2D.jsx`, `hotel2dGeometry.js`): the same geometry projected through the same
+  hero camera, inline SVG, non-scaling 1.25 px lines, its own ~5.8 s build and a soft scroll parallax.
+- **Controls:** a slim vertical icon rail at the top left of the hero (Front, Back, Cutaway, Site, +, −,
+  reset; names show on hover/focus). The drag hint is hidden on phones once the model is ready.
+- **Opening animation:** the sheet now rips from the left: the tear runs along the perforation, the torn
+  part swings down from the tear front while the rest stays attached, then it falls away. Calmer timing.
+  Admin → **Motion** has sliders for the opening, the tear, the Home build and the page reveals.
+- **From `try/auto-live` (thank you — ported by hand, not merged, because the scene code moved on):** the
+  dev-only preview switch (now Auto · Ultra · Best · Mid-range phone · Slow connection · 2D drawing), the
+  `ultra` level (dev preview), the frame-check thresholds, the livelier idle turn (±9°, starts after the
+  build) and `env.fixed`. **Please don't merge `try/auto-live` into `paper-edition`; delete the branch
+  once you've checked the port.**
+- **Ideas log §12 (paper scraps):** done — own seed, a near layer of 6 pieces (4 on phones) falling through
+  the hero view, 35 % rust / 30 % navy / 35 % white by day, rust and white at night, 0.35–0.7 m/s. They
+  appear when the build finishes.
+
+**Please do these now, in order, commit after each, and write results under "From the local machine (round 5)":**
+
+1. `git pull`, `npm install`, `npm --prefix functions install`, `npm run lint`, `npm run build` (the build now
+   also runs `scripts/seo-pages.mjs`: check `dist/` has a folder per route, `sitemap.xml`, `robots.txt`).
+   Record the main chunk size; fix lint findings that are plain mistakes, list the rest.
+2. **Home in Chrome on this PC** (Intel and NVIDIA): clear `fc-3d-level`, load `/` — background first, then
+   the build. Which level does each GPU get? Does the Intel GPU stay in 3D after the build (frame check),
+   or hand over to 2D? Record fps after the build. Use the dev preview switch (bottom left in `npm run dev`)
+   to compare Ultra / Best / Mid-range phone / 2D drawing. Screenshots or a short screen recording for the
+   owner (360 px and desktop, both editions).
+3. **The build sequence** at 1× and with Admin → Motion "Home model building itself" at 2×: smooth? any
+   frame hitch when floors appear (shadow updates) or when the sheets rise? Report the longest task.
+4. **Opening rip** in a real browser (360 px and desktop, both editions; full, quick, reduced-motion fade):
+   does it read as a page torn out from one side? Any flash before the sheet? Try Motion "Opening
+   animation" and "Tearing the sheet off" at 0.5× and 2× (the opening uses the saved value from the
+   second visit; Admin → Motion → "Watch the opening on Home" replays it).
+5. **2D drawing** on a phone or Chrome device mode (360, 390, 768): crisp lines, grain, parallax, build;
+   markup is ~100 kB (over the 60 kB aim) — check it doesn't stutter on a mid-range Android.
+6. **Rules in the emulator** (new since `cc73970`): `subscribers`, `clicks` and the `source` map on forms
+   (a visitor can create, can't read); `settings/studio`, `team`, `socialChannels`, `occasions`,
+   `socialTopics`, `socialPosts` by role (admin / `role: marketing` / `role: editor` via
+   `scripts/set-admin.js --role`); `public/social/**` uploads. Add `@firebase/rules-unit-testing` tests for
+   these if you can.
+7. **Admin walk-through** against the emulators as admin: Leads (CSV opens in Excel), Link builder, Site
+   details (WhatsApp appears in the footer), Motion, Team (add a person; functions only once deployed),
+   Studio (generate a month, bulk CSV, approve with care notes, Queue "Mark as posted"), Content → Free
+   downloads (upload a PDF).
+8. Update `docs/ideas.md` statuses from your side, then reply below.
+
+**Still open for the owner:** A (`.glb` models), C (Performance Monitoring), the domain/email, Peter's and
+Esther's sign-in emails, posting targets, Buffer plan. All are in `docs/owner-checklist.md`.
+
+## Round 4 tasks (superseded by round 5 — kept for the record)
+
+### Round 4 task list (2026-10-24)
 
 The cloud session has read the owner brief (`docs/owner-brief-hero-and-speed.md`) and the round-3
 results. Its reply is in "From the cloud session (round 4)" below. **Please do these now, in order,
@@ -152,7 +224,7 @@ sort. Please set each entry's status and add your notes there. New now: **#12 pa
 stones** (they're still in the code, but the shared `rnd()` sequence moved them out of view; proposal: their
 own seed, a deliberate near layer, more contrast).
 
-## ▶ Owner decisions 2026-10-24 + branch `try/auto-live` (please review and merge first)
+## Owner decisions 2026-10-24 + branch `try/auto-live` — reconciled by the cloud session in round 5 (ported, not merged; see round 5)
 
 The owner looked at Home on this PC and decided the following. **Answer B is settled: no "Tap to explore".**
 

@@ -1,39 +1,50 @@
 /* sized to the largest viewport (lvh) so the address bar sliding in and out never resizes it */
-.hotel-scene { position: fixed; left: 0; right: 0; top: 0; height: 100vh; height: 100lvh; z-index: 0; background: var(--ground); }
-.hotel-scene-still { position: absolute; inset: 0; display: block; }
-.hotel-scene-still img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* The background shows first: the 3D scene's own paper colour (--hotel-bg, shared with Hotel2D), then the model builds on it */
+.hotel-scene { position: fixed; left: 0; right: 0; top: 0; height: 100vh; height: 100lvh; z-index: 0; background: var(--hotel-bg, var(--ground)); }
+/* one paper grain over the model, drawn at the screen's own resolution, so it looks the same on every device */
+.hotel-scene-grain { position: absolute; inset: 0; pointer-events: none; background: url("/textures/paper.webp?v=2") 0 0 / var(--tex-size); mix-blend-mode: multiply; opacity: .22; }
+:root[data-theme="night"] .hotel-scene-grain { background-image: url("/textures/navy.webp?v=2"); mix-blend-mode: soft-light; opacity: .35; }
 .hotel-scene-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; cursor: grab; opacity: 0; transition: opacity .9s ease; -webkit-tap-highlight-color: transparent; }
 .hotel-scene.is-ready .hotel-scene-canvas { opacity: 1; }
 .grabbing .hotel-scene-canvas { cursor: grabbing; }
 .grabbing, .grabbing * { user-select: none; }
-.hotel-tags { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+.hotel-tags { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity .8s ease .2s; }
+/* labels join once the model has finished building */
+:root[data-hotel-built] .hotel-tags { opacity: 1; }
 .hotel-tags > div { position: absolute; left: 0; top: 0; opacity: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; white-space: nowrap; transition: opacity .3s; }
 .hotel-tags b { font: 700 11px/1.2 var(--fc-font-body); letter-spacing: .14em; text-transform: uppercase; padding: 7px 11px; background: var(--fc-navy); color: var(--fc-orange); box-shadow: 0 6px 16px var(--sh-2); }
 .hotel-tags i { display: block; width: 1px; height: 26px; background: var(--ink); }
 .hotel-tags small { font: 500 11px/1.2 var(--fc-font-body); color: var(--ink); background: var(--head-bg); padding: 3px 6px; }
 @media (max-width: 700px) { .hotel-tags small { display: none; } .hotel-tags i { height: 16px; } }
 
-/* "Tap to explore the model" — only in tap mode (data-hotel set by HotelScene) */
-.hotel-explore { display: none; align-items: center; gap: 10px; min-height: 44px; padding: 0 16px; border: 0; border-radius: 999px;
-  font: 700 13px/1 var(--fc-font-body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink);
-  background: var(--head-bg); box-shadow: 0 8px 22px var(--sh-2); cursor: pointer; }
-.hotel-explore svg { color: var(--fc-rust); }
-.hotel-explore:focus-visible { outline: 3px solid var(--fc-orange); outline-offset: 2px; }
-[data-hotel="tap"] .hotel-explore { display: inline-flex; }
-[data-hotel="tap"] .home-drag-hint, [data-hotel="still"] .home-drag-hint { display: none; }
+[data-hotel="2d"] .home-drag-hint { display: none; }
 
-/* development-only capture mode (?still=1): just the model, for rendering the still pictures */
-.hotel-capture body > *:not(#root), .hotel-capture .header, .hotel-capture main > *:not(.home), .hotel-capture .home > *:not(.hotel-scene),
-.hotel-capture footer, .hotel-capture .donate-fab, .hotel-capture .hotel-tags { visibility: hidden !important; }
-.hotel-capture .hotel-scene-still { display: none; }
-
-/* view buttons + zoom: only once the live model is ready */
-.hotel-controls { display: none; align-items: center; gap: 8px; flex-wrap: wrap; }
-[data-hotel="live"][data-hotel-ready] .hotel-controls { display: flex; }
-.hotel-controls-views, .hotel-controls-zoom { display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--head-bg); box-shadow: 0 8px 22px var(--sh-2); }
-.hotel-controls button { min-width: 40px; min-height: 40px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: var(--ink);
-  font: 700 12px/1 var(--fc-font-body); letter-spacing: .06em; text-transform: uppercase; cursor: pointer; display: inline-grid; place-items: center; }
-.hotel-controls-zoom button { padding: 0; font-size: 18px; }
+/* Views and zoom: a slim vertical rail at the top left of the hero, only once the 3D model is ready */
+.hotel-controls { position: absolute; z-index: 3; left: max(12px, 1.6vw); top: calc(var(--fc-header-h) + 20px);
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px; border-radius: 999px;
+  background: var(--head-bg); box-shadow: 0 6px 18px var(--sh-2);
+  opacity: 0; visibility: hidden; transition: opacity .5s ease, visibility 0s linear .5s; pointer-events: auto; }
+:root[data-hotel="live"][data-hotel-ready] .hotel-controls { opacity: 1; visibility: visible; transition: opacity .5s ease; }
+.hotel-controls button { position: relative; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 999px; background: transparent; color: var(--ink); cursor: pointer; display: grid; place-items: center; }
 .hotel-controls button:hover { background: var(--sheet); }
 .hotel-controls button[aria-pressed="true"] { background: var(--ink); color: var(--ground); }
-.hotel-controls button:focus-visible { outline: 3px solid var(--fc-orange); outline-offset: 1px; }
+.hotel-controls button:focus-visible { outline: 2px solid var(--fc-orange); outline-offset: 1px; }
+.hotel-controls-rule { width: 18px; height: 1px; margin: 4px 0; background: var(--ink); opacity: .25; }
+/* the name shows beside the icon on hover or keyboard focus (it's also the button's accessible name) */
+.hotel-controls button::after { content: attr(data-tip); position: absolute; left: calc(100% + 10px); top: 50%; translate: 0 -50%;
+  padding: 5px 9px; border-radius: 4px; white-space: nowrap; font: 600 11px/1 var(--fc-font-body); letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ground); background: var(--ink); opacity: 0; pointer-events: none; transition: opacity .15s; }
+.hotel-controls button:hover::after, .hotel-controls button:focus-visible::after { opacity: 1; }
+@media (hover: none) { .hotel-controls button::after { display: none; } }
+@media (max-width: 600px) { .hotel-controls { top: calc(var(--fc-header-h) + 12px); left: 8px; } .hotel-controls button { width: 34px; height: 34px; } }
+
+/* development-only preview switch (HotelPreviewSwitch; from the local side's try/auto-live branch) */
+.hotel-preview { position: fixed; left: 12px; bottom: 12px; z-index: 60; display: grid; gap: 6px; max-width: calc(100vw - 96px); padding: 8px 10px; border-radius: 6px; background: var(--fc-navy); color: var(--fc-white); font-size: 12px; box-shadow: 0 6px 20px -8px var(--fc-black); }
+.hotel-preview-title { font-weight: 700; letter-spacing: .04em; text-transform: uppercase; font-size: 10px; opacity: .8; }
+.hotel-preview-options { display: flex; flex-wrap: wrap; gap: 4px; }
+.hotel-preview-options button { font: inherit; padding: 5px 8px; border-radius: 4px; border: 1px solid var(--fc-navy-3); background: var(--fc-navy-2); color: var(--fc-white); cursor: pointer; }
+.hotel-preview-options button[aria-pressed="true"] { background: var(--fc-orange); border-color: var(--fc-orange); color: var(--fc-navy); }
+.hotel-preview-options button:focus-visible { outline: 2px solid var(--fc-orange); outline-offset: 2px; }
+.hotel-preview-info { opacity: .8; font-size: 11px; }
+/* phones: the rail is enough of a hint that the model can be handled; keep the hero minimal */
+@media (max-width: 600px) { :root[data-hotel-ready] .home-drag-hint { display: none; } }

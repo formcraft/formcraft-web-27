@@ -12,16 +12,19 @@
 
 | # | Idea | Area | Status | Where |
 | --- | --- | --- | --- | --- |
-| 12 | Paper scraps falling like stones, visible again and kept that way | Home 3D | **new**, owner choosing: try on a branch first, or brief only | §12 below |
-| 11 | Paper texture that really pops (concrete-paper you can almost feel) | Home 3D | sent, needs design | handoff "Owner decisions 2026-10-24" |
-| 10 | Ultra as a real level for strong desktop GPUs, not only a dev preview | Home 3D, speed | idea | §10 |
-| 9 | Dev-only quality preview: Auto / Ultra / Best / Mid-range phone / Slow phone / No 3D | Dev tooling | built on `try/auto-live` | handoff, branch |
-| 8 | No "Tap to explore": the model always comes in by itself, later on slow devices | Home 3D, speed | **decided by owner**, built on `try/auto-live` | handoff |
-| 7 | Seamless still → live: same angle, model moving at once, labels fade in, scraps start where the still has them | Home 3D | partly on `try/auto-live` (motion, capture freeze); labels open | handoff round 4 |
-| 6 | Start the 3D after the opening animation, so its build can't freeze the intro | Opening, speed | idea | §6 |
-| 5 | Stills script that works on Windows (NVIDIA flag, hidden scrollbar, Node-only WebP) | Tooling | idea | handoff round 4 |
+| 15 | Opening tear rips from one side, like a page torn out of a pad | Opening | **done** in the Home commit | handoff round 5 |
+| 14 | Animation timing settings in Admin | Admin, all pages | **done**: Admin → Motion | handoff round 5 |
+| 13 | Background first, then the 3D builds on it; 2D drawing for other devices; crisp everywhere; controls as a minimal left rail | Home | **done** in the Home commit | handoff round 5 |
+| 12 | Paper scraps falling like stones, visible again and kept that way | Home 3D | **done** in the Home commit after `cc73970` (own seed, near layer, colours, speed) | §12 below |
+| 11 | Paper texture that really pops (concrete-paper you can almost feel) | Home 3D | **accepted**, in progress: one screen-space paper grain over the model now (`.hotel-scene-grain`); world-unit fibres + normal map next | handoff "Owner decisions 2026-10-24" |
+| 10 | Ultra as a real level for strong desktop GPUs, not only a dev preview | Home 3D, speed | accepted for later; `ultra` ported as a dev preview | §10 |
+| 9 | Dev-only quality preview: Auto / Ultra / Best / Mid-range phone / Slow phone / No 3D | Dev tooling | **done** (ported from `try/auto-live`; "No 3D" is now "2D drawing") | handoff round 5 |
+| 8 | No "Tap to explore": the model always comes in by itself, later on slow devices | Home 3D, speed | **changed** by the owner: capable devices build the 3D, others get the 2D drawing; never a tap | handoff round 5 |
+| 7 | Seamless still → live: same angle, model moving at once, labels fade in, scraps start where the still has them | Home 3D | **changed**: no still any more; background first, then the model builds; labels after the build | handoff round 5 |
+| 6 | Start the 3D after the opening animation, so its build can't freeze the intro | Opening, speed | **done** (`introDone()` in `HotelScene.jsx`) | §6 |
+| 5 | Stills script that works on Windows (NVIDIA flag, hidden scrollbar, Node-only WebP) | Tooling | **declined**: stills removed | handoff round 5 |
 | 4 | Measure real visitors (web-vitals / Performance Monitoring) | Speed | waiting for owner (C) | owner brief §5 |
-| 3 | Device levels with a live frame check, remembered per device | Speed | done in `a5c5955`, revised on `try/auto-live` | owner brief §4 |
+| 3 | Device levels with a live frame check, remembered per device | Speed | done in `a5c5955`; now full / standard / 2D, never downscaled | owner brief §4 |
 | 2 | Front / Back / Cutaway / Site views, zoom, reset | Home 3D | done in `a5c5955` | owner brief §3 |
 | 1 | Sky and landscape first, building fades in; Home's own sky; one shared sky for other pages; all-round landscape from the owner's models | Home, all heroes | accepted; shared sky done in `ffff37a`; models waiting for owner (A) | owner brief §1–2 |
 
@@ -60,7 +63,8 @@ minimal but really interesting. On the new version they are static, or they are 
 **Open:** the owner may have a screenshot of the Phase 1 look (how many, which colours). The local side
 can render a comparison of Phase 1 (`18a16bf`) against now on request.
 
-**Cloud notes:**
+**Cloud notes:** done as proposed (points 1–5); point 6 no longer applies (no stills). They're hidden during
+the opening build and start falling when it ends. Near pieces respawn in the hero view.
 
 ## §10 Ultra as a real level
 
@@ -69,7 +73,8 @@ antialiasing). Strong desktop GPUs could get it for real, e.g. when the WebGL re
 discrete GPU (NVIDIA/AMD/Apple M-series) and the frame check stays smooth at full. Not on the Intel UHD 630
 (5 fps).
 
-**Cloud notes:**
+**Cloud notes:** agreed for later. Ported as a dev preview level; promote it once round 5 has fps numbers
+for the new build sequence.
 
 ## §6 Start the 3D after the opening animation
 
@@ -77,4 +82,4 @@ The night first visit took 9–11 s, because the overlay's timers stalled while 
 built. Waiting for `#fci` to be removed before calling `createHotelScene` (or yielding more in the build)
 keeps the opening smooth. The still covers the hero meanwhile.
 
-**Cloud notes:**
+**Cloud notes:** done: `HotelScene` waits for `fci-run` to go (max 8 s) before loading the scene.

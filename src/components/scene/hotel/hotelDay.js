@@ -6,6 +6,7 @@
 /* oxlint-disable */
 import * as THREE from "three";
 import { legacyLight } from "./compat";
+import { createBuild } from "./build";
 
 // Builds the scene in steps, yielding to the browser between them so the page stays responsive while
 // the model is made (env.signal aborts a build that's no longer wanted). Resolves to a handle:
@@ -21,10 +22,11 @@ export async function createHotelScene(canvas, env) {
 
   var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var smallScreen = Math.min(innerWidth, innerHeight) < 700;
-  var standard = env && env.quality === 'standard'; // mid-range devices: fewer pixels, smaller shadows
+  var standard = env && env.quality === 'standard'; // mid-range devices: smaller shadows, fewer scraps
+  var ultra = env && env.quality === 'ultra';       // strong graphics cards (dev preview for now): 2× pixels, 4096 px shadows, paper drawn in code
   var root = document.documentElement;
   var R;
-  try { R = new THREE.WebGLRenderer({ canvas: canvas, antialias: !smallScreen && !standard, powerPreference: 'high-performance' }); }
+  try { R = new THREE.WebGLRenderer({ canvas: canvas, antialias: ultra || (window.devicePixelRatio || 1) < 1.5, powerPreference: 'high-performance' }); }
   catch (e) { root.classList.add('nogl'); return null; }
   if (!R.getContext()) { root.classList.add('nogl'); return null; }
   var lastMark = performance.now(), marks = [];
@@ -39,8 +41,8 @@ export async function createHotelScene(canvas, env) {
   };
 
   var small = Math.min(innerWidth, innerHeight) < 700;
-  // performance: fewer pixels on phones, and the ratio drops further if frames run slow (see frame())
-  var maxRatio = Math.min(window.devicePixelRatio || 1, standard ? 1 : small ? 1.25 : 1.5), ratio = maxRatio;
+  // always the screen's own sharpness (up to 2×): a device that can't keep up gets the 2D drawing instead of a blurry 3D
+  var maxRatio = ultra ? Math.max(2, window.devicePixelRatio || 1) : Math.min(window.devicePixelRatio || 1, 2), ratio = maxRatio;
   R.setPixelRatio(ratio);
   R.outputColorSpace = THREE.SRGBColorSpace;
   R.toneMapping = THREE.ACESFilmicToneMapping;
@@ -233,6 +235,7 @@ export async function createHotelScene(canvas, env) {
   }
 
   await pause(); if (stopped()) return null;
+  var bi0 = model.children.length; // build groups: see build.js
   // ---------- the hotel ----------
   var BAY = 3.6, NB = 6, X0 = -10.8, ZF = 6.5, ZB = -6.5;
   var LV = [0, 4.5, 7.9, 11.3, 14.7];
@@ -352,6 +355,7 @@ export async function createHotelScene(canvas, env) {
   box(0.28, CY1 - LV[1], 1.6, CX1, (LV[1] + CY1) / 2, ZF + 0.3, W);
 
   await pause(); if (stopped()) return null;
+  var bi1 = model.children.length;
   // ---------- paper trees and scale figures ----------
   // ---------- landscape: cut-paper greens ----------
   var GREENS = ['#3f6b35', '#4f7d3a', '#5f8f43', '#74a24f', '#8db75e'].map(lin);
@@ -516,6 +520,7 @@ export async function createHotelScene(canvas, env) {
   hedge(-15.8, -3.4, 12.6, 0.7); hedge(3.4, 11.2, 12.6, 0.7);
 
   await pause(); if (stopped()) return null;
+  var bi2 = model.children.length;
   // ---------- the back of the hotel: balconies, climbers and a backyard ----------
   var ZBF = ZB - 0.2;                                     // the back wall's outer face
   var deckMat = new THREE.MeshStandardMaterial({ color: lin('#b48c62'), map: tiled(paperTex, 0.5, 0.5), bumpMap: bumpTex, bumpScale: 0.02, roughness: 0.85 });
@@ -604,6 +609,7 @@ export async function createHotelScene(canvas, env) {
   person(-1.6, 10.2, 0.3, W); person(-1.0, 10.6, 2.6, ORANGE); person(3.2, 10.0, 2.0, NAVY); person(2.4, 9.0, 1, W); person(5.8, 11.2, -0.5, W); person(-6.4, 11.6, 0.8, W); person(1.0, 12.4, 0, W);
 
   await pause(); if (stopped()) return null;
+  var bi3 = model.children.length, sd0 = scene.children.length;
   // ---------- torn paper backdrop ----------
   function tornLayer(width, topY, amp, seed, z, mat, rim, rimMat) {
     var s = new THREE.Shape(), n = 220, x0 = -width / 2;
@@ -635,28 +641,40 @@ export async function createHotelScene(canvas, env) {
   tornLayer(240, 15.5, 8, 2.2, -28.5, T('#efeeea'), true, paper('#d9d8d3'));
   tornLayer(220, 9.5, 6, 5.6, -23.5, T('#1c252d'), true, RUSTd);
   tornLayer(200, 4.5, 4.5, 9.9, -19, T('#efeeea'), true, paper('#d9d8d3'));
+  var sd1 = scene.children.length;
   var floor = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), paper('#e9e8e4', { map: tiled(paperTex, 140, 140) }));
   floor.rotation.x = -Math.PI / 2; floor.position.y = -0.8; floor.receiveShadow = true; scene.add(floor);
   model.position.y = 0;
 
   // ---------- drifting paper scraps ----------
-  var scraps = [], SN = small ? 12 : 34;
+  // Their own random sequence (scene changes elsewhere never move them again), a near layer that
+  // drops past the hero view, stronger colours and a stone-like fall (ideas log §12).
+  var srnd = (function () { var s = 4242; return function () { s = (s * 16807) % 2147483647; return s / 2147483647; }; })();
+  var scraps = [], SN = small ? 12 : 34, NEAR = small ? 4 : 6;
+  // the hero camera looks from (31, 15, 38) at (0.5, 6.5, 0): near pieces fall in that line of sight
+  var PX = 0.78, PZ = -0.626; // sideways, across the view
+  function placeNear(m, top) {
+    var f = 0.32 + srnd() * 0.3, off = (srnd() - 0.5) * 16;
+    m.position.set(31 + (0.5 - 31) * f + PX * off, top ? 17 + srnd() * 7 : 3 + srnd() * 20, 38 - 38 * f + PZ * off);
+  }
   for (var si = 0; si < SN; si++) {
-    var ss = new THREE.Shape(), k = 5 + ((rnd() * 4) | 0), rr0 = 0.25 + rnd() * 0.45;
-    for (var q = 0; q < k; q++) { var aa = q / k * Math.PI * 2, rq = rr0 * (0.6 + rnd() * 0.6); if (q === 0) ss.moveTo(Math.cos(aa) * rq, Math.sin(aa) * rq); else ss.lineTo(Math.cos(aa) * rq, Math.sin(aa) * rq); }
-    var rq2 = rnd(); var sm = new THREE.Mesh(new THREE.ShapeGeometry(ss), rq2 < 0.25 ? RUSTd : (rq2 < 0.38 ? NAVYd : Wd));
-    sm.position.set(-30 + rnd() * 60, 3 + rnd() * 26, -18 + rnd() * 36);
+    var near = si < NEAR;
+    var ss = new THREE.Shape(), k = 5 + ((srnd() * 4) | 0), rr0 = near ? 0.32 + srnd() * 0.35 : 0.25 + srnd() * 0.45;
+    for (var q = 0; q < k; q++) { var aa = q / k * Math.PI * 2, rq = rr0 * (0.6 + srnd() * 0.6); if (q === 0) ss.moveTo(Math.cos(aa) * rq, Math.sin(aa) * rq); else ss.lineTo(Math.cos(aa) * rq, Math.sin(aa) * rq); }
+    var rq2 = srnd(); var sm = new THREE.Mesh(new THREE.ShapeGeometry(ss), rq2 < 0.35 ? RUSTd : (rq2 < 0.65 ? NAVYd : Wd));
+    if (near) placeNear(sm, false); else sm.position.set(-30 + srnd() * 60, 3 + srnd() * 26, -18 + srnd() * 36);
     sm.castShadow = true;
-    sm.userData = { v: 0.2 + rnd() * 0.35, r: new THREE.Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5), ph: rnd() * 6 };
+    sm.userData = { v: 0.36 + srnd() * 0.37, r: new THREE.Vector3(srnd() - 0.5, srnd() - 0.5, srnd() - 0.5), ph: srnd() * 6, near: near };
     scene.add(sm); scraps.push(sm);
   }
+
 
   await pause(); if (stopped()) return null;
   // ---------- lights ----------
   var hemi = new THREE.HemisphereLight(lin('#ffffff'), lin('#b9bdc1'), 0.5); scene.add(hemi);
   var key = new THREE.DirectionalLight(lin('#fff6ea'), 2.1);
   key.position.set(-40, 30, 30); key.castShadow = true;
-  var SM = small || standard ? 1024 : 2048; key.shadow.mapSize.set(SM, SM);
+  var SM = ultra ? 4096 : small || standard ? 1024 : 2048; key.shadow.mapSize.set(SM, SM);
   var kc = key.shadow.camera; kc.left = -75; kc.right = 75; kc.top = 70; kc.bottom = -45; kc.near = 5; kc.far = 160;
   key.shadow.bias = -0.0004; key.shadow.normalBias = 0.03; key.shadow.radius = 4;
   scene.add(key);
@@ -840,7 +858,7 @@ export async function createHotelScene(canvas, env) {
 
   var clock = new THREE.Timer(), lastHw = 1; clock.connect(document); cleanup.push(function () { clock.dispose(); });
   // only draw while a see-through section of the page shows the model
-  var visible = true, frameNo = 0, slow = 0;
+  var visible = true, frameNo = 0, slow = 0, tStart = -1, build = null, settled = 0;
   var windows = document.querySelectorAll('.home-window');
   if (windows.length && 'IntersectionObserver' in window) {
     var seen = new Set();
@@ -854,7 +872,10 @@ export async function createHotelScene(canvas, env) {
   }
   function frame() {
     if (!visible) return; // resumes from the observer
-    clock.update(); var dt = Math.min(0.05, clock.getDelta()), t = clock.getElapsed();
+    clock.update(); var dt = Math.min(0.05, clock.getDelta()), el = clock.getElapsed();
+    // time starts at the first frame, so the first live frame is exactly the still picture; frozen for the still captures
+    if (tStart < 0) tStart = el;
+    var t = env.capture ? 0 : el - tStart, moving = !reduced && !env.capture;
     var s = sample(scrollY + vh * 0.5), k = s.k;
     for (var i = 0; i < 3; i++) { sCam[i].t = k.cam[i]; sTgt[i].t = k.tgt[i]; sCam[i].step(dt); sTgt[i].step(dt); }
     sEve.t = k.eve; sFov.t = k.fov; sEve.step(dt); sFov.step(dt);
@@ -865,7 +886,9 @@ export async function createHotelScene(canvas, env) {
     if (!drag) yaw.step(dt);
 
     var cx = sCam[0].x, cy = sCam[1].x, cz = sCam[2].x, tx = sTgt[0].x, ty = sTgt[1].x, tz = sTgt[2].x;
-    var orbit = (reduced ? 0 : Math.sin(t * 0.06) * 0.06) + sMx.x * 0.05 + yaw.x;
+    // a slow idle turn once the model has mostly built (eases in over ~4 s), calmer below the hero
+    var ti = Math.max(0, t - 3), idleTurn = moving ? Math.sin(ti * 0.15) * 0.16 * Math.min(1, ti / 3) * (0.45 + 0.55 * s.hw) : 0;
+    var orbit = idleTurn + sMx.x * 0.05 + yaw.x;
     zoom.step(dt);
     var zf = fit * zoom.x;
     var dx = (cx - tx) * zf, dz = (cz - tz) * zf, ca = Math.cos(orbit), sa = Math.sin(orbit);
@@ -880,21 +903,31 @@ export async function createHotelScene(canvas, env) {
     glassMat.emissiveIntensity = ev * 1.15; glassMat2.emissiveIntensity = ev * 0.55;
     cutLights.forEach(function (l) { l.intensity = 0.25 + ev * 3; });
 
-    if (!reduced) scraps.forEach(function (m) {
+    // the opening build; leaving the hero or touching the model speeds it up
+    if (build && !build.done) {
+      if (s.hw < 0.6 || drag || Math.abs(zoom.x - 1) > 0.02) build.hurry();
+      if (build.step(dt)) { scraps.forEach(function (m) { m.visible = true; }); document.documentElement.setAttribute('data-hotel-built', ''); }
+    }
+    if (moving) scraps.forEach(function (m) {
       var u = m.userData, f = dt * 60; m.position.y -= u.v * 0.016 * f; m.position.x += Math.sin(t * 0.4 + u.ph) * 0.01 * f;
       m.rotation.x += u.r.x * 0.01 * f; m.rotation.y += u.r.y * 0.012 * f; m.rotation.z += u.r.z * 0.01 * f;
-      if (m.position.y < 0.5) m.position.y = 30;
+      if (m.position.y < 0.5) { if (u.near) placeNear(m, true); else m.position.y = 30; }
     });
 
     placeTags(s.hw);
     if (hint) hint.style.opacity = dragged ? '0' : (s.hw * 1).toFixed(3);
-    if (frameNo++ % 3 === 0) R.shadowMap.needsUpdate = true;
+    // first frame without the shadow pass, shadows from the second: splits the first-use shader work over two tasks
+    var fi = frameNo++;
+    if (fi % 3 === 1 || (build && !build.done && fi % 2 === 0 && fi > 1)) R.shadowMap.needsUpdate = true; // more often while pieces move
     // adaptive resolution: if frames keep running slower than ~40 fps, draw fewer pixels
-    if (dt > 0.025) slow++; else slow = Math.max(0, slow - 1);
-    if (slow > 45 && ratio > 0.75) { ratio = Math.max(0.75, ratio - 0.25); R.setPixelRatio(ratio); R.setSize(vw, vh, false); slow = 0; }
-    else if (slow > 90 && ratio <= 0.75 && env.onSlow) { env.onSlow(); env.onSlow = null; } // still too slow at the lowest setting
+    // frame check: frames that keep running slow hand over to the 2D drawing
+    // (ignores the build and the next ~2 s; a frame counts as slow below ~30 fps; a dev preview never steps down)
+    if ((!build || build.done) && ++settled > 120) { if (dt > 0.034) slow++; else slow = Math.max(0, slow - 1); }
+    if (env.fixed) slow = 0;
+    if (slow > 90 && env.onSlow) { env.onSlow(); env.onSlow = null; }
     if (frameNo === 300 && slow === 0 && env.onSmooth) env.onSmooth(ratio === maxRatio);
     R.render(scene, camera);
+    if (fi === 1 && env.onReady) { var onReady = env.onReady; env.onReady = null; onReady(); } // fade in once shadows are drawn
     requestAnimationFrame(frame);
   }
   // three.js r155+ uses physical light units; keep the concept's tuned look
@@ -906,8 +939,19 @@ export async function createHotelScene(canvas, env) {
   if (env.debug) window.__hotelDebug = { camera: camera, keys: KEYS, sample: function () { return { anchors: anchors.map(function (a) { return a.y; }), vh: vh, vw: vw, fit: fit, scrollY: scrollY }; } };
   if (R.compileAsync) { try { await R.compileAsync(scene, camera); } catch (err) {} }
   if (stopped()) return null;
+  // after compiling (hidden objects aren't compiled): hide the model for the opening build
+  if (!reduced && !env.capture) {
+    build = createBuild({
+      backdrop: scene.children.slice(sd0, sd1),
+      base: model.children.slice(0, bi0),
+      building: model.children.slice(bi0, bi1).concat(model.children.slice(bi2, bi3)),
+      green: model.children.slice(bi1, bi2),
+      lamps: [],
+    }, THREE, { timeScale: env.buildScale });
+    scraps.forEach(function (m) { m.visible = false; });
+  } else document.documentElement.setAttribute('data-hotel-built', '');
+  cleanup.push(function () { document.documentElement.removeAttribute('data-hotel-built'); });
   requestAnimationFrame(frame);
-  if (env.onReady) env.onReady();
 
   return {
     setView: setView,
