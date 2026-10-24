@@ -7,7 +7,10 @@
 import * as THREE from "three";
 import { legacyLight } from "./compat";
 
-export function createHotelScene(canvas, env) {
+// Builds the scene in steps, yielding to the browser between them so the page stays responsive while
+// the model is made (env.signal aborts a build that's no longer wanted). Resolves to a handle:
+// { dispose, setView(name), zoomBy(step), resetView() } — or null if aborted / WebGL is missing.
+export async function createHotelScene(canvas, env) {
   env = env || {};
   // the concept was written for three.js before colour management; keep its colour maths
   THREE.ColorManagement.enabled = false;
@@ -18,15 +21,23 @@ export function createHotelScene(canvas, env) {
 
   var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var smallScreen = Math.min(innerWidth, innerHeight) < 700;
+  var standard = env && env.quality === 'standard'; // mid-range devices: fewer pixels, smaller shadows
   var root = document.documentElement;
   var R;
-  try { R = new THREE.WebGLRenderer({ canvas: canvas, antialias: !smallScreen, powerPreference: 'high-performance' }); }
+  try { R = new THREE.WebGLRenderer({ canvas: canvas, antialias: !smallScreen && !standard, powerPreference: 'high-performance' }); }
   catch (e) { root.classList.add('nogl'); return null; }
   if (!R.getContext()) { root.classList.add('nogl'); return null; }
+  var pause = function () {
+    return new Promise(function (r) { if (window.scheduler && window.scheduler.yield) window.scheduler.yield().then(r); else window.setTimeout(r, 0); });
+  };
+  var stopped = function () {
+    if (!(env.signal && env.signal.aborted)) return false;
+    alive = false; cleanup.forEach(function (fn) { fn(); }); R.dispose(); return true;
+  };
 
   var small = Math.min(innerWidth, innerHeight) < 700;
   // performance: fewer pixels on phones, and the ratio drops further if frames run slow (see frame())
-  var maxRatio = Math.min(window.devicePixelRatio || 1, small ? 1.25 : 1.5), ratio = maxRatio;
+  var maxRatio = Math.min(window.devicePixelRatio || 1, standard ? 1 : small ? 1.25 : 1.5), ratio = maxRatio;
   R.setPixelRatio(ratio);
   R.outputColorSpace = THREE.SRGBColorSpace;
   R.toneMapping = THREE.ACESFilmicToneMapping;
@@ -162,6 +173,7 @@ export function createHotelScene(canvas, env) {
     g.restore();
     drawTex.needsUpdate = true;
   }
+  await pause(); if (stopped()) return null;
   // ---------- materials ----------
   function paper(hex, o) {
     o = o || {};
@@ -223,6 +235,7 @@ export function createHotelScene(canvas, env) {
     var cm = new THREE.Mesh(eg, c % 2 ? W : W2); cm.position.y = 0.36 * (c + 1); cm.castShadow = cm.receiveShadow = true; model.add(cm);
   }
 
+  await pause(); if (stopped()) return null;
   // ---------- the hotel ----------
   var BAY = 3.6, NB = 6, X0 = -10.8, ZF = 6.5, ZB = -6.5;
   var LV = [0, 4.5, 7.9, 11.3, 14.7];
@@ -285,6 +298,7 @@ export function createHotelScene(canvas, env) {
     var tk = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.75, 1.8, 32), W); tk.position.set(p[0], RY + 0.9, p[1]); tk.castShadow = tk.receiveShadow = true; model.add(tk);
   });
 
+  await pause(); if (stopped()) return null;
   // ---------- cutaway: torn façade revealing guest rooms ----------
   var CX0 = X0 + 4 * BAY, CX1 = X0 + 6 * BAY, CY0 = LV[1] + 0.36, CY1 = LV[3];
   // room interiors (two floors × two bays)
@@ -340,6 +354,7 @@ export function createHotelScene(canvas, env) {
   // fins framing the cut
   box(0.28, CY1 - LV[1], 1.6, CX1, (LV[1] + CY1) / 2, ZF + 0.3, W);
 
+  await pause(); if (stopped()) return null;
   // ---------- paper trees and scale figures ----------
   // ---------- landscape: cut-paper greens ----------
   var GREENS = ['#3f6b35', '#4f7d3a', '#5f8f43', '#74a24f', '#8db75e'].map(lin);
@@ -503,6 +518,7 @@ export function createHotelScene(canvas, env) {
   shrub(12.6, -4.8, 0.6, 5); shrub(-12.7, 4.8, 0.6, 4); shrub(12.4, 6.0, 0.5, 0);
   hedge(-15.8, -3.4, 12.6, 0.7); hedge(3.4, 11.2, 12.6, 0.7);
 
+  await pause(); if (stopped()) return null;
   // ---------- the back of the hotel: balconies, climbers and a backyard ----------
   var ZBF = ZB - 0.2;                                     // the back wall's outer face
   var deckMat = new THREE.MeshStandardMaterial({ color: lin('#b48c62'), map: tiled(paperTex, 0.5, 0.5), bumpMap: bumpTex, bumpScale: 0.02, roughness: 0.85 });
@@ -590,6 +606,7 @@ export function createHotelScene(canvas, env) {
   }
   person(-1.6, 10.2, 0.3, W); person(-1.0, 10.6, 2.6, ORANGE); person(3.2, 10.0, 2.0, NAVY); person(2.4, 9.0, 1, W); person(5.8, 11.2, -0.5, W); person(-6.4, 11.6, 0.8, W); person(1.0, 12.4, 0, W);
 
+  await pause(); if (stopped()) return null;
   // ---------- torn paper backdrop ----------
   function tornLayer(width, topY, amp, seed, z, mat, rim, rimMat) {
     var s = new THREE.Shape(), n = 220, x0 = -width / 2;
@@ -637,11 +654,12 @@ export function createHotelScene(canvas, env) {
     scene.add(sm); scraps.push(sm);
   }
 
+  await pause(); if (stopped()) return null;
   // ---------- lights ----------
   var hemi = new THREE.HemisphereLight(lin('#7f95b8'), lin('#1a2028'), 0.32); scene.add(hemi);
   var key = new THREE.DirectionalLight(lin('#a8c0ff'), 0.85);
   key.position.set(-34, 44, 18); key.castShadow = true;
-  var SM = small ? 1024 : 2048; key.shadow.mapSize.set(SM, SM);
+  var SM = small || standard ? 1024 : 2048; key.shadow.mapSize.set(SM, SM);
   var kc = key.shadow.camera; kc.left = -75; kc.right = 75; kc.top = 70; kc.bottom = -45; kc.near = 5; kc.far = 160;
   key.shadow.bias = -0.0004; key.shadow.normalBias = 0.03; key.shadow.radius = 4;
   scene.add(key);
@@ -788,6 +806,7 @@ export function createHotelScene(canvas, env) {
   var flies = new THREE.Points(fGeo, new THREE.PointsMaterial({ size: 0.45, map: warmGlow, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, color: lin('#ffd9a0') }));
   model.add(flies);
 
+  await pause(); if (stopped()) return null;
   // ---------- camera keyframes ----------
   var KEYS = {
     hero:  { cam: [31, 15, 38], tgt: [0.5, 6.5, 0], eve: 0, fov: 34 },
@@ -914,6 +933,23 @@ export function createHotelScene(canvas, env) {
   };
   Spring.prototype.set = function (response, damping) { this.w = 2 * Math.PI / response; this.z = damping; };
   function SpringN(arr, response, damping) { return arr.map(function (v) { return new Spring(v, response, damping); }); }
+  // ---------- views and zoom (buttons on the page; pinch and Ctrl + wheel on the model) ----------
+  var zoom = new Spring(1, 0.55, 1), ZMIN = 0.6, ZMAX = 1.6;
+  var HERO = { cam: KEYS.hero.cam.slice(), tgt: KEYS.hero.tgt.slice(), eve: KEYS.hero.eve, fov: KEYS.hero.fov };
+  var VIEWS = {
+    front: HERO,
+    back: { cam: KEYS.chain.cam.slice(), tgt: KEYS.chain.tgt.slice(), eve: KEYS.hero.eve, fov: KEYS.chain.fov },
+    cutaway: { cam: [(CX0 + CX1) / 2 + 6, (CY0 + CY1) / 2 + 2.5, ZF + 15], tgt: [(CX0 + CX1) / 2, (CY0 + CY1) / 2, ZF - 1], eve: KEYS.hero.eve, fov: 32 },
+    site: { cam: KEYS.plan.cam.slice(), tgt: KEYS.plan.tgt.slice(), eve: KEYS.hero.eve, fov: KEYS.plan.fov }
+  };
+  function setView(name) {
+    var v = VIEWS[name] || HERO;
+    // the hero keyframe is the one the page-top camera follows; anchors keep a reference to it
+    KEYS.hero.cam = v.cam.slice(); KEYS.hero.tgt = v.tgt.slice(); KEYS.hero.fov = v.fov;
+    yaw.t = 0; dragged = true; if (hint) hint.classList.add('gone');
+  }
+  function zoomBy(step) { zoom.t = Math.max(ZMIN, Math.min(ZMAX, zoom.t * (1 - step))); }
+  function resetView() { setView('front'); zoom.t = 1; }
   // scroll-driven camera: one spring per axis (2D/3D motion decomposed into independent springs)
   var k0 = KEYS.hero;
   var sCam = SpringN(k0.cam, 1.1, 1), sTgt = SpringN(k0.tgt, 1.1, 1);
@@ -969,6 +1005,22 @@ export function createHotelScene(canvas, env) {
   }
   canvas.addEventListener('pointerup', release);
   canvas.addEventListener('pointercancel', release);
+  // pinch to zoom (two fingers on the model); one finger keeps scrolling the page or turning the model
+  var touches = new Map(), pinch0 = 0, zoom0 = 1;
+  canvas.addEventListener('pointerdown', function (e) {
+    if (e.pointerType !== 'touch') return;
+    touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (touches.size === 2) { var t = Array.from(touches.values()); pinch0 = Math.hypot(t[0].x - t[1].x, t[0].y - t[1].y); zoom0 = zoom.t; drag = null; }
+  });
+  canvas.addEventListener('pointermove', function (e) {
+    if (!touches.has(e.pointerId)) return;
+    touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (touches.size === 2 && pinch0 > 0) { var t = Array.from(touches.values()); var d = Math.hypot(t[0].x - t[1].x, t[0].y - t[1].y); zoom.t = Math.max(ZMIN, Math.min(ZMAX, zoom0 * pinch0 / Math.max(1, d))); }
+  });
+  var endTouch = function (e) { touches.delete(e.pointerId); if (touches.size < 2) pinch0 = 0; };
+  canvas.addEventListener('pointerup', endTouch); canvas.addEventListener('pointercancel', endTouch);
+  // Ctrl + wheel zooms; the plain wheel keeps scrolling the page
+  canvas.addEventListener('wheel', function (e) { if (!e.ctrlKey) return; e.preventDefault(); zoomBy(e.deltaY < 0 ? 0.08 : -0.08); }, { passive: false });
 
   var tmx = 0, tmy = 0;
   addEventListener('pointermove', function (e) { if (e.pointerType === 'mouse' && !drag) { tmx = e.clientX / vw * 2 - 1; tmy = e.clientY / vh * 2 - 1; } }, { passive: true });
@@ -1001,8 +1053,10 @@ export function createHotelScene(canvas, env) {
 
     var cx = sCam[0].x, cy = sCam[1].x, cz = sCam[2].x, tx = sTgt[0].x, ty = sTgt[1].x, tz = sTgt[2].x;
     var orbit = (reduced ? 0 : Math.sin(t * 0.06) * 0.06) + sMx.x * 0.05 + yaw.x;
-    var dx = (cx - tx) * fit, dz = (cz - tz) * fit, ca = Math.cos(orbit), sa = Math.sin(orbit);
-    camera.position.set(tx + dx * ca - dz * sa, ty + (cy - ty) * fit - sMy.x * 1.4, tz + dx * sa + dz * ca);
+    zoom.step(dt);
+    var zf = fit * zoom.x;
+    var dx = (cx - tx) * zf, dz = (cz - tz) * zf, ca = Math.cos(orbit), sa = Math.sin(orbit);
+    camera.position.set(tx + dx * ca - dz * sa, ty + (cy - ty) * zf - sMy.x * 1.4, tz + dx * sa + dz * ca);
     camera.position.z = Math.max(camera.position.z, -17.5);   // never slip behind the backdrop sheets
     camera.lookAt(tx, ty, tz);
     var wantFov = sFov.x * fovMul; if (Math.abs(camera.fov - wantFov) > 0.01) { camera.fov = wantFov; camera.updateProjectionMatrix(); }
@@ -1039,6 +1093,8 @@ export function createHotelScene(canvas, env) {
     // adaptive resolution: if frames keep running slower than ~40 fps, draw fewer pixels
     if (dt > 0.025) slow++; else slow = Math.max(0, slow - 1);
     if (slow > 45 && ratio > 0.75) { ratio = Math.max(0.75, ratio - 0.25); R.setPixelRatio(ratio); R.setSize(vw, vh, false); slow = 0; }
+    else if (slow > 90 && ratio <= 0.75 && env.onSlow) { env.onSlow(); env.onSlow = null; } // still too slow at the lowest setting
+    if (frameNo === 300 && slow === 0 && env.onSmooth) env.onSmooth(ratio === maxRatio);
     R.render(scene, camera);
     requestAnimationFrame(frame);
   }
@@ -1048,10 +1104,15 @@ export function createHotelScene(canvas, env) {
   var layoutObserver = new ResizeObserver(function () { measure(); });
   layoutObserver.observe(document.body);
   cleanup.push(function () { layoutObserver.disconnect(); });
+  if (R.compileAsync) { try { await R.compileAsync(scene, camera); } catch (err) {} }
+  if (stopped()) return null;
   requestAnimationFrame(frame);
   if (env.onReady) env.onReady();
 
   return {
+    setView: setView,
+    zoomBy: zoomBy,
+    resetView: resetView,
     dispose: function () {
       alive = false;
       window.cancelAnimationFrame(rafId);

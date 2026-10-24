@@ -1,18 +1,28 @@
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "../../hooks/useTheme";
+import { readJSON, writeJSON } from "../../lib/storage";
 import "./HotelScene.css";
 
-// How the home page shows the hotel model:
-// - "live": the three.js scene, faded in over the still picture once its first frame is drawn;
-// - "tap":  the still picture with a "Tap to explore the model" button (slower phones, Save-Data,
-//           reduced motion); tapping switches to live;
-// - "still": the still picture only (no WebGL).
-const webgl = () => {
+// How the home page shows the hotel model — device levels (owner brief, section 4):
+// - "full":     live three.js scene at full resolution, faded in over the still picture;
+// - "standard": the same, with fewer pixels and smaller shadows (mid-range phones, 3G);
+// - "lite":     the still picture with a "Tap to explore the model" button (Save-Data, 2G,
+//               ≤ 2 GB memory, reduced motion, software graphics); tapping loads the live scene;
+// - "still":    the still picture only (no WebGL).
+// Browser signals give a first guess; a live frame check confirms it (too slow → lite), and the
+// result is remembered on the device for 30 days so return visits don't guess again.
+const LEVEL_KEY = "fc-3d-level";
+const MONTH = 30 * 24 * 3600 * 1000;
+
+const webglInfo = () => {
     try {
         const c = document.createElement("canvas");
-        return Boolean(c.getContext("webgl2") || c.getContext("webgl"));
+        const gl = c.getContext("webgl2") || c.getContext("webgl");
+        if (!gl) return null;
+        const ext = gl.getExtension("WEBGL_debug_renderer_info");
+        return { renderer: ext ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : "" };
     } catch {
-        return false;
+        return null;
     }
 };
 
@@ -21,19 +31,28 @@ const smallScreen = () => Math.min(window.innerWidth, window.innerHeight) < 700;
 // ?still=1 (development only): renders the live scene alone, for scripts/render-hotel-stills.mjs
 const stillCapture = () => import.meta.env.DEV && typeof window !== "undefined" && new URLSearchParams(window.location.search).has("still");
 
-const pickMode = () => {
-    if (typeof window === "undefined" || !webgl()) return "still";
-    if (stillCapture()) return "live";
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return "tap";
+const guessLevel = () => {
+    if (typeof window === "undefined") return "still";
+    const gl = webglInfo();
+    if (!gl) return "still";
+    if (stillCapture()) return "full";
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return "lite";
+    const saved = readJSON(LEVEL_KEY, null);
+    if (saved?.level && Date.now() - (saved.at ?? 0) < MONTH) return saved.level;
     const conn = navigator.connection;
-    if (conn?.saveData || /(^|-)2g$|^3g$/.test(conn?.effectiveType ?? "")) return "tap";
-    if (smallScreen()) {
-        const lowMemory = navigator.deviceMemory !== undefined && navigator.deviceMemory < 4;
-        const fewCores = navigator.hardwareConcurrency !== undefined && navigator.hardwareConcurrency < 6;
-        if (lowMemory || fewCores) return "tap";
-    }
-    return "live";
+    const mem = navigator.deviceMemory;
+    const cores = navigator.hardwareConcurrency;
+    if (conn?.saveData || /(^|-)2g$/.test(conn?.effectiveType ?? "")) return "lite";
+    if (mem !== undefined && mem <= 2) return "lite";
+    if (/swiftshader|llvmpipe|software/i.test(gl.renderer)) return "lite";
+    if (conn?.effectiveType === "3g") return "standard";
+    if (mem !== undefined && mem <= 4) return "standard";
+    if (/mali-[4t]|adreno \(tm\) [345]\d\d|powervr sgx|videocore/i.test(gl.renderer)) return "standard";
+    if (smallScreen() && cores !== undefined && cores < 6) return "standard";
+    return "full";
 };
+
+const rememberLevel = (level) => writeJSON(LEVEL_KEY, { level, at: Date.now() });
 
 const loaders = {
     day: () => import("./hotel/hotelDay"),
@@ -56,6 +75,8 @@ const loadTextures = () =>
 
 // Ask the scene to start from anywhere on the page (the hero's "Tap to explore" button)
 export const exploreModel = () => window.dispatchEvent(new Event("fc:explore-model"));
+// Views and zoom, from the buttons in the hero (HotelControls)
+const hotelCommand = (detail) => window.dispatchEvent(new CustomEvent("fc:hotel", { detail }));
 
 // The still picture: the 3D scene's own first frame, rendered ahead of time for each edition
 // and for landscape / portrait screens (scripts: see docs/current-code.md, "Home 3D scene").
@@ -73,26 +94,42 @@ const Still = ({ theme }) => (
 export const HotelScene = () => {
     const { theme } = useTheme();
     const edition = theme === "night" ? "night" : "day";
-    const [mode, setMode] = useState(pickMode);
+    const [level, setLevel] = useState(guessLevel);
     const [ready, setReady] = useState(false);
     const canvasRef = useRef(null);
+    const handleRef = useRef(null);
+    const live = level === "full" || level === "standard";
 
-    // tell the page which mode is on (the hero shows its "Tap to explore" button in "tap" mode)
+    // tell the page which level is on (CSS shows "Tap to explore" in lite, the view buttons when live + ready)
     useEffect(() => {
-        document.documentElement.dataset.hotel = mode;
-        if (stillCapture()) document.documentElement.classList.add("hotel-capture");
-        const onExplore = () => setMode((m) => (m === "tap" ? "live" : m));
+        const root = document.documentElement;
+        root.dataset.hotel = live ? "live" : level === "lite" ? "tap" : "still";
+        if (stillCapture()) root.classList.add("hotel-capture");
+        const onExplore = () => setLevel((l) => (l === "lite" ? "standard" : l));
+        const onCommand = (e) => {
+            const h = handleRef.current;
+            if (!h) return;
+            const { view, zoom, reset } = e.detail ?? {};
+            if (view) h.setView?.(view);
+            if (zoom) h.zoomBy?.(zoom);
+            if (reset) h.resetView?.();
+        };
         window.addEventListener("fc:explore-model", onExplore);
+        window.addEventListener("fc:hotel", onCommand);
         return () => {
             window.removeEventListener("fc:explore-model", onExplore);
-            delete document.documentElement.dataset.hotel;
+            window.removeEventListener("fc:hotel", onCommand);
+            delete root.dataset.hotel;
         };
-    }, [mode]);
+    }, [level, live]);
 
     useEffect(() => {
-        if (mode !== "live") return undefined;
-        let handle = null;
-        let cancelled = false;
+        document.documentElement.toggleAttribute("data-hotel-ready", ready && live);
+    }, [ready, live]);
+
+    useEffect(() => {
+        if (!live) return undefined;
+        const controller = new AbortController();
         setReady(false);
         // wait until the page has painted and the browser is idle, so text and buttons come first
         const idle = window.requestIdleCallback ?? ((fn) => setTimeout(fn, 600));
@@ -100,42 +137,101 @@ export const HotelScene = () => {
         const start = () =>
             Promise.all([loaders[edition](), loadTextures()])
                 .then(([{ createHotelScene }, textures]) => {
-                    if (cancelled || !canvasRef.current) return;
-                    handle = createHotelScene(canvasRef.current, {
+                    if (controller.signal.aborted || !canvasRef.current) return null;
+                    return createHotelScene(canvasRef.current, {
                         sheetUrl: "/images/fmc-sheet-a1.webp",
                         textures,
+                        quality: level,
+                        signal: controller.signal,
                         // fade in only once a frame has really been drawn
                         onReady: () =>
                             requestAnimationFrame(() =>
                                 requestAnimationFrame(() => {
-                                    if (cancelled) return;
+                                    if (controller.signal.aborted) return;
                                     setReady(true);
                                     if (stillCapture()) setTimeout(() => (window.__hotelStillReady = true), 4500);
                                 })
                             ),
+                        // live frame check: too slow even at the lowest resolution → the still picture
+                        onSlow: () => {
+                            rememberLevel("lite");
+                            setLevel("lite");
+                        },
+                        onSmooth: (atFull) => rememberLevel(level === "full" && atFull ? "full" : "standard"),
                     });
-                    if (!handle) setMode("still");
+                })
+                .then((handle) => {
+                    if (controller.signal.aborted) {
+                        handle?.dispose();
+                        return;
+                    }
+                    if (!handle) setLevel("still");
+                    else handleRef.current = handle;
                 })
                 .catch((error) => {
                     console.warn("Hotel model unavailable, keeping the still picture.", error);
-                    if (!cancelled) setMode("still");
+                    if (!controller.signal.aborted) setLevel("still");
                 });
         const idleId = idle(start, { timeout: 1800 });
         return () => {
-            cancelled = true;
+            controller.abort();
             cancelIdle(idleId);
-            handle?.dispose();
+            handleRef.current?.dispose();
+            handleRef.current = null;
         };
-    }, [mode, edition]);
+    }, [live, level, edition]);
 
     return (
-        <div className={`hotel-scene ${ready && mode === "live" ? "is-ready" : ""}`} aria-hidden="true">
+        <div className={`hotel-scene ${ready && live ? "is-ready" : ""}`} aria-hidden="true">
             {/* the still picture shows straight away and stays underneath, so nothing ever flashes */}
             <Still theme={edition} />
-            {mode === "live" && (
+            {live && (
                 // a fresh canvas per edition, so each script gets a clean WebGL context
-                <canvas key={edition} id="scene" ref={canvasRef} className="hotel-scene-canvas" />
+                <canvas key={`${edition}-${level}`} id="scene" ref={canvasRef} className="hotel-scene-canvas" />
             )}
+        </div>
+    );
+};
+
+// View buttons and zoom for the live model (owner brief, section 3). Shown by CSS only when the
+// live scene is ready. The plain mouse wheel keeps scrolling the page; Ctrl + wheel and pinch zoom.
+const VIEWS = [
+    ["front", "Front"],
+    ["back", "Back"],
+    ["cutaway", "Cutaway"],
+    ["site", "Site"],
+];
+export const HotelControls = () => {
+    const [view, setView] = useState("front");
+    const go = (v) => {
+        setView(v);
+        hotelCommand({ view: v });
+    };
+    return (
+        <div className="hotel-controls" role="group" aria-label="Look at the model">
+            <div className="hotel-controls-views">
+                {VIEWS.map(([key, label]) => (
+                    <button key={key} type="button" aria-pressed={view === key} onClick={() => go(key)}>
+                        {label}
+                    </button>
+                ))}
+            </div>
+            <div className="hotel-controls-zoom">
+                <button type="button" aria-label="Zoom in" onClick={() => hotelCommand({ zoom: 0.15 })}>+</button>
+                <button type="button" aria-label="Zoom out" onClick={() => hotelCommand({ zoom: -0.15 })}>−</button>
+                <button
+                    type="button"
+                    aria-label="Reset the view"
+                    onClick={() => {
+                        setView("front");
+                        hotelCommand({ reset: true });
+                    }}
+                >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                        <path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4" />
+                    </svg>
+                </button>
+            </div>
         </div>
     );
 };

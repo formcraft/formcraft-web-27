@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { usePublicDoc } from "../hooks/usePublicDoc";
 import { useShowLink } from "../hooks/useSite";
-import { HotelScene, HotelTags, HotelExplore } from "../components/scene/HotelScene";
+import { HotelScene, HotelTags, HotelExplore, HotelControls } from "../components/scene/HotelScene";
 import { Section, SectionHead } from "../components/page/Section";
 import { Photo } from "../components/page/Photo";
 import { Reveal, Kinetic } from "../components/ui/Reveal";
@@ -59,6 +59,7 @@ export const Home = () => {
                 </div>
                 <div className="home-explore">
                     <HotelExplore />
+                    <HotelControls />
                 </div>
                 <div className="wrap home-hero-inner">
                     <div className="home-hero-copy">

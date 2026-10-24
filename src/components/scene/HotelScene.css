@@ -26,3 +26,14 @@
 .hotel-capture body > *:not(#root), .hotel-capture .header, .hotel-capture main > *:not(.home), .hotel-capture .home > *:not(.hotel-scene),
 .hotel-capture footer, .hotel-capture .donate-fab, .hotel-capture .hotel-tags { visibility: hidden !important; }
 .hotel-capture .hotel-scene-still { display: none; }
+
+/* view buttons + zoom: only once the live model is ready */
+.hotel-controls { display: none; align-items: center; gap: 8px; flex-wrap: wrap; }
+[data-hotel="live"][data-hotel-ready] .hotel-controls { display: flex; }
+.hotel-controls-views, .hotel-controls-zoom { display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--head-bg); box-shadow: 0 8px 22px var(--sh-2); }
+.hotel-controls button { min-width: 40px; min-height: 40px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: var(--ink);
+  font: 700 12px/1 var(--fc-font-body); letter-spacing: .06em; text-transform: uppercase; cursor: pointer; display: inline-grid; place-items: center; }
+.hotel-controls-zoom button { padding: 0; font-size: 18px; }
+.hotel-controls button:hover { background: var(--sheet); }
+.hotel-controls button[aria-pressed="true"] { background: var(--ink); color: var(--ground); }
+.hotel-controls button:focus-visible { outline: 3px solid var(--fc-orange); outline-offset: 1px; }

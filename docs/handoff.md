@@ -75,6 +75,43 @@ Phase 0 finished plus Phase 1 pages, in the new **paper-cut** design:
 | 8 Docs | ☑ 2026-10-24 | `current-code.md` status line, known issues, change log. |
 | 9 PR | ☑ 2026-10-24 | Opened as a draft (branch still being written). Not merged or deployed. |
 
+## ▶ Tasks for the local Claude Code — start here (round 4, 2026-10-24)
+
+The cloud session has read the owner brief (`docs/owner-brief-hero-and-speed.md`) and the round-3
+results. Its reply is in "From the cloud session (round 4)" below. **Please do these now, in order,
+commit after each, and write results under "From the local machine" (round 4):**
+
+1. `git pull` (branch `paper-edition`), `npm install`, `npm run lint`, `npm run build`. Record the main
+   chunk size and any lint findings. Fix lint findings that are plain mistakes; list the rest.
+2. **Home freeze, before/after.** Same method as round 3 (headless, then throttled 3G + 4× CPU): first
+   paint, longest task, total blocked time until the model shows, then frame rate. The scene now builds in
+   steps (it yields between sections and compiles shaders with `compileAsync`). In the cloud's software-
+   WebGL run the longest task dropped from 8.1 s to 4.3 s; tell us where the remaining long task is
+   (Performance panel → which function).
+3. **Real-GPU stills.** `npm run dev`, `npx --yes playwright@1 install chromium` (once),
+   `node scripts/render-hotel-stills.mjs` → commit the four `public/images/hotel-*.webp`.
+4. **Opening animation** in a real browser (it's skipped for automated browsers): 360 px and desktop,
+   day and night; full (first visit) / quick (later visit) / none (same tab session) / reduced-motion fade.
+   Does the mark land on the header logo? Any flash of the page before the sheet? Tap skips?
+5. **Views and zoom** on the live model: Front / Back / Cutaway / Site buttons, + / − / reset, Ctrl +
+   wheel zooms, plain wheel scrolls the page, pinch on a phone zooms, one-finger vertical swipe scrolls.
+   To force the live model on a weak machine: `localStorage.setItem("fc-3d-level", JSON.stringify({level:"full", at: Date.now()}))`.
+6. **Device levels.** Clear `fc-3d-level` and check which level each test device gets (Chrome DevTools:
+   Network "Slow 3G" → standard; Save-Data or "2G" → lite with "Tap to explore the model"). Note the WebGL
+   renderer string of the office machine and the owner's phone.
+7. **Help the owner test on a real phone** over the local network: `npm run dev -- --host`, open the
+   address on the phone. Check: no flicker at load or while scrolling, the opening animation, the
+   still → live handover, tap-to-explore, the plant-a-tree pop-up.
+8. Round-3 items still open on the cloud side (offline Home, product gallery, plant-a-tree pop-up, the two
+   lint warnings) are being fixed in the next cloud commits; re-check them when they land.
+
+Owner decisions the brief asked for (please ask the owner and write the answers here):
+- **A.** The owner's front, back and landscape models: export as **glTF binary (`.glb`)**, Y-up, metres,
+  ideally under 15 MB each, textures ≤ 2048 px. Put them in `assets-src/models/` (git LFS not needed under
+  50 MB) or share the folder path. Until then the scene uses the concept model.
+- **B.** "Tap to explore the model" button on lite devices: keep? (built; easy to remove)
+- **C.** Performance Monitoring (anonymous speed data to Google, one line in the privacy page): yes/no?
+
 ## Owner brief: Home hero, skies, 3D views and device levels (read first)
 
 **`docs/owner-brief-hero-and-speed.md`** (2026-10-24). It replaces the earlier "still image → 3D" proposal. In short:
@@ -219,6 +256,35 @@ New in this round (L1 + L2 groundwork; later commits add L3–L7):
 - `functions/` (not deployed — Blaze needed): run `npm --prefix functions install` and
   `node --check functions/index.js`; with the emulators: `firebase emulators:start` (functions on 5001).
 - `.github/workflows/ci.yml` + `lighthouserc.json`: lint, build and Lighthouse on push/PR.
+
+
+### Reply to the owner brief (cloud session, 2026-10-24)
+
+1. **Hero — agree, with one change.** No second landscape and no gap: the page now shows a **still picture
+   of the 3D scene's own first frame** (landscape *and* building, `public/images/hotel-*.webp`) at once and
+   keeps it underneath; the live canvas fades in over it after its first frame is drawn. So the instant
+   view and the 3D scene can't drift apart (they're the same render), and there's nothing to remove after
+   the fade. `PaperLayers` is no longer used on Home. A separate transparent building cut-out isn't needed
+   with this approach. When the owner's landscape models arrive (A), the stills are re-rendered from them.
+2. **Skies — agree.** The other pages get one shared sky (being built now: day gradient + Kampala-clock
+   sun + few clouds; night navy → faint city glow, a few hundred small stars, a handful twinkling, the moon,
+   no twinkle with reduced motion). Home's sky comes from the 3D scene (and its still).
+3. **Views and zoom — agree, built.** Front / Back / Cutaway / Site buttons, + / − and reset; Ctrl + wheel
+   and pinch zoom; plain wheel and one-finger swipes scroll the page; zoom limits 0.6×–1.6×. The scroll-
+   driven views stay: the view you pick replaces the page-top view, the rest of the scroll story is
+   unchanged. A full 360° turn by dragging stays limited until the all-round landscape exists (A); the
+   Back view already shows the rear.
+4. **Device levels — agree, built.** Full / Standard / Lite (+ Still without WebGL) from connection, memory,
+   cores, screen and the WebGL renderer name, then a live frame check: if frames stay too slow even at the
+   lowest resolution, it drops to Lite; a smooth run is remembered. Result stored per device for 30 days
+   (`fc-3d-level`). **Build freeze:** the scene build now yields between sections and compiles shaders
+   asynchronously; more splitting follows once task 2 shows where the rest of the time goes.
+5. **Measuring real visitors — waiting for the owner (C).** Ready to add `web-vitals` + the level/frame
+   rate into Analytics (after cookie consent) or Firebase Performance Monitoring.
+6. **Plant-a-tree pop-up, offline Home, product gallery, lint warnings — in progress in the cloud.**
+- **D.** Full-turn landscape plus zoom within budget: yes, if the landscape is built as cheap layered
+  cards / a backdrop dome with the true-3D items limited to the plot. First to cut if it's slow: the
+  drifting paper scraps, then the night fireflies, then shadow resolution.
 
 **Please check (round 4)**
 1. `npm run lint`, `npm run build` (main chunk size; three.js and Firestore still separate chunks).
