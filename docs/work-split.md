@@ -26,9 +26,9 @@ If either side needs to change a file the other owns, write the change into `doc
 
 | # | Task | Gives local |
 | --- | --- | --- |
-| C1 | **Living sky tuner**: a private page where the owner drags the sun and moon and tunes the springs. **Done**; the owner sends the numbers. | Final numbers for C2 |
-| C2 | **`src/components/scene/sky/skyPhysics.js` + `moonPhase.js`**: the stars/clouds/sun-and-moon engine from the tuner as plain JavaScript (no React), with the contract below. Plus the moon phase, the lit shape and the equator "boat moon" turn. | Something to wire into `Sky.jsx` (L4) |
-| C3 | **`sky/weatherShapes.js` + the weather token block**: torn-paper cloud decks, the storm cloud and its glow timing, the mist "vellum" band, the rain-sliver and splash drawer (canvas), wet-paper overlay. Plus a tuner page for the scenes so the owner can see them first. | Shapes and drawers for L7 |
+| C1 | **Living sky tuner**: a private page where the owner drags the sun and moon and tunes the springs. **Done**; the owner's numbers are in `SKY_DEFAULTS`. | Final numbers for C2 |
+| C2 | **Done.** **`src/components/scene/sky/skyPhysics.js` + `moonPhase.js`**: the stars/clouds/sun-and-moon engine from the tuner as plain JavaScript (no React), with the contract below. Plus the moon phase, the lit shape and the equator "boat moon" turn. | Something to wire into `Sky.jsx` (L4) |
+| C3 | **Done.** **`sky/weatherShapes.js` + the weather token block**: torn-paper cloud decks, the storm cloud and its glow timing, the mist "vellum" band, the rain-sliver and splash drawer (canvas), wet-paper overlay. Plus a tuner page for the scenes so the owner can see them first. | Shapes and drawers for L7 |
 | C4 | **`functions/weather.js`**: MET Norway sync every 30 min (User-Agent, `If-Modified-Since`, 4-decimal lat/lon), symbol → scene mapping as a pure, tested function, writes `stats/weather` and a private `weatherMeta/kampala`. Written, not deployed. | Something to test in the emulator (L9) |
 | C5 | **Home 3D look**: paper tuning on feedback, the night edition, later rain and wind on the model (Sky 5). | — |
 | C6 | **Design reviews on request**: admin wording (done in `handoff.md`), page visuals, copy organisation. | Lists in `handoff.md` |
@@ -74,5 +74,40 @@ moonPhase(date)            // → { age, fraction, waxing, name }
 moonLitPath(phase, r = 44) // → { d, rotate } for the SVG clip of the lit part
 ```
 
+**Wiring the drag (lesson from the tuner page, where the drag first failed inside the claude.ai viewer):**
+- listen for `pointerdown` on the hero, not the disc, and start a drag only within 1.6 × the disc radius of its centre;
+- follow `pointermove` / `pointerup` / `pointercancel` on `window`, with `setPointerCapture` inside a try/catch;
+- set `user-select: none` on the hero and cancel `dragstart`, so a native text or image drag can't steal the
+  gesture;
+- use `touch-action: none` on the disc and on the hero only while dragging; everywhere else the page still scrolls.
+
 No DOM, no timers, no React in these modules: the caller owns `requestAnimationFrame`, the canvas and the elements.
 That keeps them easy to test and lets the local side decide how they fit the paper scene.
+
+## Contract for C3 (weather, for L7)
+
+```js
+import { SCENES, fallbackScene, windFromMs, deckFor, puffsFor, stormCloud, mistBand, createStormGlow, createRain } from "./sky/weatherShapes";
+
+const kind = fallbackScene(stats.kind, features.weather);  // switched-off scenes fall back to a calmer one
+const sc = SCENES[kind];        // { wash, glowK, decks, puffs, storm, mist, rain, wet, stars, sun, moon, minWind }
+const wind = windFromMs(stats.windMs, motion.wind, kind) * dir;  // dir = -1 for an easterly wind
+deckFor(kind, w, h)             // [{ d, tone }] in drawing order; fill with var(--cloud-deck-back | -front | --cloud-storm-back | -front)
+puffsFor(kind, w, h)            // [{ sheets: [{ d, tone: "back"|"front" }], cx, cy, w }]: layered paper clouds (owner's reference);
+                                //   fill front var(--sc-cloud), back var(--cloud-back); each sheet filter: drop-shadow(0 5px 6px var(--cloud-shadow));
+                                //   one <g> per cloud, drift 4 px/s × wind
+stormCloud(w, h)                // { sheets, d, glow: { cx, cy, r } }; sheets toned storm-back / storm-front; clip the var(--storm-glow) gradient to d
+mistBand({ w, h, horizon })     // { d, top, bottom }; fill with a vertical gradient of var(--mist); put it between the mid and near hills
+const glow = createStormGlow(); glow.step(dt)            // → opacity 0–1 this frame (skip with reduced motion)
+const rain = createRain({ w, h, amount: sc.rain, wind, budget, ridge: (x) => frontHillY(x) });
+rain.step(dt); rain.draw(ctx, { near: css("--rain"), far: css("--rain-far") });
+```
+
+Layer order in the hero, back to front: sky gradient (opacity follows `glowK`), wash (`var(sc.wash)`), star canvas
+(opacity `sc.stars`), the sun or moon (opacity `sc.sun` / `sc.moon`), storm glow + storm cloud, deck strips, puffs,
+hills (with mist between mid and near, and a `var(--wet)` copy of the near and front hills when `sc.wet`), rain
+canvas, hero text. With reduced motion: draw one still frame of rain, no glow, no drift.
+
+**Cloud look (owner, 2026-10-24):** paper-cut clouds like the owner's reference picture: layered sheets with soft
+shadows between them, white by day and navy-grey by night. The old one-piece `puffCloud` is gone; use `cloudGroup`
+or `puffsFor`.
