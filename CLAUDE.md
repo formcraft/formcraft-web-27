@@ -28,7 +28,7 @@ If the user says the plan changed, re-read `docs/build-plan.md` before continuin
 4. **Check your work.** After each task: `npm run check` (or `npm run check:fast` for small changes) must pass with no errors; it runs lint and build too. Look at the screenshots in `check-report/index.html`. There is no GitHub CI (it was removed to save money); these checks run on this computer.
 5. **Update `docs/current-code.md` in the same commit**, following its "How to keep this file up to date" steps: status line, file map, how-it-works paragraphs, checklist, change log.
 6. **Cloud ↔ local handoff (owner's rule).** Before and after every push: `git pull`, read what the other Claude Code session added (`docs/handoff.md`, `docs/ideas.md`, new branches), reconcile it with your work (port, merge or answer), and leave clear numbered tasks for the other side in `docs/handoff.md`.
-7. **Commit per task.** Message starts with the task id: `P0.4: AuthContext, remove forced sign-in`. Don't push or deploy unless asked.
+7. **Commit per task.** Message starts with the task id: `P0.4: AuthContext, remove forced sign-in`. Don't push or deploy unless asked. **No AI attribution** (owner's rule: this code is private property of Atochon): never add `Co-Authored-By: Claude`, `Claude-Session:`, "Generated with Claude Code" or similar lines to commits, pull requests or code.
 8. **Missing facts → `TODO:`.** Never invent copy, prices, clients, testimonials, team members or numbers.
 
 ## How we think (adapted from the MIT-licensed [karpathy-guidelines](https://github.com/multica-ai/andrej-karpathy-skills))
