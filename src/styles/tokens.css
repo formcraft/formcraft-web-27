@@ -111,6 +111,25 @@
   --sky-glow-2: rgba(255, 174, 97, .12);
   --sky-band: var(--sc-band);
   --sky-star: var(--fc-white);
+  /* weather (cloud) — living-sky scenes, docs/brief-living-sky.md Q4–Q5. Washes go over the sky gradient;
+     all are tints of the navy, the concrete grey and the paper white. */
+  --sky-wash-partly: rgba(127, 199, 190, .10);
+  --sky-wash-overcast: rgba(148, 152, 155, .22);
+  --sky-wash-rain: rgba(28, 37, 45, .18);
+  --sky-wash-storm: rgba(28, 37, 45, .30);
+  --cloud-back: #E3E7E7;
+  --cloud-shadow: rgba(28, 37, 45, .22);
+  --cloud-deck-back: #E4E6E6;
+  --cloud-deck-front: #D2D6D7;
+  --cloud-storm-back: #B9C0C4;
+  --cloud-storm-front: #9EA7AD;
+  --rain: rgba(28, 37, 45, .30);
+  --rain-far: rgba(28, 37, 45, .16);
+  --storm-glow: rgba(255, 246, 236, .55);
+  --mist: rgba(241, 241, 241, .55);
+  --wet: rgba(23, 29, 26, .07);
+  --body-glow: rgba(255, 174, 97, .35);
+  --body-lift: rgba(23, 29, 26, .18);
 
   /* home hotel: the 3D scene's background and the 2D paper-cut drawing (components/scene/Hotel2D).
      Values follow the 3D model's paper and lighting, so the drawing and the model match. */
@@ -226,6 +245,24 @@
   --sky-glow-2: rgba(255, 174, 97, .07);
   --sky-band: #6C3125;
   --sky-star: #F4F1E8;
+  /* weather (cloud), night */
+  --sky-wash-partly: rgba(28, 37, 45, .12);
+  --sky-wash-overcast: rgba(42, 53, 64, .35);
+  --sky-wash-rain: rgba(9, 13, 18, .40);
+  --sky-wash-storm: rgba(9, 13, 18, .55);
+  --cloud-back: #24303A;
+  --cloud-shadow: rgba(0, 0, 0, .38);
+  --cloud-deck-back: #26313B;
+  --cloud-deck-front: #303C47;
+  --cloud-storm-back: #1E272F;
+  --cloud-storm-front: #2A3540;
+  --rain: rgba(241, 241, 241, .20);
+  --rain-far: rgba(241, 241, 241, .10);
+  --storm-glow: rgba(157, 180, 214, .40);
+  --mist: rgba(42, 53, 64, .50);
+  --wet: rgba(0, 0, 0, .12);
+  --body-glow: rgba(244, 241, 232, .18);
+  --body-lift: rgba(0, 0, 0, .45);
 
   --hotel-bg: #121A20;
   --hotel-floor: #1E2932;
