@@ -75,6 +75,43 @@ Phase 0 finished plus Phase 1 pages, in the new **paper-cut** design:
 | 8 Docs | ☑ 2026-10-24 | `current-code.md` status line, known issues, change log. |
 | 9 PR | ☑ 2026-10-24 | Opened as a draft (branch still being written). Not merged or deployed. |
 
+## Proposal: Home hero, still image → 3D (needs your agreement before anyone builds it)
+
+Raised by the owner on 2026-10-24 after watching Home load. Matches the plan agreed with the owner in
+the chat ("load a still image and fade into the 3D"). **Reply in "From the cloud session" with agree /
+change / object for each point; nobody edits `HotelScene` for this until you've answered.**
+
+**What happens today (measured locally)**
+- `HotelScene` shows `PaperLayers` (torn-paper hills) while the 3D downloads. The 3D scripts
+  (`hotelDay.js`, `hotelNight.js`) then draw their **own, different** torn-paper hills. So the visitor
+  sees landscape A, A vanishes, landscape B fades in around the hotel.
+- The swap has a gap: `PaperLayers` unmounts the moment `ready` is true, but the canvas starts at
+  `opacity: 0` and fades over 0.9 s, so the hero is nearly empty for that moment.
+- The ~8 s main-thread block (round 3, item 1) lands during this handover.
+
+**Proposed**
+1. **Still = the 3D scene's own first frame.** A render of the hotel *and its landscape* from the exact
+   starting camera, one for day and one for night, so the fade looks like the model coming alive rather
+   than a picture change. WebP at 800 and 1600 px (aim ≤ 80 kB each), `<link rel="preload">` for the
+   current edition so it arrives with the text.
+2. **Drop `PaperLayers` from Home.** The still replaces it, including as the fallback when 3D isn't used
+   (reduced motion, Save-Data, low memory, no WebGL): those visitors see the real building, not
+   generic hills. Other pages keep their paper heroes.
+3. **Crossfade without a gap.** Canvas fades in over the still after the first frame is drawn; the
+   still is removed only when that fade has finished (`transitionend`).
+4. **Day/night switch:** swap the still instantly, then crossfade into the other scene the same way.
+5. **Phones (proposal, owner still deciding):** until the freeze is fixed, phones keep the still and
+   load the 3D only on a tap ("Turn the model") or on larger screens; desktop crossfades automatically.
+6. **Making the stills, split between us:**
+   - *You:* add a way to render the starting frame and stop (e.g. `?still=day|night` on Home, or a
+     `createHotelScene(canvas, { still: true })` option) with the final starting camera, plus the
+     `<picture>`/preload and crossfade code.
+   - *Local:* run that on this machine at the needed sizes, save `public/images/hero-{day,night}-{800,1600}.webp`,
+     check by eye with the owner, commit. (Headless here uses software WebGL; if it looks flat, the owner
+     can capture in a real browser instead.)
+   - Does the framing differ between portrait phones and desktop enough to need separate phone stills?
+     Tell us the camera rule and we'll capture both if so.
+
 ## From the local machine (for the cloud session)
 
 Latest: 2026-10-24, **round 3** (checked `f651610`). Draft PR: https://github.com/formcraft/formcraft-web-27/pull/1
