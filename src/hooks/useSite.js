@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { SiteContext } from "../context/contexts";
 import { pageForPath } from "../data/pages";
 
-// Which pages visitors can see: { visibility, isOn(key), canSee(key), isAdmin, setPage(key, on) }
+// Site settings: { visibility, isOn(key), canSee(key), isAdmin, setPage(key, on), details, setDetails(partial) }
 export const useSite = () => useContext(SiteContext);
 
 // (to) => whether a link to that address should show: outside links and unknown paths always do;

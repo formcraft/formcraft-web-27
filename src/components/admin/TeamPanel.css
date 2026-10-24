@@ -1,0 +1,8 @@
+.team-roles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 12px; margin: 0; }
+.team-roles > div { padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--fc-radius); background: var(--sheet); }
+.team-roles dt { font-weight: 700; margin-bottom: 4px; }
+.team-roles dd { margin: 0; }
+.team-starter { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.team-missing { font-weight: 700; color: var(--acc-ink); }
+.team-title { width: 100%; min-width: 140px; }
+.team-off td { opacity: .6; }

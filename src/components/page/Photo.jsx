@@ -1,9 +1,8 @@
 // A render printed on paper: WebP with a smaller version for phones, lazy unless it's above the fold.
 // `name` is either a file in public/images (without "-800"/".webp"), or a full URL / path for photos
 // uploaded from the admin page.
+// (To turn an images[] entry into a name, use imgName from src/lib/images.js.)
 const isUrl = (name) => /^(https?:|\/|blob:)/.test(name);
-
-export const imageName = (img) => (typeof img === "string" ? img : img?.name ?? img?.url ?? null);
 
 export const Photo = ({ name, alt, caption, note, ratio = "4 / 3", eager = false, className = "", sizes = "(max-width: 700px) 100vw, 50vw" }) => (
     <figure className={`photo ${className}`.trim()} style={{ "--ar": ratio }}>

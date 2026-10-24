@@ -18,6 +18,9 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build
+        env:
+          SITE_URL: https://formcraftdesign.com      # TODO: the confirmed domain (owner checklist 1.1)
+          VITE_SITE_URL: https://formcraftdesign.com
       - name: Lighthouse (mobile, against the built site)
         run: npx --yes @lhci/cli@0.14.x autorun
         continue-on-error: true

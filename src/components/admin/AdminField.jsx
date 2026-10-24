@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { uploadImage } from "../../lib/adminContent";
-import { Photo, imageName } from "../page/Photo";
+import { uploadFile, uploadImage } from "../../lib/adminContent";
+import { Photo } from "../page/Photo";
+import { imgName } from "../../lib/images";
 import { Icon } from "../ui/Icon";
 
 // One form field in the content editor, drawn from the collection's field list (src/data/content.js)
@@ -18,6 +19,7 @@ export const AdminField = ({ collection, field, value, onChange, idPrefix }) => 
         );
     }
     if (field.type === "images") return <ImagesField collection={collection} field={field} value={value ?? []} onChange={onChange} id={id} />;
+    if (field.type === "file") return <FileField collection={collection} field={field} value={value ?? ""} onChange={onChange} id={id} />;
 
     let control;
     if (field.type === "textarea") {
@@ -90,8 +92,8 @@ const ImagesField = ({ collection, field, value, onChange, id }) => {
             {value.length > 0 && (
                 <ul className="admin-thumbs">
                     {value.map((img, i) => (
-                        <li key={`${imageName(img)}-${i}`}>
-                            <Photo name={imageName(img)} alt="" ratio="1 / 1" sizes="120px" />
+                        <li key={`${imgName(img)}-${i}`}>
+                            <Photo name={imgName(img)} alt="" ratio="1 / 1" sizes="120px" />
                             <div className="row" style={{ "--gap": "4px" }}>
                                 <button type="button" className="icon-btn admin-mini" disabled={i === 0} onClick={() => move(i, -1)} aria-label={`Move photo ${i + 1} earlier`}>
                                     <Icon name="arrowLeft" size={14} />
@@ -112,6 +114,55 @@ const ImagesField = ({ collection, field, value, onChange, id }) => {
             </label>
             <input id={id} className="sr-only" type="file" accept="image/*" multiple onChange={onFiles} disabled={busy} />
             <span className="hint">The first photo is the cover. Upload WebP or JPG, about 1600 px wide.</span>
+            {error && <p className="alert alert-error" role="alert">{error}</p>}
+        </fieldset>
+    );
+};
+
+// One downloadable file (PDF or image): upload, replace or remove. Stores the public URL.
+const FileField = ({ collection, field, value, onChange, id }) => {
+    const [busy, setBusy] = useState(false);
+    const [error, setError] = useState(null);
+
+    const onFile = async (event) => {
+        const file = event.target.files?.[0];
+        event.target.value = "";
+        if (!file) return;
+        setBusy(true);
+        setError(null);
+        try {
+            onChange(await uploadFile(collection, file));
+        } catch (e) {
+            setError(e.message || "Upload failed.");
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    let fileLabel = null;
+    try {
+        fileLabel = value ? decodeURIComponent(value.split("?")[0].split("%2F").pop().split("/").pop()).replace(/^\d+-/, "") : null;
+    } catch {
+        fileLabel = null;
+    }
+
+    return (
+        <fieldset className="field admin-images">
+            <legend className="label">{field.label}</legend>
+            {value ? (
+                <p className="row admin-file" style={{ "--gap": "10px" }}>
+                    <Icon name="file" size={18} />
+                    <a className="link" href={value} target="_blank" rel="noreferrer">{fileLabel || "Open the file"}</a>
+                    <button type="button" className="btn btn-line btn-sm" onClick={() => onChange("")}>Remove</button>
+                </p>
+            ) : (
+                <p className="small">No file yet — visitors are told it isn't ready and that we'll email it.</p>
+            )}
+            <label className="btn btn-line btn-sm admin-upload" htmlFor={id}>
+                <Icon name="plus" size={16} /> {busy ? "Uploading…" : value ? "Replace the file" : "Upload a file"}
+            </label>
+            <input id={id} className="sr-only" type="file" accept="application/pdf,image/*" onChange={onFile} disabled={busy} />
+            {field.help && <span className="hint">{field.help} PDF or image, up to 25 MB.</span>}
             {error && <p className="alert alert-error" role="alert">{error}</p>}
         </fieldset>
     );

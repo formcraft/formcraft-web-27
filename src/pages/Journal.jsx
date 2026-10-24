@@ -4,21 +4,15 @@ import { usePageMeta } from "../hooks/usePageMeta";
 import { useContent } from "../hooks/useContent";
 import { PageHero } from "../components/page/PageHero";
 import { Section } from "../components/page/Section";
-import { imageName } from "../components/page/Photo";
+import { imgName } from "../lib/images";
 import { Reveal } from "../components/ui/Reveal";
 import { Icon } from "../components/ui/Icon";
-import { sendInterest } from "../lib/forms";
+import { SubscribeForm } from "../components/forms/SubscribeForm";
 import "./Journal.css";
 
 // Category values come from CONTENT.posts (admin select); shown with a capital letter.
 const CATEGORIES = ["project stories", "community", "workshops", "news"];
 const label = (text) => (text ? text.charAt(0).toUpperCase() + text.slice(1) : "");
-
-const TOPICS = [
-    ["Construction", "planning, costs, site"],
-    ["BIM", "models, standards, tools"],
-    ["Craft", "makers, workshop, materials"],
-];
 
 const isUrl = (name) => /^(https?:|\/|blob:)/.test(name);
 const src = (name, small) => (isUrl(name) ? name : `/images/${name}${small ? "-800" : ""}.webp`);
@@ -34,7 +28,7 @@ const postState = (p) => (/^\s*TODO/.test(p.body ?? "") ? "Planned" : p.publishe
 
 const Cover = ({ post, big = false, eager = false }) => {
     const first = post.images?.[0];
-    const name = imageName(first);
+    const name = imgName(first);
     const alt = (typeof first === "object" && first?.alt) || "";
     return name ? (
         <img
@@ -66,34 +60,12 @@ export const Journal = () => {
     usePageMeta("Journal", "The Formcraft Journal: notes on construction, BIM and craft from real projects in Kampala, written by the team.");
     const { items: posts, loading } = useContent("posts");
     const [category, setCategory] = useState("all");
-    const [status, setStatus] = useState("idle"); // idle | sending | sent | error
-    const [error, setError] = useState(null);
 
     const inUse = CATEGORIES.filter((c) => posts.some((p) => p.category === c));
     const shown = posts.filter((p) => category === "all" || p.category === category);
     const featured = shown.find((p) => p.featured) ?? shown[0] ?? null;
     const rest = shown.filter((p) => p !== featured);
     const anyPlanned = posts.some((p) => postState(p) === "Planned");
-
-    const onSubscribe = async (event) => {
-        event.preventDefault();
-        const f = new FormData(event.currentTarget);
-        const topics = f.getAll("topics");
-        if (topics.length === 0) {
-            setError("Pick at least one topic.");
-            setStatus("error");
-            return;
-        }
-        setStatus("sending");
-        setError(null);
-        try {
-            await sendInterest({ topic: "Journal newsletter", name: f.get("name"), email: f.get("email"), body: `Newsletter topics: ${topics.join(", ")}` });
-            setStatus("sent");
-        } catch (e) {
-            setError(e.message || "Something went wrong. Please try again.");
-            setStatus("error");
-        }
-    };
 
     return (
         <div className="journal">
@@ -166,49 +138,10 @@ export const Journal = () => {
                     <Reveal className="stack" style={{ "--gap": "18px" }}>
                         <p className="eyebrow">Newsletter</p>
                         <h2 className="h2">The Journal, in your inbox.</h2>
-                        <p className="body">New posts, workshop dates and projects as they finish. Pick the topics you care about. Unsubscribe any time.</p>
+                        <p className="body">New posts, workshop dates and projects as they finish. Pick what you care about. Unsubscribe any time.</p>
                         <p className="fine todo">TODO: how often we send, and which email service we use.</p>
                     </Reveal>
-                    {status === "sent" ? (
-                        <div className="card card-pad stack" role="status" style={{ "--gap": "14px" }}>
-                            <h3 className="h3">You're on the list.</h3>
-                            <p className="body">Thanks — we'll send the Journal to your inbox when new posts go up.</p>
-                            <div className="row">
-                                <button type="button" className="btn btn-ink btn-sm" onClick={() => setStatus("idle")}>Add another email</button>
-                            </div>
-                        </div>
-                    ) : (
-                        <form className="card card-pad form" onSubmit={onSubscribe}>
-                            <div className="form-row">
-                                <div className="field">
-                                    <label htmlFor="jn-name">Name</label>
-                                    <input id="jn-name" name="name" autoComplete="name" required maxLength={120} />
-                                </div>
-                                <div className="field">
-                                    <label htmlFor="jn-email">Email address</label>
-                                    <input id="jn-email" name="email" type="email" autoComplete="email" required maxLength={200} placeholder="you@example.com" />
-                                </div>
-                            </div>
-                            <fieldset className="journal-topics">
-                                <legend>Send me posts about</legend>
-                                <div className="row" style={{ "--gap": "8px" }}>
-                                    {TOPICS.map(([t, hint]) => (
-                                        <label key={t} className="chip">
-                                            <input type="checkbox" name="topics" value={t} defaultChecked />
-                                            {t} <span className="fine">{hint}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                            </fieldset>
-                            {error && <p className="alert alert-error" role="alert">{error}</p>}
-                            <div className="row">
-                                <button type="submit" className="btn btn-primary" disabled={status === "sending"}>
-                                    {status === "sending" ? "Sending…" : "Subscribe"}
-                                </button>
-                                <span className="fine">We use your email only to send the Journal.</span>
-                            </div>
-                        </form>
-                    )}
+                    <SubscribeForm variant="card" defaultInterests={["Journal"]} />
                 </div>
             </Section>
         </div>

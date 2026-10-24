@@ -1,0 +1,27 @@
+.subscribe { position: relative; display: flex; flex-direction: column; gap: 12px; }
+.subscribe.card { gap: 16px; }
+.subscribe-heading { margin: 0; }
+.subscribe-line { display: flex; flex-wrap: wrap; gap: 8px; }
+.subscribe-input {
+  flex: 1 1 200px; min-width: 0; min-height: 44px; padding: 0 14px;
+  border: 1.5px solid var(--line-2); border-radius: var(--fc-radius);
+  background: var(--sheet); color: var(--ink); font: inherit; font-size: 16px;
+}
+.subscribe-input::placeholder { color: var(--ink-3); }
+.subscribe-input:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fc-orange) 55%, transparent); }
+.subscribe-line .btn { flex: none; }
+.subscribe-interests { border: 0; margin: 0; padding: 0; }
+.subscribe-interests legend { padding: 0; margin-bottom: 8px; font-weight: 700; font-size: 14px; }
+.subscribe-interests .chip { position: relative; min-height: 40px; }
+.subscribe-consent { display: flex; align-items: flex-start; gap: 10px; font-size: 13.5px; line-height: 1.45; color: var(--ink-2); cursor: pointer; }
+.subscribe-consent input { flex: none; width: 20px; height: 20px; margin: 0; accent-color: var(--fc-orange); }
+.subscribe-done { gap: 10px; }
+.subscribe-done .h3, .subscribe-done .h4 { display: flex; align-items: center; gap: 10px; }
+.subscribe-done svg { color: var(--acc-ink); flex: none; }
+.subscribe-download { align-self: flex-start; }
+.subscribe-error { margin: 0; }
+
+/* compact, on the dark footer */
+.subscribe-footer { max-width: 420px; }
+.subscribe-footer .subscribe-consent { font-size: 12.5px; color: var(--ink-3); }
+.subscribe-footer .subscribe-input { background: color-mix(in srgb, var(--ink) 6%, transparent); }

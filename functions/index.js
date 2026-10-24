@@ -43,7 +43,7 @@ const cleanSource = (src) => {
     if (!src || typeof src !== "object") return null;
     const touch = (t) =>
         t && typeof t === "object"
-            ? Object.fromEntries(["source", "medium", "campaign", "content", "term", "referrer", "landing", "at"].map((k) => [k, str(t[k], 100)]).filter(([, v]) => v))
+            ? Object.fromEntries(["source", "medium", "campaign", "content", "term", "referrer", "landing", "at", "clickId"].map((k) => [k, str(t[k], 100)]).filter(([, v]) => v))
             : null;
     return { first: touch(src.first), last: touch(src.last), page: str(src.page, 200) };
 };
@@ -165,3 +165,6 @@ export const onTeamChange = onDocumentWritten("team/{email}", async (event) => {
         if (error.code !== "auth/user-not-found") throw error;
     }
 });
+
+// Marketing Studio: Buffer channels lookup and the scheduled publisher (functions/studio.js)
+export { bufferChannels, publishApprovedPosts } from "./studio.js";

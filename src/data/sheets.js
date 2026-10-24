@@ -9,6 +9,8 @@ export const SHEETS = {
     "/about": ["A301", "About"],
     "/journal": ["A302", "Journal"],
     "/contact": ["A304", "Contact"],
+    "/privacy": ["A305", "Privacy"],
+    "/links": ["X001", "Links"],
     "/stores": ["S101", "Stores"],
     "/checkout": ["S201", "Checkout"],
     "/checkout/confirmed": ["S202", "Order confirmed"],

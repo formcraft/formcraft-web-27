@@ -59,3 +59,40 @@ export const listRest = async (collection, signal, max = 500) => {
     } while (token && out.length < max);
     return out;
 };
+
+// Plain values → Firestore's typed JSON
+export const encodeValue = (v) => {
+    if (v == null) return { nullValue: null };
+    if (typeof v === "boolean") return { booleanValue: v };
+    if (typeof v === "number") return Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v };
+    if (typeof v === "string") return { stringValue: v };
+    if (Array.isArray(v)) return { arrayValue: { values: v.map(encodeValue) } };
+    if (typeof v === "object") return { mapValue: { fields: Object.fromEntries(Object.entries(v).filter(([, x]) => x !== undefined).map(([k, x]) => [k, encodeValue(x)])) } };
+    return { stringValue: String(v) };
+};
+
+// Create a document with a random id and `createdAt` set by the server (like serverTimestamp()),
+// over REST so public pages don't load the Firestore SDK just to log a click. Signed-out request:
+// firestore.rules decide. `keepalive` lets it finish while the browser follows a link.
+export const createDocRest = async (collection, data) => {
+    const id = (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}${Math.random()}`).replace(/[^\w]/g, "").slice(0, 20);
+    const base = root();
+    const name = `${base.replace(/^https?:\/\/[^/]+\/v1\//, "")}/${collection}/${id}`;
+    const body = {
+        writes: [
+            {
+                update: { name, fields: encodeValue(data).mapValue.fields },
+                updateTransforms: [{ fieldPath: "createdAt", setToServerValue: "REQUEST_TIME" }],
+                currentDocument: { exists: false },
+            },
+        ],
+    };
+    const res = await fetch(withKey(`${base}:commit`), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        keepalive: true,
+    });
+    if (!res.ok) throw new Error(`Firestore ${res.status}`);
+    return id;
+};

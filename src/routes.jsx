@@ -34,6 +34,8 @@ const TABLE = [
     ["/donate", "Donate"],
     ["/donate/thank-you", "DonateThanks"],
     ["/contact", "Contact"],
+    ["/links", "Links"],
+    ["/privacy", "Privacy"],
     ["/account", "Account"],
     ["/sign-in", "SignIn"],
     ["/admin", "Admin"],

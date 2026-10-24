@@ -19,9 +19,6 @@
 .journal-skel-big { height: 340px; }
 .journal-skel { height: 300px; }
 
-.journal-topics { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-.journal-topics legend { font-weight: 700; font-size: 14px; padding: 0; margin-bottom: 10px; }
-.journal-topics .chip:has(input:checked) .fine { color: inherit; opacity: .8; }
 
 @media (max-width: 900px) {
   .journal-featured { grid-template-columns: 1fr; }

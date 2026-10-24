@@ -9,6 +9,7 @@ import { Section, SectionHead } from "../components/page/Section";
 import { Reveal } from "../components/ui/Reveal";
 import { Icon } from "../components/ui/Icon";
 import { sendInterest } from "../lib/forms";
+import { Honeypot } from "../components/forms/Honeypot";
 import { formatUGX } from "../lib/money";
 import "./Community.css";
 
@@ -102,7 +103,7 @@ export const Community = () => {
             "",
             String(f.get("about") || ""),
         ].join("\n");
-        join.send({ topic: "Community sign-up", name: f.get("name"), email: f.get("email"), body });
+        join.send({ topic: "Community sign-up", name: f.get("name"), email: f.get("email"), body, website: f.get("website") });
     };
 
     const onBook = (event) => {
@@ -111,7 +112,7 @@ export const Community = () => {
         const chosen = events.find((e) => e.slug === f.get("event"));
         const title = chosen?.title ?? "an event";
         const body = [`Place at: ${title}${chosen?.date ? ` (${formatDate(chosen.date)})` : ""}`, `Places: ${f.get("places") || 1}`, `Phone: ${f.get("phone") || "—"}`].join("\n");
-        booking.send({ topic: `Event: ${title}`, name: f.get("name"), email: f.get("email"), body });
+        booking.send({ topic: `Event: ${title}`, name: f.get("name"), email: f.get("email"), body, website: f.get("website") });
     };
 
     return (
@@ -262,6 +263,7 @@ export const Community = () => {
                             </div>
                         ) : (
                             <form className="card card-pad form" onSubmit={onBook}>
+                                <Honeypot />
                                 <div className="stack" style={{ "--gap": "6px" }}>
                                     <h3 className="h3">Ask for a place</h3>
                                     <p className="small">We confirm places by email or phone. Online payment for paid events opens later (Flutterwave: MTN, Airtel or card).</p>
@@ -338,6 +340,7 @@ export const Community = () => {
                         </div>
                     ) : (
                         <form className="card card-pad form" onSubmit={onJoin}>
+                            <Honeypot />
                             <h3 className="h3">Apply to join</h3>
                             <div className="form-row">
                                 <div className="field">

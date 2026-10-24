@@ -4,11 +4,12 @@ import { CONTENT } from "../../data/content";
 import { useCollection } from "../../hooks/useCollection";
 import { deleteItem, importStarter, saveItem, toForm } from "../../lib/adminContent";
 import { formatUGX } from "../../lib/money";
-import { Photo, imageName } from "../page/Photo";
+import { Photo } from "../page/Photo";
+import { imgName } from "../../lib/images";
 import { Icon } from "../ui/Icon";
 import { AdminField } from "./AdminField";
 
-const PUBLIC_PATH = { products: "/stores", templates: "/templates", projects: "/projects", developments: "/real-estate", posts: "/journal", courses: "/academy", events: "/community" };
+const PUBLIC_PATH = { products: "/stores", templates: "/templates", projects: "/projects", developments: "/real-estate", posts: "/journal", courses: "/academy", events: "/community", downloads: "/templates" };
 const DETAIL = { products: true, templates: true, projects: true, developments: true, posts: true };
 
 // Add, edit, hide and delete one kind of content. Lists the Firestore collection live; when it's
@@ -29,7 +30,7 @@ export const ContentPanel = ({ name }) => {
             await fn();
             if (done) setNote({ ok: true, text: done });
         } catch (e) {
-            setNote({ ok: false, text: e.code === "permission-denied" ? "Firestore refused the change: this account doesn't have the admin claim yet (sign out and back in after it's set)." : e.message });
+            setNote({ ok: false, text: e.code === "permission-denied" ? "Firestore refused the change: this account doesn't have the admin or marketing role yet (sign out and back in after it's set)." : e.message });
         } finally {
             setBusy(false);
         }
@@ -52,7 +53,7 @@ export const ContentPanel = ({ name }) => {
                 </div>
                 <div className="admin-fields">
                     {def.fields.map((f) => (
-                        <div key={f.name} className={f.type === "textarea" || f.type === "images" ? "admin-wide" : ""}>
+                        <div key={f.name} className={f.type === "textarea" || f.type === "images" || f.type === "file" ? "admin-wide" : ""}>
                             <AdminField collection={name} field={f} value={editing.values[f.name]} onChange={(v) => set(f.name, v)} idPrefix={`edit-${name}`} />
                         </div>
                     ))}
@@ -115,7 +116,7 @@ export const ContentPanel = ({ name }) => {
                 <ul className="admin-items">
                     {sorted.map((item) => (
                         <li key={item.id} className="card admin-item">
-                            <Photo name={imageName(item.images?.[0])} alt={item.title} ratio="1 / 1" sizes="72px" />
+                            <Photo name={imgName(item.images?.[0])} alt={item.title} ratio="1 / 1" sizes="72px" />
                             <div className="stack" style={{ "--gap": "4px" }}>
                                 <strong>{item.title || "(untitled)"}</strong>
                                 <span className="fine">

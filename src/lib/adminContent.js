@@ -1,10 +1,11 @@
-// Admin writes for site content. Only admins can write (firestore.rules / storage.rules check the
-// `admin` claim); these helpers just shape the data. Loaded only on /admin.
+// Admin writes for site content. Only the team can write (firestore.rules / storage.rules check the
+// `admin` claim or the marketing role); these helpers just shape the data. Loaded only on /admin.
 import { getDb, getStorageService } from "../config/firebase";
 import { CONTENT, slugify } from "../data/content";
 import { refreshContent } from "../hooks/useContent";
 
 const MAX_IMAGE = 8 * 1024 * 1024;
+const MAX_FILE = 25 * 1024 * 1024;
 
 const fs = () => Promise.all([getDb(), import("firebase/firestore")]);
 
@@ -29,6 +30,9 @@ export const toDoc = (name, values) => {
             case "images":
                 out[f.name] = Array.isArray(v) ? v : [];
                 break;
+            case "file":
+                out[f.name] = v ? String(v).trim() : null;
+                break;
             default:
                 out[f.name] = v == null ? "" : String(v).trim();
         }
@@ -45,6 +49,7 @@ export const toForm = (name, item = {}) =>
             if (f.type === "tags") return [f.name, (v ?? []).join(", ")];
             if (f.type === "bool") return [f.name, v ?? f.default ?? false];
             if (f.type === "images") return [f.name, v ?? []];
+            if (f.type === "file") return [f.name, v ?? ""];
             return [f.name, v ?? f.default ?? ""];
         })
     );
@@ -90,7 +95,20 @@ export const uploadImage = async (name, file) => {
     return getDownloadURL(r);
 };
 
-// Inbox items (messages, quotes, leads, orders…) — admin-only status field
+// Upload a download (PDF or image, up to 25 MB) to Storage public/content/<collection>/… → public URL
+export const uploadFile = async (name, file) => {
+    const ok = file.type === "application/pdf" || file.type.startsWith("image/");
+    if (!ok) throw new Error("Upload a PDF or an image (JPG, PNG, WebP).");
+    if (file.size > MAX_FILE) throw new Error("That file is over 25 MB. Make it smaller (export the PDF for screen) and try again.");
+    const [storage, { ref, uploadBytes, getDownloadURL }] = await Promise.all([getStorageService(), import("firebase/storage")]);
+    const path = `public/content/${name}/${Date.now()}-${file.name.replace(/[^\w.-]+/g, "_")}`;
+    const r = ref(storage, path);
+    await uploadBytes(r, file, { contentType: file.type, contentDisposition: `inline; filename="${file.name.replace(/[^\w.-]+/g, "_")}"`, cacheControl: "public, max-age=86400" });
+    return getDownloadURL(r);
+};
+
+// Lead and inbox items (messages, quotes, investor leads, subscribers) — status set by admins and
+// the marketing team (firestore.rules isMarketing())
 export const setStatus = async (collectionName, id, status) => {
     const [db, { doc, updateDoc }] = await fs();
     await updateDoc(doc(db, collectionName, id), { status });

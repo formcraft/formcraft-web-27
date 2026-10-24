@@ -5,11 +5,13 @@ import { useContentItem } from "../hooks/useContent";
 import { useShowLink } from "../hooks/useSite";
 import { PageHero } from "../components/page/PageHero";
 import { Section } from "../components/page/Section";
-import { Photo, imageName } from "../components/page/Photo";
+import { Photo } from "../components/page/Photo";
+import { imgName } from "../lib/images";
 import { QuoteForm } from "../components/forms/QuoteForm";
 import { Reveal } from "../components/ui/Reveal";
 import { Icon } from "../components/ui/Icon";
 import { formatUGX } from "../lib/money";
+import { track } from "../lib/analytics";
 import { templateKindName, templateSpec, isSample } from "../data/templates";
 import "./TemplateDesign.css";
 
@@ -36,9 +38,13 @@ export const TemplateDesign = () => {
     const { hash } = useLocation();
     const show = useShowLink();
     const { item: t, loading, items } = useContentItem("templates", slug);
+    const viewed = t?.slug;
+    useEffect(() => {
+        if (viewed) track("select_content", { content_type: "template", item_id: viewed });
+    }, [viewed]);
     const [view, setView] = useState(0);
     const [option, setOption] = useState("build");
-    usePageMeta(t ? `${t.title} · Template builds` : loading ? "Template builds" : "Design not found", t?.summary);
+    usePageMeta(t ? `${t.title} · Template builds` : loading ? "Template builds" : "Design not found", t?.summary, { noindex: (!t && !loading) || (t && isSample(t)) });
 
     // Deep links like /templates/x#build: scroll once the design has loaded
     useEffect(() => {
@@ -67,7 +73,7 @@ export const TemplateDesign = () => {
     }
 
     const gallery = t.images?.length
-        ? t.images.map((img, i) => ({ label: img?.alt || `Image ${i + 1}`, name: imageName(img), alt: img?.alt || `${t.title}, image ${i + 1}` }))
+        ? t.images.map((img, i) => ({ label: img?.alt || `Image ${i + 1}`, name: imgName(img), alt: img?.alt || `${t.title}, image ${i + 1}` }))
         : VIEWS.map((label) => ({ label, name: null, alt: `[${label}]` }));
     const current = gallery[Math.min(view, gallery.length - 1)];
     const others = items.filter((x) => x.slug !== t.slug).slice(0, 3);
@@ -200,7 +206,7 @@ export const TemplateDesign = () => {
                         {others.map((o, i) => (
                             <Reveal as="li" key={o.slug} delay={i * 0.06}>
                                 <Link to={`/templates/${o.slug}`} className="card template-design-more-card">
-                                    <Photo name={imageName(o.images?.[0])} alt={o.images?.[0]?.alt || "[Render]"} ratio="16 / 10" />
+                                    <Photo name={imgName(o.images?.[0])} alt={o.images?.[0]?.alt || "[Render]"} ratio="16 / 10" />
                                     <span className="stack" style={{ "--gap": "4px", padding: "16px 18px 20px" }}>
                                         <strong className="h4">{o.title}</strong>
                                         <span className="small">{n(o.bedrooms)} bed · {templateKindName(o).toLowerCase()}</span>

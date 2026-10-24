@@ -5,11 +5,13 @@ import { useContent } from "../hooks/useContent";
 import { useShowLink } from "../hooks/useSite";
 import { PageHero } from "../components/page/PageHero";
 import { Section, SectionHead } from "../components/page/Section";
-import { Photo, imageName } from "../components/page/Photo";
+import { Photo } from "../components/page/Photo";
+import { imgName } from "../lib/images";
 import { Reveal } from "../components/ui/Reveal";
 import { Icon } from "../components/ui/Icon";
 import { formatUGX } from "../lib/money";
 import { sendInvestorLead } from "../lib/forms";
+import { Honeypot } from "../components/forms/Honeypot";
 import { DEV_STATUSES, devStatusLabel, isSampleDev } from "../data/developments";
 import "./RealEstate.css";
 
@@ -54,6 +56,7 @@ const InterestForm = () => {
         setError(null);
         try {
             await sendInvestorLead({
+                website: form.get("website"),
                 name: form.get("name"),
                 org: form.get("org"),
                 email: form.get("email"),
@@ -78,6 +81,7 @@ const InterestForm = () => {
     }
     return (
         <form className="card card-pad form" onSubmit={onSubmit}>
+            <Honeypot />
             <h3 className="h3">Talk to the Real Estate team</h3>
             <div className="form-row">
                 <div className="field">
@@ -160,7 +164,7 @@ export const RealEstate = () => {
                         {shown.map((d, i) => (
                             <Reveal as="li" key={d.slug} delay={(i % 3) * 0.06}>
                                 <article className="card real-estate-card">
-                                    <Photo name={imageName(d.images?.[0])} alt={d.images?.[0]?.alt || `[Render: ${d.kind || d.title}]`} ratio="16 / 10" />
+                                    <Photo name={imgName(d.images?.[0])} alt={d.images?.[0]?.alt || `[Render: ${d.kind || d.title}]`} ratio="16 / 10" />
                                     <div className="real-estate-card-body">
                                         <div className="row" style={{ "--gap": "6px" }}>
                                             <span className={`tag real-estate-status is-${d.status}`}>{devStatusLabel(d.status)}</span>

@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
-import { useContent } from "../hooks/useContent";
+import { useContent, useContentItem } from "../hooks/useContent";
 import { useShowLink } from "../hooks/useSite";
 import { PageHero } from "../components/page/PageHero";
 import { Section, SectionHead } from "../components/page/Section";
-import { Photo, imageName } from "../components/page/Photo";
+import { Photo } from "../components/page/Photo";
+import { imgName } from "../lib/images";
 import { Reveal } from "../components/ui/Reveal";
 import { Icon } from "../components/ui/Icon";
+import { SubscribeForm } from "../components/forms/SubscribeForm";
 import { formatUGX } from "../lib/money";
 import { TEMPLATE_KINDS, templateKind, templateKindName, templateSpec, templateArea, isSample } from "../data/templates";
 import "./Templates.css";
@@ -69,7 +71,7 @@ const TemplateCard = ({ t }) => {
     const img = t.images?.[0];
     return (
         <article className="card templates-card">
-            <Photo name={imageName(img)} alt={img?.alt || `[Render and floor plan: ${t.title}]`} ratio="16 / 10" />
+            <Photo name={imgName(img)} alt={img?.alt || `[Render and floor plan: ${t.title}]`} ratio="16 / 10" />
             <div className="templates-card-body">
                 <div className="between templates-card-top">
                     <span className="row" style={{ "--gap": "6px" }}>
@@ -105,6 +107,8 @@ export const Templates = () => {
     const [beds, setBeds] = useState("any");
     const shown = items.filter((t) => (kind === "all" || templateKind(t) === kind) && matchesBeds(t, beds));
     const samples = items.some(isSample);
+    const { item: catalogue } = useContentItem("downloads", "template-catalogue");
+    const catalogueText = catalogue?.description ?? "";
 
     return (
         <div className="templates" data-division="construction">
@@ -212,6 +216,20 @@ export const Templates = () => {
                         </Reveal>
                     ))}
                 </ul>
+            </Section>
+
+            <Section tone="ground" seed={7} id="catalogue">
+                <div className="grid-2">
+                    <Reveal className="stack" style={{ "--gap": "18px" }}>
+                        <p className="eyebrow">Free download</p>
+                        <h2 className="h2">{catalogue?.title || "Template home catalogue"}.</h2>
+                        <p className="body">The designs in the home library in one file, to keep, print and share with your family before you decide.</p>
+                        {catalogueText && (
+                            <p className={`small ${/^\s*TODO/.test(catalogueText) ? "todo" : ""}`}>{catalogueText}</p>
+                        )}
+                    </Reveal>
+                    <SubscribeForm variant="card" heading="Send me the catalogue" download="template-catalogue" defaultInterests={["Template homes"]} button="Send me the catalogue" />
+                </div>
             </Section>
 
             <Section tone="dark" seed={8} id="designers">

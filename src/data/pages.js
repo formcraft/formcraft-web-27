@@ -20,6 +20,8 @@ export const PAGES = [
     { key: "journal", label: "Journal", note: "Project stories and community news", paths: ["/journal", "/journal/:slug"], group: "Company", defaultOn: true },
     { key: "about", label: "About", paths: ["/about"], group: "Company", defaultOn: true },
     { key: "contact", label: "Contact", paths: ["/contact"], group: "Company", locked: true },
+    { key: "links", label: "Links", note: "Link-in-bio page for social profiles", paths: ["/links"], group: "Company", defaultOn: true, unlisted: true },
+    { key: "privacy", label: "Privacy", paths: ["/privacy"], group: "Company", locked: true, unlisted: true },
     { key: "account", label: "Your account", paths: ["/account"], group: "Account", defaultOn: true, unlisted: true },
     { key: "signIn", label: "Sign in", paths: ["/sign-in"], group: "Account", locked: true, unlisted: true },
     { key: "admin", label: "Admin", paths: ["/admin"], group: "Account", locked: true, unlisted: true },

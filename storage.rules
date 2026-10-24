@@ -3,6 +3,8 @@ service firebase.storage {
   match /b/{bucket}/o {
     function signedIn() { return request.auth != null; }
     function isAdmin()  { return signedIn() && request.auth.token.admin == true; }
+    function isMarketing() { return isAdmin() || (signedIn() && request.auth.token.role == 'marketing'); }
+    function isEditor() { return isMarketing() || (signedIn() && request.auth.token.role == 'editor'); }
 
     // Product and project images: anyone reads, only admin uploads
     match /public/{allPaths=**} {
@@ -10,11 +12,30 @@ service firebase.storage {
       allow write: if isAdmin();
     }
 
-    // Drawings attached to quote requests: anyone may upload one file (PDF/image, < 20 MB); only admin reads
+    // Content photos and free downloads from Admin → Content (lib/adminContent.js uploadImage /
+    // uploadFile): the marketing team may upload too — images or PDFs up to 25 MB.
+    match /public/content/{allPaths=**} {
+      allow read: if true;
+      allow write: if isMarketing()
+        && (request.resource == null
+            || (request.resource.size < 25 * 1024 * 1024
+                && request.resource.contentType.matches('application/pdf|image/.*')));
+    }
+
+    // Social post pictures and videos from Admin → Studio (editors upload drafts too)
+    match /public/social/{allPaths=**} {
+      allow read: if true;
+      allow write: if isEditor()
+        && (request.resource == null
+            || (request.resource.contentType.matches('image/.*') && request.resource.size < 15 * 1024 * 1024)
+            || (request.resource.contentType.matches('video/.*') && request.resource.size < 100 * 1024 * 1024));
+    }
+
+    // Drawings attached to quote requests: anyone may upload one file (PDF/image, < 20 MB); the team reads
     match /quotes/{quoteId}/{fileName} {
       allow create: if request.resource.size < 20 * 1024 * 1024
         && request.resource.contentType.matches('application/pdf|image/.*');
-      allow read: if isAdmin();
+      allow read: if isMarketing();
     }
 
     // Member portfolio uploads: owner writes, public reads (profiles are approved before they're listed)

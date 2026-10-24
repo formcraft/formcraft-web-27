@@ -3,7 +3,8 @@ import { usePageMeta } from "../hooks/usePageMeta";
 import { useContentItem } from "../hooks/useContent";
 import { PageHero } from "../components/page/PageHero";
 import { Section } from "../components/page/Section";
-import { Photo, imageName } from "../components/page/Photo";
+import { Photo } from "../components/page/Photo";
+import { imgName } from "../lib/images";
 import { Icon } from "../components/ui/Icon";
 import "./Post.css";
 
@@ -42,7 +43,7 @@ const readMinutes = (text) => Math.max(1, Math.round(String(text ?? "").split(/\
 export const Post = () => {
     const { slug } = useParams();
     const { item: post, loading, items } = useContentItem("posts", slug);
-    usePageMeta(post ? post.title : loading ? "Journal" : "Post not found", post?.excerpt);
+    usePageMeta(post ? post.title : loading ? "Journal" : "Post not found", post?.excerpt, { image: post?.images?.[0], noindex: !post && !loading });
 
     if (!post && loading) {
         return (
@@ -66,7 +67,7 @@ export const Post = () => {
     const planned = isPlanned(post);
     const draft = !planned && !post.publishedAt;
     const first = post.images?.[0];
-    const cover = imageName(first);
+    const cover = imgName(first);
     const coverAlt = (typeof first === "object" && first?.alt) || post.title;
     const related = [
         ...items.filter((p) => p.slug !== post.slug && p.category === post.category),

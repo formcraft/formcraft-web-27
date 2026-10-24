@@ -71,7 +71,7 @@ const NavGroup = ({ group, pathname }) => {
 };
 
 export const Header = () => {
-    const { user, isAdmin, loading, openSignIn } = useAuth();
+    const { user, isEditor, loading, openSignIn } = useAuth();
     const { pathname } = useLocation();
     const [menuOpen, setMenuOpen] = useState(false);
     const show = useShowLink();
@@ -100,7 +100,7 @@ export const Header = () => {
 
                 <div className="header-tools">
                     <ThemeSwitch />
-                    {isAdmin && (
+                    {isEditor && (
                         <Link to="/admin" className="icon-btn" aria-label="Admin" title="Admin">
                             <Icon name="layers" size={19} />
                         </Link>

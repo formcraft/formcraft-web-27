@@ -3,7 +3,11 @@ import { useLocation } from "react-router-dom";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { DonateFab } from "./DonateFab";
+import { ConsentBanner } from "./ConsentBanner";
 import { CartDrawer } from "../shop/CartDrawer";
+import { SubscribePrompt } from "../forms/SubscribePrompt";
+import { initAttribution } from "../../lib/attribution";
+import { installClickTracking } from "../../lib/track";
 
 // On a new page: go to the top (or to the #section in the link) and move focus to the main area
 // so keyboard and screen-reader users start at the new content. Not on the first load, so Tab
@@ -27,8 +31,17 @@ const useScrollOnNavigate = () => {
     }, [pathname, hash]);
 };
 
+// Funnel: remember where the visitor came from (tagged links, referrer) and count contact clicks.
+const useFunnel = () => {
+    useEffect(() => {
+        initAttribution();
+        installClickTracking();
+    }, []);
+};
+
 export const Layout = ({ children }) => {
     useScrollOnNavigate();
+    useFunnel();
     return (
         <>
             <a className="skip-link" href="#main">
@@ -41,6 +54,8 @@ export const Layout = ({ children }) => {
             <Footer />
             <DonateFab />
             <CartDrawer />
+            <ConsentBanner />
+            <SubscribePrompt />
         </>
     );
 };

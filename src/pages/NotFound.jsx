@@ -12,7 +12,7 @@ const DOORS = [
 ];
 
 export const NotFound = () => {
-    usePageMeta("Page not found");
+    usePageMeta("Page not found", undefined, { noindex: true });
     return (
         <>
             <PageHero eyebrow="404 · page not found" title="This page isn't on the drawings." sheet="X404" seed={404} city={false} lead="The link may be old or mistyped. Try one of these instead.">

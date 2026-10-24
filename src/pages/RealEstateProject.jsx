@@ -4,11 +4,13 @@ import { usePageMeta } from "../hooks/usePageMeta";
 import { useContentItem } from "../hooks/useContent";
 import { PageHero } from "../components/page/PageHero";
 import { Section } from "../components/page/Section";
-import { Photo, imageName } from "../components/page/Photo";
+import { Photo } from "../components/page/Photo";
+import { imgName } from "../lib/images";
 import { Reveal } from "../components/ui/Reveal";
 import { Icon } from "../components/ui/Icon";
 import { formatUGX } from "../lib/money";
 import { sendInvestorLead } from "../lib/forms";
+import { Honeypot } from "../components/forms/Honeypot";
 import { devStatusLabel, isSampleDev } from "../data/developments";
 import "./RealEstateProject.css";
 
@@ -44,6 +46,7 @@ const InterestForm = ({ dev }) => {
         setError(null);
         try {
             await sendInvestorLead({
+                website: form.get("website"),
                 name: form.get("name"),
                 org: form.get("org"),
                 email: form.get("email"),
@@ -68,6 +71,7 @@ const InterestForm = ({ dev }) => {
     }
     return (
         <form className="card card-pad form" onSubmit={onSubmit}>
+            <Honeypot />
             <div className="stack" style={{ "--gap": "6px" }}>
                 <h3 className="h3">Invest in this development</h3>
                 <p className="small">Investing online isn't open yet. Register your interest and we'll send the documents when the round opens.</p>
@@ -120,7 +124,7 @@ export const RealEstateProject = () => {
     const { slug } = useParams();
     const { item: dev, loading, items } = useContentItem("developments", slug);
     const [view, setView] = useState(0);
-    usePageMeta(dev ? `${dev.title} · Real estate` : loading ? "Real estate" : "Development not found", dev?.summary);
+    usePageMeta(dev ? `${dev.title} · Real estate` : loading ? "Real estate" : "Development not found", dev?.summary, { noindex: (!dev && !loading) || (dev && isSampleDev(dev)) });
 
     if (!dev && loading) {
         return (
@@ -143,7 +147,7 @@ export const RealEstateProject = () => {
     }
 
     const gallery = dev.images?.length
-        ? dev.images.map((img, i) => ({ label: img?.alt || `Image ${i + 1}`, name: imageName(img), alt: img?.alt || `${dev.title}, image ${i + 1}` }))
+        ? dev.images.map((img, i) => ({ label: img?.alt || `Image ${i + 1}`, name: imgName(img), alt: img?.alt || `${dev.title}, image ${i + 1}` }))
         : VIEWS.map((label) => ({ label, name: null, alt: `[${label}]` }));
     const current = gallery[Math.min(view, gallery.length - 1)];
     const others = items.filter((d) => d.slug !== dev.slug).slice(0, 3);
@@ -248,7 +252,7 @@ export const RealEstateProject = () => {
                         {others.map((o, i) => (
                             <Reveal as="li" key={o.slug} delay={i * 0.06}>
                                 <Link to={`/real-estate/${o.slug}`} className="card real-estate-project-other-card">
-                                    <Photo name={imageName(o.images?.[0])} alt={o.images?.[0]?.alt || "[Render]"} ratio="16 / 10" />
+                                    <Photo name={imgName(o.images?.[0])} alt={o.images?.[0]?.alt || "[Render]"} ratio="16 / 10" />
                                     <span className="stack" style={{ "--gap": "6px", padding: "16px 18px 20px" }}>
                                         <span className="tag" style={{ alignSelf: "flex-start" }}>{devStatusLabel(o.status)}</span>
                                         <strong className="h4">{o.title}</strong>

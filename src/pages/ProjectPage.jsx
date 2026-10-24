@@ -13,7 +13,7 @@ import "./ProjectPage.css";
 export const ProjectPage = () => {
     const { slug } = useParams();
     const { item: project, items: projects, loading } = useContentItem("projects", slug);
-    usePageMeta(project ? project.title : "Project not found", project?.summary);
+    usePageMeta(project ? project.title : "Project not found", project?.summary, { image: project?.images?.[0], noindex: !project });
     if (!project && loading) return <div className="wrap section"><div className="skeleton" style={{ height: 480 }} /></div>;
     if (!project) return <NotFound />;
 

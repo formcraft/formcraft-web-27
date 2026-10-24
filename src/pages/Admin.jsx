@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { useAuth } from "../hooks/useAuth";
@@ -8,18 +8,65 @@ import { CONTENT } from "../data/content";
 import { Section } from "../components/page/Section";
 import { PagesPanel } from "../components/admin/PagesPanel";
 import { ContentPanel } from "../components/admin/ContentPanel";
-import { InboxPanel, INBOXES } from "../components/admin/InboxPanel";
+import { InboxPanel } from "../components/admin/InboxPanel";
+import { INBOXES } from "../components/admin/inboxes";
+import { LeadsPanel } from "../components/admin/LeadsPanel";
+import { LinkBuilderPanel } from "../components/admin/LinkBuilderPanel";
+import { DetailsPanel } from "../components/admin/DetailsPanel";
+import { MotionPanel } from "../components/admin/MotionPanel";
+import { StudioPanel } from "../components/admin/studio/StudioPanel";
+import { TeamPanel } from "../components/admin/TeamPanel";
 import { firebaseConfigured } from "../config/firebase";
 import "./Admin.css";
 
-// The team's control room: which pages are open, the site's content, and what visitors sent.
-// Everything here is enforced again by firestore.rules / storage.rules (admin custom claim).
+// The team's control room: leads, which pages are open, the site's content, and what visitors sent.
+// Each item says which team roles see it (custom claims: admin, role "marketing", role "editor");
+// admins see everything. Everything here is enforced again by firestore.rules / storage.rules.
+// To add a section, add an item { key, label, roles, render } to a group.
+const TEAM = ["admin", "marketing"];
+
+const SiteDetails = () => {
+    const { loading } = useSite();
+    return <DetailsPanel key={loading ? "loading" : "ready"} />;
+};
+
+const SiteMotion = () => {
+    const { loading } = useSite();
+    return <MotionPanel key={loading ? "loading" : "ready"} />;
+};
+
 const SECTIONS = [
-    { group: "Site", items: [["overview", "Overview"], ["pages", "Pages"]] },
-    { group: "Content", items: Object.entries(CONTENT).map(([k, v]) => [k, v.label]) },
-    { group: "Inbox", items: Object.entries(INBOXES).map(([k, v]) => [k, v.label]) },
+    {
+        group: "Marketing",
+        items: [
+            { key: "leads", label: "Leads", roles: TEAM, render: () => <LeadsPanel /> },
+            { key: "studio", label: "Studio", roles: ["admin", "marketing", "editor"], render: () => <StudioPanel /> },
+            { key: "links", label: "Link builder", roles: TEAM, render: () => <LinkBuilderPanel /> },
+        ],
+    },
+    {
+        group: "Site",
+        items: [
+            { key: "overview", label: "Overview", roles: ["admin"], render: (go) => <Overview go={go} /> },
+            { key: "pages", label: "Pages", roles: ["admin"], render: () => <PagesPanel /> },
+            { key: "details", label: "Site details", roles: ["admin"], render: () => <SiteDetails /> },
+            { key: "motion", label: "Motion", roles: ["admin"], render: () => <SiteMotion /> },
+            { key: "team", label: "Team", roles: ["admin"], render: () => <TeamPanel /> },
+        ],
+    },
+    {
+        group: "Content",
+        items: Object.entries(CONTENT).map(([k, v]) => ({ key: k, label: v.label, roles: TEAM, render: () => <ContentPanel key={k} name={k} /> })),
+    },
+    {
+        group: "Inbox",
+        items: Object.entries(INBOXES).map(([k, v]) => ({ key: k, label: v.label, roles: ["admin"], render: () => <InboxPanel key={k} name={k} /> })),
+    },
 ];
-const ALL = SECTIONS.flatMap((s) => s.items.map(([k]) => k));
+
+// The groups and items a role can see (admins: everything)
+const sectionsFor = (role) =>
+    SECTIONS.map((s) => ({ ...s, items: s.items.filter((i) => role === "admin" || i.roles.includes(role)) })).filter((s) => s.items.length > 0);
 
 const Overview = ({ go }) => {
     const { visibility } = useSite();
@@ -39,10 +86,10 @@ const Overview = ({ go }) => {
                     <strong className="h3">Products, designs, projects…</strong>
                     <span className="small">Add a new template design, a product or a Journal post, with photos.</span>
                 </button>
-                <button type="button" className="card card-pad admin-tile" onClick={() => go("quotes")}>
-                    <span className="fine">Inbox</span>
-                    <strong className="h3">Quotes and messages</strong>
-                    <span className="small">Everything sent through the site's forms, newest first.</span>
+                <button type="button" className="card card-pad admin-tile" onClick={() => go("leads")}>
+                    <span className="fine">Leads</span>
+                    <strong className="h3">Quotes, messages, subscribers</strong>
+                    <span className="small">Everything sent through the site's forms, where it came from, and a CSV export.</span>
                 </button>
             </div>
             <p className="small">Payments: orders and donations are marked paid only by the server after Flutterwave confirms them — never from this screen.</p>
@@ -52,19 +99,23 @@ const Overview = ({ go }) => {
 
 export const Admin = () => {
     usePageMeta("Admin", "Formcraft team admin.");
-    const { user, isAdmin, loading, openSignIn } = useAuth();
+    const { user, isAdmin, isEditor, role, loading, openSignIn } = useAuth();
     const { hash } = useLocation();
     const navigate = useNavigate();
-    const initial = ALL.includes(hash.slice(1)) ? hash.slice(1) : "overview";
-    const [tab, setTab] = useState(initial);
+    const myRole = isAdmin ? "admin" : role;
+    const sections = useMemo(() => sectionsFor(myRole), [myRole]);
+    const items = useMemo(() => sections.flatMap((s) => s.items), [sections]);
+    const [picked, setPicked] = useState(() => hash.slice(1) || null);
+    const current = items.find((i) => i.key === picked) ?? items[0] ?? null;
+    const tab = current?.key;
 
     useEffect(() => {
         const h = hash.slice(1);
-        if (ALL.includes(h)) setTab(h);
+        if (h) setPicked(h);
     }, [hash]);
 
     const go = (key) => {
-        setTab(key);
+        setPicked(key);
         navigate(`/admin#${key}`, { replace: true });
     };
 
@@ -74,15 +125,15 @@ export const Admin = () => {
         body = (
             <div className="card card-pad stack admin-gate" style={{ "--gap": "14px" }}>
                 <h2 className="h3">Sign in to the admin page</h2>
-                <p className="body">Only Formcraft team accounts with the admin role can use this page.</p>
+                <p className="body">Only Formcraft team accounts (admin, marketing or editor) can use this page.</p>
                 <button type="button" className="btn btn-primary" style={{ alignSelf: "flex-start" }} onClick={openSignIn}>Sign in</button>
             </div>
         );
-    else if (!isAdmin)
+    else if (!isEditor)
         body = (
             <div className="card card-pad stack admin-gate" style={{ "--gap": "14px" }}>
-                <h2 className="h3">This account isn't an admin.</h2>
-                <p className="body">You're signed in as {user.email}. Admin rights are given with <code>scripts/set-admin.js</code> by someone with access to the Firebase project; sign out and back in afterwards.</p>
+                <h2 className="h3">This account isn't on the Formcraft team.</h2>
+                <p className="body">You're signed in as {user.email}. An admin can add you in Admin → Team (or with <code>scripts/set-admin.js</code>); sign out and back in afterwards.</p>
                 <Link to="/" className="btn btn-line" style={{ alignSelf: "flex-start" }}>Back to the site</Link>
             </div>
         );
@@ -90,10 +141,10 @@ export const Admin = () => {
         body = (
             <div className="admin-layout">
                 <nav className="admin-nav" aria-label="Admin sections">
-                    {SECTIONS.map((s) => (
+                    {sections.map((s) => (
                         <div key={s.group} className="stack" style={{ "--gap": "2px" }}>
                             <p className="fine admin-nav-head">{s.group}</p>
-                            {s.items.map(([key, label]) => (
+                            {s.items.map(({ key, label }) => (
                                 <button key={key} type="button" className="admin-nav-btn" aria-current={tab === key ? "page" : undefined} onClick={() => go(key)}>
                                     {label}
                                 </button>
@@ -102,10 +153,7 @@ export const Admin = () => {
                     ))}
                 </nav>
                 <div className="admin-main" id="admin-main">
-                    {tab === "overview" && <Overview go={go} />}
-                    {tab === "pages" && <PagesPanel />}
-                    {CONTENT[tab] && <ContentPanel key={tab} name={tab} />}
-                    {INBOXES[tab] && <InboxPanel key={tab} name={tab} />}
+                    {current?.render(go)}
                 </div>
             </div>
         );
@@ -119,7 +167,7 @@ export const Admin = () => {
                         <p className="eyebrow">Sheet U103 · team only</p>
                         <h1 className="h2">Admin</h1>
                     </div>
-                    {isAdmin && <span className="tag tag-accent">Signed in as admin · {user?.email}</span>}
+                    {isEditor && <span className="tag tag-accent">Signed in as {myRole} · {user?.email}</span>}
                 </div>
                 {body}
             </Section>

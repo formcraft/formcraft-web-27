@@ -8,6 +8,7 @@ import { Photo } from "../components/page/Photo";
 import { Reveal } from "../components/ui/Reveal";
 import { Icon } from "../components/ui/Icon";
 import { sendInvestorLead } from "../lib/forms";
+import { Honeypot } from "../components/forms/Honeypot";
 import "./Invest.css";
 
 const TARGETS = [
@@ -44,6 +45,7 @@ const PackForm = ({ show }) => {
         setError(null);
         try {
             await sendInvestorLead({
+                website: form.get("website"),
                 name: form.get("name"),
                 org: form.get("org"),
                 email: form.get("email"),
@@ -74,6 +76,7 @@ const PackForm = ({ show }) => {
 
     return (
         <form className="card card-pad form" onSubmit={onSubmit}>
+            <Honeypot />
             <h3 className="h3">Request the investor pack</h3>
             <div className="form-row">
                 <div className="field">

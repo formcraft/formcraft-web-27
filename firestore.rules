@@ -7,17 +7,59 @@ service cloud.firestore {
     function str(field, max) { return request.resource.data[field] is string
                                  && request.resource.data[field].size() > 0
                                  && request.resource.data[field].size() <= max; }
+    // Marketing team (custom claim role: "marketing", set from Admin → Team) or an admin:
+    // reads and works the leads, edits site content.
+    function isMarketing() { return isAdmin() || (signedIn() && request.auth.token.role == 'marketing'); }
+    // Editors (role "editor") draft social posts in Admin → Studio; marketing and admins approve
+    function isEditor() { return isMarketing() || (signedIn() && request.auth.token.role == 'editor'); }
+    function editorStatus(s) { return s in ['idea', 'draft', 'review']; }
+    // optional string field: absent, or a string of at most `max` characters (may be empty)
+    function optStr(field, max) { return !(field in request.resource.data)
+                                    || (request.resource.data[field] is string && request.resource.data[field].size() <= max); }
+    // where the visitor came from (src/lib/attribution.js) and the page the form was sent from
+    function attribution() { return (!('source' in request.resource.data) || request.resource.data.source is map)
+                                 && optStr('page', 200); }
 
-    // Public catalogue: anyone reads, only admin writes
-    match /products/{id} { allow read: if true; allow write: if isAdmin(); }
-    match /projects/{id} { allow read: if true; allow write: if isAdmin(); }
-    match /events/{id}   { allow read: if true; allow write: if isAdmin(); }
-    match /courses/{id}  { allow read: if true; allow write: if isAdmin(); }
-    match /templates/{id}    { allow read: if true; allow write: if isAdmin(); } // template home designs
-    match /developments/{id} { allow read: if true; allow write: if isAdmin(); } // real-estate developments
+    // Public catalogue: anyone reads, admins and the marketing team write (Admin → Content)
+    match /products/{id} { allow read: if true; allow write: if isMarketing(); }
+    match /projects/{id} { allow read: if true; allow write: if isMarketing(); }
+    match /events/{id}   { allow read: if true; allow write: if isMarketing(); } // Community events and workshops
+    match /courses/{id}  { allow read: if true; allow write: if isMarketing(); }
+    match /templates/{id}    { allow read: if true; allow write: if isMarketing(); } // template home designs
+    match /developments/{id} { allow read: if true; allow write: if isMarketing(); } // real-estate developments
+    match /downloads/{id}    { allow read: if true; allow write: if isMarketing(); } // free downloads (lead magnets)
 
-    // Site settings: which pages visitors see (Admin → Pages). Anyone reads, only admin writes.
-    match /settings/{id} { allow read: if true; allow write: if isAdmin(); }
+    // Site settings: settings/site = page switches, contact details, motion (public read, admin write);
+    // settings/studio = Marketing Studio options (team only)
+    match /settings/{id} {
+      allow read: if id != 'studio' || isEditor();
+      allow write: if isAdmin() || (id == 'studio' && isMarketing());
+    }
+
+    // Team members by email (Admin → Team); the onTeamChange function turns them into custom claims
+    match /team/{email} {
+      allow read: if isAdmin() || (signedIn() && request.auth.token.email.lower() == email);
+      allow write: if isAdmin();
+    }
+
+    // Marketing Studio (Admin → Studio): channels, occasions, topic ideas and the posts calendar
+    match /socialChannels/{id} { allow read: if isEditor(); allow write: if isMarketing(); }
+    match /occasions/{id}      { allow read: if isEditor(); allow write: if isMarketing(); }
+    match /socialTopics/{id} {
+      allow read: if isEditor();
+      allow create: if isMarketing() || (isEditor() && request.resource.data.get('uses', 0) == 0);
+      allow update, delete: if isMarketing();
+    }
+    match /socialPosts/{id} {
+      allow read: if isEditor();
+      allow create: if isMarketing()
+        || (isEditor() && editorStatus(request.resource.data.status)
+            && !request.resource.data.keys().hasAny(['approvedBy', 'results']));
+      allow update: if isMarketing()
+        || (isEditor() && editorStatus(resource.data.status) && editorStatus(request.resource.data.status)
+            && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['approvedBy', 'results']));
+      allow delete: if isMarketing();
+    }
     match /stats/{id}    { allow read: if true; allow write: if false; } // functions only
 
     // Users and their carts
@@ -42,23 +84,53 @@ service cloud.firestore {
     match /enrolments/{id}  { allow read: if isOwner(resource.data.uid) || isAdmin(); allow write: if false; }
     match /donations/{id}   { allow read: if resource.data.showOnWall == true || isOwner(resource.data.uid) || isAdmin(); allow write: if false; }
 
-    // Forms: anyone submits (checked fields only), only admin reads
+    // Forms: anyone submits (checked fields only); the team reads and sets a status (Admin → Leads)
     match /messages/{id} {
-      allow create: if request.resource.data.keys().hasOnly(['name', 'email', 'subject', 'body', 'createdAt'])
+      allow create: if request.resource.data.keys().hasOnly(['name', 'email', 'subject', 'body', 'source', 'page', 'createdAt'])
         && str('name', 120) && str('email', 200) && str('body', 5000)
+        && attribution()
         && request.resource.data.createdAt == request.time;
-      allow read, update, delete: if isAdmin();
+      allow read, update: if isMarketing();
+      allow delete: if isAdmin();
     }
     match /quotes/{id} {
       allow create: if !('status' in request.resource.data)
         && str('name', 120) && str('contact', 200)
+        && attribution()
         && request.resource.data.createdAt == request.time;
-      allow read, update: if isAdmin();
+      allow read, update: if isMarketing();
     }
     match /investorLeads/{id} {
-      allow create: if str('name', 120) && str('email', 200)
+      allow create: if !('status' in request.resource.data)
+        && str('name', 120) && str('email', 200)
+        && attribution()
         && request.resource.data.createdAt == request.time;
-      allow read, update: if isAdmin();
+      allow read, update: if isMarketing();
+    }
+
+    // Email list (SubscribeForm): consent required; the team reads, sets a status, removes people
+    match /subscribers/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['email', 'name', 'interests', 'consent', 'download', 'source', 'page', 'createdAt'])
+        && str('email', 200)
+        && request.resource.data.email.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$')
+        && request.resource.data.consent == true
+        && optStr('name', 120) && optStr('download', 80)
+        && (!('interests' in request.resource.data) || (request.resource.data.interests is list && request.resource.data.interests.size() <= 10))
+        && attribution()
+        && request.resource.data.createdAt == request.time;
+      allow read, update, delete: if isMarketing();
+    }
+
+    // Contact clicks (phone, WhatsApp, email, socials, marked buttons) for the Leads dashboard.
+    // (Not `events`: that collection holds the Community events and workshops.)
+    match /clicks/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['type', 'target', 'page', 'source', 'createdAt'])
+        && request.resource.data.type in ['whatsapp', 'phone', 'email', 'cta', 'social']
+        && str('target', 300) && optStr('page', 200)
+        && (!('source' in request.resource.data) || request.resource.data.source is map)
+        && request.resource.data.createdAt == request.time;
+      allow read: if isMarketing();
+      allow delete: if isAdmin();
     }
 
     // Jobs board: approved members post
@@ -74,6 +146,6 @@ service cloud.firestore {
     }
 
     // Journal (only if kept)
-    match /posts/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /posts/{id} { allow read: if true; allow write: if isMarketing(); }
   }
 }

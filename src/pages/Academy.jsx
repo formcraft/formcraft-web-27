@@ -9,6 +9,7 @@ import { Photo } from "../components/page/Photo";
 import { Reveal } from "../components/ui/Reveal";
 import { Icon } from "../components/ui/Icon";
 import { sendInterest } from "../lib/forms";
+import { Honeypot } from "../components/forms/Honeypot";
 import { formatUGX } from "../lib/money";
 import "./Academy.css";
 
@@ -71,7 +72,7 @@ export const Academy = () => {
         setStatus("sending");
         setError(null);
         try {
-            await sendInterest({ topic: `Course: ${title}`, name: f.get("name"), email: f.get("email"), body });
+            await sendInterest({ topic: `Course: ${title}`, name: f.get("name"), email: f.get("email"), body, website: f.get("website") });
             setStatus("sent");
         } catch (e) {
             setError(e.message || "Something went wrong. Please try again, or call us.");
@@ -205,6 +206,7 @@ export const Academy = () => {
                         </div>
                     ) : (
                         <form className="card card-pad form" onSubmit={onSubmit}>
+                            <Honeypot />
                             <h3 className="h3">Your place</h3>
                             <div className="field">
                                 <label htmlFor="ae-course">Course</label>

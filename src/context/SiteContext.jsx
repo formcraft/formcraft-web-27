@@ -4,16 +4,42 @@ import { useAuth } from "../hooks/useAuth";
 import { getDb } from "../config/firebase";
 import { getDocRest, restReady } from "../lib/firestoreRest";
 import { PAGES, defaultVisibility, pageByKey } from "../data/pages";
+import { CONTACT_DEFAULTS } from "../data/contact";
 import { readJSON, writeJSON } from "../lib/storage";
+import { MOTION_CACHE, MOTION_DEFAULTS, applyMotion, clampMotion, mergeMotion } from "../data/motion";
 
-// Which pages visitors can see. Firestore `settings/site` { pages: { key: bool } }, read over REST
-// (no SDK on public pages) and cached in localStorage so the next visit knows straight away.
-// Admins change it from /admin; firestore.rules lets only admins write it.
+// Site settings from Firestore `settings/site`, read over REST (no SDK on public pages) and cached in
+// localStorage so the next visit knows straight away:
+// - `pages`: { key: bool } — which pages visitors can see (Admin → Pages)
+// - `details`: { whatsapp, phone, email, address, hours, instagram, x, linkedin, tiktok, facebook,
+//   pinterest } — public contact details (Admin → Site details), merged over src/data/contact.js
+// - `motion`: { intro, tear, build, reveal } — animation time scales (Admin → Motion), see src/data/motion.js
+// firestore.rules let only admins write it.
 const CACHE = "fc-site-pages";
+const DETAILS_CACHE = "fc-site-details";
+
+// A saved key wins even when empty (so an admin can remove a default); empty means "not set" (null)
+const mergeDetails = (saved) => {
+    const out = { ...CONTACT_DEFAULTS };
+    Object.keys(CONTACT_DEFAULTS).forEach((k) => {
+        if (saved && k in saved) {
+            const v = typeof saved[k] === "string" ? saved[k].trim() : saved[k];
+            out[k] = v ? v : null;
+        }
+    });
+    return out;
+};
+
+const writeSettings = async (data) => {
+    const [db, { doc, setDoc, serverTimestamp }] = await Promise.all([getDb(), import("firebase/firestore")]);
+    await setDoc(doc(db, "settings", "site"), { ...data, updatedAt: serverTimestamp() }, { merge: true });
+};
 
 export const SiteProvider = ({ children }) => {
     const { isAdmin } = useAuth();
     const [stored, setStored] = useState(() => readJSON(CACHE, null));
+    const [savedDetails, setSavedDetails] = useState(() => readJSON(DETAILS_CACHE, null));
+    const [savedMotion, setSavedMotion] = useState(() => readJSON(MOTION_CACHE, null));
     const [loading, setLoading] = useState(restReady());
 
     useEffect(() => {
@@ -24,6 +50,12 @@ export const SiteProvider = ({ children }) => {
                 const pages = doc?.pages ?? {};
                 setStored(pages);
                 writeJSON(CACHE, pages);
+                const details = doc?.details ?? {};
+                setSavedDetails(details);
+                writeJSON(DETAILS_CACHE, details);
+                const motion = doc?.motion ?? {};
+                setSavedMotion(motion);
+                writeJSON(MOTION_CACHE, motion);
             })
             .catch((error) => {
                 if (error.name !== "AbortError") console.warn("Couldn't read site settings; using the defaults.", error);
@@ -40,6 +72,10 @@ export const SiteProvider = ({ children }) => {
         return merged;
     }, [stored]);
 
+    const details = useMemo(() => mergeDetails(savedDetails), [savedDetails]);
+    const motion = useMemo(() => mergeMotion(savedMotion), [savedMotion]);
+    useEffect(() => applyMotion(motion), [motion]);
+
     const setPage = useCallback(
         async (key, on) => {
             if (!isAdmin) throw new Error("Only admins can change which pages are shown.");
@@ -49,8 +85,7 @@ export const SiteProvider = ({ children }) => {
             setStored(next);
             writeJSON(CACHE, next);
             try {
-                const [db, { doc, setDoc, serverTimestamp }] = await Promise.all([getDb(), import("firebase/firestore")]);
-                await setDoc(doc(db, "settings", "site"), { pages: { [key]: on }, updatedAt: serverTimestamp() }, { merge: true });
+                await writeSettings({ pages: { [key]: on } });
             } catch (error) {
                 setStored(previous);
                 writeJSON(CACHE, previous);
@@ -58,6 +93,50 @@ export const SiteProvider = ({ children }) => {
             }
         },
         [isAdmin, stored]
+    );
+
+    // Merge-write some of the contact details (admin only; the rules check the claim too)
+    const setDetails = useCallback(
+        async (partial) => {
+            if (!isAdmin) throw new Error("Only admins can change the site details.");
+            const clean = Object.fromEntries(
+                Object.entries(partial)
+                    .filter(([k]) => k in CONTACT_DEFAULTS)
+                    .map(([k, v]) => [k, typeof v === "string" ? v.trim().slice(0, 300) : v ?? ""])
+            );
+            const previous = savedDetails;
+            const next = { ...(savedDetails ?? {}), ...clean };
+            setSavedDetails(next);
+            writeJSON(DETAILS_CACHE, next);
+            try {
+                await writeSettings({ details: clean });
+            } catch (error) {
+                setSavedDetails(previous);
+                writeJSON(DETAILS_CACHE, previous);
+                throw error;
+            }
+        },
+        [isAdmin, savedDetails]
+    );
+
+    // Animation timing (admin only): { key: scale } merged into settings/site.motion
+    const setMotion = useCallback(
+        async (partial) => {
+            if (!isAdmin) throw new Error("Only admins can change the animation timing.");
+            const clean = Object.fromEntries(Object.entries(partial).filter(([k]) => k in MOTION_DEFAULTS).map(([k, v]) => [k, clampMotion(v)]));
+            const previous = savedMotion;
+            const next = { ...(savedMotion ?? {}), ...clean };
+            setSavedMotion(next);
+            writeJSON(MOTION_CACHE, next);
+            try {
+                await writeSettings({ motion: clean });
+            } catch (error) {
+                setSavedMotion(previous);
+                writeJSON(MOTION_CACHE, previous);
+                throw error;
+            }
+        },
+        [isAdmin, savedMotion]
     );
 
     const value = useMemo(
@@ -68,8 +147,12 @@ export const SiteProvider = ({ children }) => {
             isOn: (key) => visibility[key] !== false,
             canSee: (key) => isAdmin || visibility[key] !== false,
             setPage,
+            details,
+            setDetails,
+            motion,
+            setMotion,
         }),
-        [visibility, loading, isAdmin, setPage]
+        [visibility, loading, isAdmin, setPage, details, setDetails, motion, setMotion]
     );
 
     return <SiteContext.Provider value={value}>{children}</SiteContext.Provider>;

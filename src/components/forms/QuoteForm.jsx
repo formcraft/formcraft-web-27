@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { sendQuote } from "../../lib/forms";
 import { Icon } from "../ui/Icon";
+import { Honeypot } from "./Honeypot";
+import { SubscribeForm } from "./SubscribeForm";
 import "./Forms.css";
 
 // Request a proposal. Saves to Firestore `quotes` (plus an optional drawing in Storage).
@@ -23,6 +25,7 @@ export const QuoteForm = ({ types, defaultType, heading = "Tell us about the plo
                 budgetUGX: form.get("budget"),
                 message: form.get("message"),
                 file: form.get("file")?.size ? form.get("file") : null,
+                website: form.get("website"),
             });
             setStatus("sent");
         } catch (e) {
@@ -43,6 +46,8 @@ export const QuoteForm = ({ types, defaultType, heading = "Tell us about the plo
                     <Link to="/projects" className="btn btn-line btn-sm">See our work</Link>
                     <button type="button" className="btn btn-ink btn-sm" onClick={() => setStatus("idle")}>Send another</button>
                 </div>
+                <hr className="rule" />
+                <SubscribeForm variant="inline" heading="Want our template home catalogue?" intro="We'll email it to you, along with new designs as they're released." download="template-catalogue" button="Send it to me" />
             </div>
         );
     }
@@ -50,6 +55,7 @@ export const QuoteForm = ({ types, defaultType, heading = "Tell us about the plo
     const id = (name) => `${idPrefix}-${name}`;
     return (
         <form className="card card-pad form" onSubmit={onSubmit} noValidate={false}>
+            <Honeypot />
             <div className="stack" style={{ "--gap": "8px" }}>
                 <h3 className="h3">{heading}</h3>
                 {intro && <p className="small">{intro}</p>}

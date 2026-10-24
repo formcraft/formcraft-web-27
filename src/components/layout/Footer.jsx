@@ -1,7 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
 import { useTheme } from "../../hooks/useTheme";
 import { sheetFor } from "../../data/sheets";
-import { useShowLink } from "../../hooks/useSite";
+import { useShowLink, useSite } from "../../hooks/useSite";
+import { socialLinks, telHref, waHref } from "../../data/contact";
+import { openConsent } from "../../lib/analytics";
+import { SubscribeForm } from "../forms/SubscribeForm";
 import { Icon } from "../ui/Icon";
 import { Logo, LogoMark } from "../ui/Logo";
 import { TornEdge } from "../ui/TornEdge";
@@ -19,6 +22,9 @@ export const Footer = () => {
     const { theme } = useTheme();
     const [sheet, name] = sheetFor(pathname);
     const show = useShowLink();
+    const { details } = useSite();
+    const socials = socialLinks(details);
+    const wa = waHref(details.whatsapp);
 
     return (
         <footer className="footer paper-dark">
@@ -64,11 +70,31 @@ export const Footer = () => {
                     </nav>
                     <div className="footer-contact">
                         <p className="footer-head">Talk to us</p>
-                        <span>Kampala, Uganda</span>
-                        <a href="tel:+256753929921">+256 753 929 921</a>
-                        <a href="mailto:formcraftdesign@gmail.com">formcraftdesign@gmail.com</a>
-                        <span className="fine">Instagram @formcraft.ug · X @formcraft_ug · LinkedIn formcraftinc</span>
+                        <span>{details.address || "Kampala, Uganda"}</span>
+                        {details.phone && <a href={telHref(details.phone)}>{details.phone}</a>}
+                        {wa && <a href={wa} target="_blank" rel="noreferrer">WhatsApp us</a>}
+                        {details.email && <a href={`mailto:${details.email}`}>{details.email}</a>}
+                        {details.hours && <span className="fine">{details.hours}</span>}
+                        {socials.length > 0 && (
+                            <ul className="footer-socials" aria-label="Formcraft on social media">
+                                {socials.map((s) => (
+                                    <li key={s.key}>
+                                        <a href={s.href} target="_blank" rel="noreferrer">
+                                            {s.label} <span className="fine">{s.text !== s.label ? s.text : ""}</span>
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
+                </div>
+
+                <div className="footer-news">
+                    <div className="stack" style={{ "--gap": "6px" }}>
+                        <p className="footer-head">Email updates</p>
+                        <p className="small">New template homes, Journal stories and workshop dates, now and then.</p>
+                    </div>
+                    <SubscribeForm variant="footer" />
                 </div>
 
                 <div className="footer-grid-ref" aria-hidden="true">
@@ -107,7 +133,11 @@ export const Footer = () => {
                 </div>
                 <div className="footer-legal">
                     <span>© {new Date().getFullYear()} Formcraft Design and Construction Co. Ltd</span>
-                    <span>Made in Kampala</span>
+                    <span className="footer-legal-links">
+                        <Link to="/privacy">Privacy</Link>
+                        <button type="button" className="footer-cookie" onClick={openConsent}>Cookie settings</button>
+                        <span>Made in Kampala</span>
+                    </span>
                 </div>
             </div>
         </footer>

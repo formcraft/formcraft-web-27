@@ -1,0 +1,9 @@
+.privacy-body { max-width: 760px; display: flex; flex-direction: column; gap: 18px; }
+.privacy-body .h3 { margin-top: 22px; }
+.privacy-draft { margin-bottom: 8px; }
+.privacy-list { margin: 0; display: flex; flex-direction: column; }
+.privacy-list > div { display: flex; flex-direction: column; gap: 6px; padding: 16px 0; border-top: 1px solid var(--line); }
+.privacy-list > div:first-child { border-top: 0; padding-top: 4px; }
+.privacy-list dd { margin: 0; }
+.privacy-points { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
+.privacy-cookie { margin-left: 6px; vertical-align: middle; }

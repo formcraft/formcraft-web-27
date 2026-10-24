@@ -7,7 +7,7 @@ import { useContent } from "../hooks/useContent";
 import { formatUGX } from "../lib/money";
 import { PageHero } from "../components/page/PageHero";
 import { Section } from "../components/page/Section";
-import { imageName } from "../components/page/Photo";
+import { imgName } from "../lib/images";
 import { Icon } from "../components/ui/Icon";
 import "./Checkout.css";
 
@@ -23,7 +23,7 @@ const AREAS = ["Kampala", "Wakiso", "Mukono", "Entebbe", "Other"];
 const STEPS = ["Delivery", "Payment", "Confirmation"];
 
 const thumb = (img) => {
-    const name = imageName(img);
+    const name = imgName(img);
     if (!name) return null;
     return /^(https?:|\/|blob:)/.test(name) ? name : `/images/${name}-800.webp`;
 };

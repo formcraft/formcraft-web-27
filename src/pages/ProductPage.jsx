@@ -93,7 +93,7 @@ const ProductGallery = ({ images, title, firstAlt }) => {
 export const ProductPage = () => {
     const { slug } = useParams();
     const { item: product, items: products, loading } = useContentItem("products", slug);
-    usePageMeta(product?.title ?? "Product not found", product?.description);
+    usePageMeta(product?.title ?? "Product not found", product?.description, { image: product?.images?.[0], noindex: !product });
     const { add, openCart } = useCart();
     const [picked, setColor] = useState(null);
     const [pickedSize, setSize] = useState(null);

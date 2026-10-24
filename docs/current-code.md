@@ -9,7 +9,7 @@
 >   "How to keep this file up to date").
 >
 > Baseline written: 2026-10-09 from a full read of the code · Last updated: 2026-10-24
-> · Phase: **Launch track L1 (opening animation, still → 3D, phone speed fixes) and L2 groundwork (security headers, functions) done**; every designed page built; admin control room
+> · Phase: **Launch track: L1–L2 done; L3 funnel, L4 lead data, L5 SEO, L6 marketing studio, L7 team accounts built** (functions not deployed yet); every designed page built; admin control room
 > (branch `paper-edition`; the latest commits were compiled with esbuild only — run lint/build locally, see `docs/handoff.md`)
 
 ---
@@ -39,15 +39,15 @@ Write plainly. Name files and components exactly. Don't describe planned feature
 | Build | Vite ^8 with `@vitejs/plugin-react` | same |
 | Lint | oxlint (`npm run lint`) | same |
 | Firebase SDK | `firebase` ^12; Auth eager; Firestore, Storage, Functions on demand; public reads over the Firestore REST API (no SDK) | same |
-| Firebase project files | `firebase.json` (SPA rewrite, cache headers), `.firebaserc`, `firestore.rules`, `storage.rules`, `firestore.indexes.json`; no `functions/` yet | functions in Phase 3 |
+| Firebase project files | `firebase.json` (SPA rewrite, cache and security headers), `.firebaserc`, `firestore.rules`, `storage.rules`, `firestore.indexes.json`, `functions/` (written, not deployed: needs Blaze) | same |
 | Firebase project | `fromcraft-2026`, config from `VITE_FIREBASE_*` | open question |
 | Styling | tokens + shared styles in `src/styles/`, one CSS file per component, coarse paper textures | same |
-| State | `AuthContext`, `ThemeContext`, `CartContext`, `SiteContext` (page switches) | same |
+| State | `AuthContext` (user, role), `ThemeContext`, `CartContext`, `SiteContext` (page switches, contact details, motion timing) | same |
 | Content | `useContent()`: Firestore collection if the admin added items, else starter data in `src/data/` | Firestore |
 | Offline / caching | service worker `public/sw.js` (production only), localStorage content cache, long cache headers | same |
 | Tests | none | rules tests from Phase 3 |
 
-Scripts: `npm run dev`, `npm run build`, `npm run lint`, `npm run preview`. Texture generator: `python3 scripts/make-textures.py public/textures`. Admin claim: `node scripts/set-admin.js you@example.com`.
+Scripts: `npm run dev`, `npm run build` (Vite, then `scripts/seo-pages.mjs` writes per-route HTML heads, sitemap and robots), `npm run og` (preview images, needs Playwright), `npm run lint`, `npm run preview`. Texture generator: `python3 scripts/make-textures.py public/textures`. Admin claim: `node scripts/set-admin.js you@example.com`.
 
 ---
 
@@ -58,12 +58,12 @@ formcraft-web-27/
 ├─ index.html                 # edition before first paint (saved choice, else Kampala clock); opening animation (#fci); preloads
 ├─ firebase.json  .firebaserc  firestore.rules  storage.rules  firestore.indexes.json  .env.example
 ├─ docs/  build-plan.md  current-code.md  handoff.md  owner-checklist.md (accounts, payments, setup only the owner can do)
-├─ functions/  index.js (submitLead, claimTeamRole, onTeamChange)  package.json   # Cloud Functions, need Blaze
+├─ functions/  index.js (submitLead, claimTeamRole, onTeamChange)  studio.js (bufferChannels, publishApprovedPosts)  package.json   # need Blaze
 ├─ .github/workflows/ci.yml  lighthouserc.json        # lint + build + Lighthouse on every push/PR
-├─ scripts/   set-admin.js (admin custom claim)  make-textures.py (paper textures)
+├─ scripts/   set-admin.js (admin/role claims)  make-textures.py (paper textures)  seo-pages.mjs (per-route heads, sitemap)  make-og.mjs (preview images)
 ├─ public/
 │  ├─ sw.js        service worker (offline cache, fast repeat visits)
-│  ├─ fonts/  logos/  images/ (WebP renders, 1600 + -800)
+│  ├─ fonts/  logos/  images/ (WebP renders, 1600 + -800)  og/ (34 link-preview cards, JPEG)
 │  ├─ textures/    paper, navy, black, orange: 768 px tileable coarse paper (shown at 384 px);
 │  │               hotel-paper(-512).webp, hotel-bump-512.webp: baked textures for the 3D model
 │  └─ images/      … plus hotel-{land|port}-{day|night}.webp: still pictures of the 3D hotel
@@ -74,23 +74,27 @@ formcraft-web-27/
    ├─ styles/      tokens.css  fonts.css  base.css  components.css
    ├─ data/        pages.js (every page + on/off defaults)  nav.js (header groups)  content.js (admin collections + fields)
    │               products.js  templates.js  projects.js  developments.js  posts.js  courses.js  events.js  sheets.js
+   │               downloads.js  contact.js  seo.js (titles, keywords, JSON-LD)  motion.js (animation timing)
+   │               socialPlatforms.js  socialChannels.js  occasions.js  socialTopics.js  team.js  (Marketing Studio)
    ├─ hooks/       useAuth  useTheme  useCart  useSite (+ useShowLink)  useContent (+ useContentItem)  useCollection
    │               useDocument  usePublicDoc  usePageMeta  useReveal  useSky
    ├─ lib/         money.js  forms.js  storage.js  images.js  firestoreRest.js  adminContent.js  skyClock.js
+   │               attribution.js (where visitors came from)  analytics.js (after consent)  track.js (contact clicks)  studio.js
    ├─ components/
-   │  ├─ layout/   Layout  Header  ThemeSwitch  Footer  DonateFab  PageGate  PageSkeleton
+   │  ├─ layout/   Layout  Header  ThemeSwitch  Footer  DonateFab  PageGate  PageSkeleton  ConsentBanner
    │  ├─ page/     PageHero  Section  Photo
    │  ├─ scene/    HotelScene (+ HotelExplore, HotelControls; hotel/*.js)  PaperLayers  Sky (shared hero sky, sun/moon, stars)
    │  │            sceneGeometry.js (hills, motifs, trees, star field)
-   │  ├─ admin/    PagesPanel  ContentPanel  AdminField  InboxPanel
+   │  ├─ admin/    PagesPanel  ContentPanel  AdminField  InboxPanel (+ inboxes.js)  LeadsPanel  LeadCharts  LinkBuilderPanel
+   │  │            DetailsPanel  MotionPanel  TeamPanel  studio/ (StudioPanel and its tabs, Composer)
    │  ├─ shop/     ProductCard  CartButton  CartDrawer
-   │  ├─ forms/    QuoteForm
+   │  ├─ forms/    QuoteForm  Honeypot  SubscribeForm  SubscribePrompt
    │  ├─ auth/     SignInDialog
    │  └─ ui/       Icon  Logo  TornEdge  Reveal/Kinetic  Drawer  Popover (small corner pop-up)
    └─ pages/       Home  Studio  Construction  Concrete  Templates  TemplateDesign  Projects  ProjectPage
                    Stores  ProductPage  Checkout  OrderConfirmed  Community  Academy  Journal  Post
                    Invest  RealEstate  RealEstateProject  Donate  DonateThanks  About  Contact
-                   Account  SignIn  Admin  ComingSoon (unused, kept for later)  NotFound   (each .jsx + .css)
+                   Account  SignIn  Admin  Links  Privacy  ComingSoon (unused, kept for later)  NotFound   (each .jsx + .css)
 ```
 
 ### Planned moves (Phase 0)
@@ -125,10 +129,26 @@ formcraft-web-27/
 `CONTENT` defines the collections the admin can edit — products, templates, projects, developments, posts, courses, events — each with a starter-data loader from `src/data/` and a field list for the admin form. `useContent(name)` shows cached or starter items at once, then lists the Firestore collection over REST; if it has any documents they replace the starter data. Items with `active: false` are hidden from visitors (admins see them tagged "Hidden"). Lists are cached per visit (5 minutes) and in localStorage. Images in `images[]` can be public/images names, `{ name, alt }` objects or Storage URLs (`lib/images.js`, `Photo`).
 
 ### Admin (`/admin`)
-Signed out → sign-in card; signed in without the claim → how to get it (`scripts/set-admin.js`). Admins get a side menu: **Overview**; **Pages** (switches, grouped like the site map); **Content** (one panel per collection: live list via `useCollection`, add/edit form built from the field list, photo uploads to Storage `public/content/<collection>/`, hide via "Show on the site", delete with confirmation, "Import the starter list" to copy `src/data/` into Firestore); **Inbox** (messages, quotes, investor leads with a status the team sets; orders, donations and members read-only). Nothing on this page can mark a payment paid.
+Open to the team: admins (claim `admin`), marketing (`role: "marketing"`) and editors (`role: "editor"`); each menu item lists the roles that see it (admins see all). **Marketing:** Leads, Studio, Link builder. **Site (admin):** Overview, Pages, Site details, Motion, Team. **Content** (admin, marketing). **Inbox** (admin). Editors see only Studio, limited to drafts. The header shows the admin icon to anyone on the team.
+- **Leads** (`LeadsPanel`, `LeadCharts`): messages, quotes, investor leads and subscribers (newest 500 each) plus contact clicks (newest 1000) in one list; filters (type, source, status, date range, search); a status per lead (new, contacted, qualified, won, lost); KPI tiles; SVG charts (leads per week, by source, top pages, campaigns) each with a table view; CSV downloads (filtered list, all subscribers) with a BOM for Excel and formula injection blocked.
+- **Link builder:** tagged links (utm source/medium/campaign) for each platform and page, base from `SITE_URL`.
+- **Site details:** WhatsApp, phone, email, address, hours, socials (`settings/site.details`); WhatsApp buttons appear only once a number is set.
+- **Motion** (`MotionPanel`): time scales 0.5×–3× for the opening animation, the tear, the Home model build and the page reveals (`settings/site.motion`, `data/motion.js`). SiteContext sets `--fc-motion` and `--fc-motion-build` on `<html>`; `index.html` reads the cached copy (`fc-site-motion`) so the opening animation follows it from a visitor's second visit.
+- **Team** (`TeamPanel`): add people by email with a role (`team/{email}`); `onTeamChange` / `claimTeamRole` set the custom claims (once functions are deployed).
+- **Studio** (`studio/StudioPanel`): see "Marketing Studio" below.
+The older parts: **Overview**; **Pages** (switches, grouped like the site map); **Content** (one panel per collection: live list via `useCollection`, add/edit form built from the field list, photo uploads to Storage `public/content/<collection>/`, hide via "Show on the site", delete with confirmation, "Import the starter list" to copy `src/data/` into Firestore); **Inbox** (messages, quotes, investor leads with a status the team sets; orders, donations and members read-only). Nothing on this page can mark a payment paid.
+
+### Funnel (L3)
+`lib/attribution.js` keeps where a visitor came from (utm tags, which click id was present but never the id, referrer host, landing page): first touch (never overwritten) and last touch in localStorage `fc-source`. Every form adds `source` and `page` (`lib/forms.js`) and has a hidden honeypot field (`Honeypot`): if it's filled, the form pretends to succeed and saves nothing. With `VITE_FORMS_VIA_FUNCTIONS=true` every form goes through the `submitLead` function instead of writing Firestore directly. Email capture: `SubscribeForm` (inline, card, footer; consent required) writes `subscribers`; the card can offer a free download (`downloads` collection, edited in Admin → Content; template catalogue first, no file yet). `SubscribePrompt` slides up bottom-left once a visitor has scrolled 55 % of a long page, at most every 14 days. `/links` is the link-in-bio page; `/privacy` describes what is collected (legal parts TODO). `ConsentBanner` asks once; Analytics (`lib/analytics.js`) loads only after "Accept", in production, with a measurement id. `lib/track.js` counts clicks on phone, email, WhatsApp, social and `data-track="cta"` links into `clicks` (over REST, at most once per target per page view).
+
+### SEO (L5)
+`src/data/seo.js` is the single source: `SITE_URL` (default `https://formcraftdesign.com`, TODO confirm), organisation details, every route's title (≤ 60 chars), description (≤ 155), preview image, sitemap settings and noindex flag, and the JSON-LD builders. `usePageMeta(title, description, { image, noindex, canonical })` sets title, description, canonical, Open Graph, Twitter and robots tags; on static routes the values in `seo.js` win so the live page matches the pre-built HTML. After `vite build`, `scripts/seo-pages.mjs` writes a copy of `index.html` per route (and per starter product, template, project, post and development) with the right head, plus `sitemap.xml` and `robots.txt`; Firebase Hosting serves them through `cleanUrls`. Sample listings and private pages are noindex. `scripts/make-og.mjs` draws the 1200 × 630 preview cards in `public/og/` (paper, logo, page headline, title block).
+
+### Marketing Studio (L6)
+Admin → Studio plans social posts across an open-ended channel list (`data/socialPlatforms.js`: Instagram, Facebook, X, LinkedIn, TikTok, Pinterest and more; channels in `socialChannels`). Tabs: **Calendar** (month grid, agenda list on phones), **Queue** (today and upcoming, "Mark as posted"), **Generate** (fills the year with drafts from posting targets, the occasions calendar and the topic bank), **Bulk** (CSV import/export), **Channels** (targets, posting days, Buffer mapping), **Topics** (85 ideas in 13 pillars, `[placeholders]` where facts are needed), **Occasions** (54 from the Template Master Register with template codes FMC-MKT-HOL/AWR/DAY and care notes; Easter computed, Eid marked "confirm"), **Results** (leads per post and campaign via the tracked links' `utm_content` = post id). Posts go idea → draft → review → approved → published; approving needs every care note ticked, a date and a channel. `functions/studio.js` publishes approved posts through Buffer every few minutes once `BUFFER_TOKEN` is set (Pinterest by hand for now). Editors can only draft and send for review (`firestore.rules`).
 
 ### Firebase and data access
-`config/firebase.js` loads Auth eagerly and Firestore/Storage/Functions on demand; the Firestore emulator is on 8081. Public reads use `lib/firestoreRest.js` (it also passes the server's `Date` header to the sky clock). Forms (`lib/forms.js`): `sendMessage`, `sendQuote` (+ drawing upload), `sendInvestorLead`, `sendInterest` (sign-ups, course and event places, newsletter → `messages` with a `[topic]` subject). Rules added in this round: `templates`, `developments` and `settings` are public read / admin write; admins can update or delete `messages`, update `investorLeads`, approve `members`; donors can read their own `donations`.
+`config/firebase.js` loads Auth eagerly and Firestore/Storage/Functions on demand; the Firestore emulator is on 8081. Public reads use `lib/firestoreRest.js` (it also passes the server's `Date` header to the sky clock). Forms (`lib/forms.js`): `sendMessage`, `sendQuote` (+ drawing upload), `sendInvestorLead`, `sendInterest` (sign-ups, course and event places, newsletter → `messages` with a `[topic]` subject). Rules: content collections (products, projects, events, courses, templates, developments, downloads, posts) are public read, written by admins and marketing; `settings/site` public read, admin write; `settings/studio` team only; leads (`messages`, `quotes`, `investorLeads`, `subscribers`) anyone creates with checked fields (incl. `source` map and `page`), marketing reads and sets status; `clicks` anyone creates (bounded fields), marketing reads; `team` admin only (members read their own); Studio collections by role (`isEditor`, `isMarketing`); members approved by admins; donors read their own `donations`. Storage: `public/content/**` and `public/social/**` for the team, quote drawings readable by marketing.
 
 ### Pages
 All copy comes from the owner's designs and the Company Profile; anything unknown is a `TODO:` or `[placeholder]`.
@@ -220,7 +240,10 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 - Pages not visited before are blank offline until a route error boundary is added (planned with the funnel work).
 - The Home 3D scene doesn't follow the Kampala sky clock yet (its day and night scripts keep their own lighting); the paper scenes do.
 - The hotel still pictures were rendered in a headless browser with software WebGL (slightly harsher shadows than a real GPU). Re-render them after any change to the scene: see `docs/handoff.md` (round 4).
-- Functions are written but not deployed (Blaze plan needed). Until then forms write to Firestore directly and team roles come from `scripts/set-admin.js`.
+- Functions are written but not deployed (Blaze plan needed). Until then forms write to Firestore directly, team roles come from `scripts/set-admin.js`, and Studio posts are published by hand (Queue → "Mark as posted").
+- Items added only through Admin get no pre-built SEO page until the next build (the live page still sets its own head).
+- Online unsubscribe isn't built; the privacy page tells people to ask by email.
+- Rules for `subscribers`, `clicks`, the `source` map and the Studio collections haven't been tested in the emulator yet (handoff).
 - `pages/ComingSoon.jsx` is no longer routed (hidden pages use `PageGate`); kept for later phases.
 - The Firestore emulator runs on port **8081**, not the default 8080, because the Revit MCP plugin uses 8080 on the owner's machine. Keep `firebase.json` and `config/firebase.js` in step.
 - `npm audit`: 4 high in `@grpc/grpc-js` (pulled in by `firebase`, Node-only, not in the browser build) and 2 moderate in `react-router` 6 (fixed only in v7, a later task).
@@ -238,6 +261,7 @@ Newest first. One row per commit or task.
 
 | Date | Task | What changed | Files |
 | --- | --- | --- | --- |
+| 2026-10-24 | L3–L7 | Funnel: attribution, honeypots, `subscribers` + SubscribeForm/Prompt, free downloads, contact-click tracking (`clicks`), cookie consent + Analytics after consent, `/links`, `/privacy`, forms through `submitLead` behind `VITE_FORMS_VIA_FUNCTIONS`. Admin: Leads (charts, CSV), Link builder, Site details, Motion (animation timing), Team, Studio (marketing calendar, generate the year, CSV, Buffer publisher in `functions/studio.js`); roles admin/marketing/editor. SEO: `data/seo.js`, `usePageMeta` options, `scripts/seo-pages.mjs` (per-route heads, sitemap, robots) in `npm run build`, `public/og/` cards. Rules for all of it. Lint: `INBOXES` → `admin/inboxes.js`, `Photo` no longer exports `imageName`. | `src/lib/*`, `src/components/admin/*`, `src/components/forms/*`, `src/components/layout/*`, `src/context/SiteContext.jsx`, `src/data/*`, `src/pages/*`, `src/hooks/usePageMeta.js`, `src/styles/base.css`, `firestore.rules`, `storage.rules`, `firestore.indexes.json`, `functions/*`, `scripts/*`, `public/og/*`, `package.json`, `.env.example`, `ci.yml`, docs |
 | 2026-10-24 | L1 polish | Shared hero sky (`Sky.jsx`: gradient, glow, stars and twinkles at night, sun/moon) behind every page hero; new sky tokens. Plant-a-tree button opens a small corner `Popover` (counter, 1/5/10, TODO price) instead of the drawer. Product photo gallery. Service worker precaches the home page's assets and what each page loaded; offline fallback page. Hotel: baked textures always, `?hoteldebug` build-step timings. Also documents `a5c5955` (views and zoom, device levels with a live frame check, scene built in steps). | `src/components/scene/Sky.*`, `PaperLayers.*`, `sceneGeometry.js`, `src/components/page/PageHero.jsx`, `src/styles/tokens.css`, `src/components/ui/Popover.*`, `src/components/layout/DonateFab.*`, `src/pages/ProductPage.*`, `public/sw.js`, `src/main.jsx`, `src/components/scene/HotelScene.jsx`, `hotel/*.js`, docs |
 | 2026-10-24 | local check | Round 4 checks of `d9d6802`. Hotel stills re-rendered on the NVIDIA GPU (scrollbar hidden, WebP via sharp). `functions/package-lock.json` added. Findings in `docs/handoff.md`. | `public/images/hotel-*.webp`, `functions/package-lock.json`, docs |
 | 2026-10-24 | L1, L2 | Opening animation in `index.html` (drawing sheet → stamp → glide to the header logo → tear off the pad; full/quick/none/fade). Home: still pictures of the hotel shown first, 3D fades in over them; tap/still modes for slower phones; layer sized to `100lvh`; baked hotel textures; no blur on phones. Security headers + report-only CSP, `cleanUrls`. `functions/` (submitLead, claimTeamRole, onTeamChange); AuthContext roles; `set-admin.js --role`. CI workflow + Lighthouse budgets. Build plan: Launch track L1–L7. `docs/owner-checklist.md`. | `index.html`, `src/components/scene/HotelScene.*`, `hotel/*.js`, `src/pages/Home.*`, `Header.css`, `firebase.json`, `functions/*`, `src/context/AuthContext.jsx`, `scripts/set-admin.js`, `.github/workflows/ci.yml`, `lighthouserc.json`, `public/images/hotel-*`, `public/textures/hotel-*`, docs |

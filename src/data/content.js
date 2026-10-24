@@ -4,7 +4,7 @@
 //   Firestore list replaces the local list for that collection.
 // - `fields`: the admin form. Types: text, textarea, ugx (whole UGX integer, null = "not set"),
 //   number, select, tags (comma-separated list), images (uploads to Storage public/content/…),
-//   bool, date.
+//   bool, date, file (one PDF or image uploaded to Storage public/content/…; stores its URL).
 // Money fields here are display prices only; checkout reads prices again on the server (Phase 3).
 const CATEGORY = ["furniture", "joinery", "goods", "merch", "plans"];
 const DIVISIONS = ["studio", "construction", "concrete", "stores"];
@@ -136,6 +136,18 @@ export const CONTENT = {
             { name: "capacity", label: "Places", type: "number" },
             { name: "priceUGX", label: "Price (UGX)", type: "ugx" },
             ...tail,
+        ],
+    },
+    downloads: {
+        label: "Free downloads",
+        page: "templates",
+        local: () => import("./downloads.js").then((m) => m.downloads),
+        fields: [
+            ...base,
+            { name: "description", label: "What's in it", type: "textarea" },
+            { name: "file", label: "File (PDF or image)", type: "file", help: "Visitors get this link after they subscribe. Until a file is uploaded, the site says it isn't ready and that we'll email it." },
+            { name: "images", label: "Cover image", type: "images" },
+            { name: "active", label: "Show on the site", type: "bool", default: true },
         ],
     },
 };

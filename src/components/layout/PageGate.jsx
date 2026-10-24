@@ -8,7 +8,7 @@ import "./PageGate.css";
 // Visitors only see pages the admin has turned on (Admin → Pages). Admins see every page, with a
 // strip saying it's hidden. A hidden page's address tells visitors it isn't open yet.
 const NotOpen = ({ label }) => {
-    usePageMeta("Not open yet", "This part of the Formcraft site isn't open yet.");
+    usePageMeta("Not open yet", "This part of the Formcraft site isn't open yet.", { noindex: true });
     return (
         <PageHero eyebrow="Not open yet" title={`${label} opens soon.`} sheet="X000" seed={13} lead="We're getting this part of the site ready. In the meantime, the rest of Formcraft is open.">
             <Link to="/" className="btn btn-primary">Back to the home page</Link>

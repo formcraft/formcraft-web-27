@@ -93,10 +93,11 @@ button { cursor: pointer; }
 @keyframes fc-rise { from { opacity: 0; translate: 0 14px; } to { opacity: 1; translate: 0 0; } }
 @keyframes fc-word { from { opacity: 0; translate: 0 .5em; rotate: 3deg; } to { opacity: 1; translate: 0 0; rotate: 0deg; } }
 @keyframes fc-reveal { from { opacity: 0; translate: 0 40px; rotate: -.5deg; } to { opacity: 1; translate: 0 0; rotate: 0deg; } }
-.kinetic .word { display: inline-block; animation: fc-word .9s var(--fc-ease) both; animation-delay: calc(.12s + var(--i, 0) * 70ms); }
-.rise { animation: fc-rise .8s var(--fc-ease) both; animation-delay: var(--delay, .4s); }
+.kinetic .word { display: inline-block; animation: fc-word calc(.9s * var(--fc-motion, 1)) var(--fc-ease) both; animation-delay: calc((.12s + var(--i, 0) * 70ms) * var(--fc-motion, 1)); }
+.rise { animation: fc-rise calc(.8s * var(--fc-motion, 1)) var(--fc-ease) both; animation-delay: calc(var(--delay, .4s) * var(--fc-motion, 1)); }
 /* Scroll reveal: Reveal component adds .is-in when an element enters the viewport */
-.reveal { opacity: 0; translate: 0 40px; rotate: -.5deg; transition: opacity .9s var(--fc-ease), translate .9s var(--fc-ease), rotate .9s var(--fc-ease); transition-delay: var(--delay, 0s); }
+/* durations scale with Admin → Motion (--fc-motion, set on <html> by SiteContext) */
+.reveal { --fc-reveal-t: calc(.9s * var(--fc-motion, 1)); opacity: 0; translate: 0 40px; rotate: -.5deg; transition: opacity var(--fc-reveal-t) var(--fc-ease), translate var(--fc-reveal-t) var(--fc-ease), rotate var(--fc-reveal-t) var(--fc-ease); transition-delay: calc(var(--delay, 0s) * var(--fc-motion, 1)); }
 .reveal.is-in { opacity: 1; translate: 0 0; rotate: 0deg; }
 
 @media (prefers-reduced-motion: reduce) {

@@ -5,6 +5,9 @@ import { PageHero } from "../components/page/PageHero";
 import { Section } from "../components/page/Section";
 import { Icon } from "../components/ui/Icon";
 import { sendMessage } from "../lib/forms";
+import { useSite } from "../hooks/useSite";
+import { socialLinks, telHref, waHref } from "../data/contact";
+import { Honeypot } from "../components/forms/Honeypot";
 import "./Contact.css";
 
 const SUBJECTS = [
@@ -19,8 +22,12 @@ const SUBJECTS = [
 ];
 
 export const Contact = () => {
-    usePageMeta("Contact", "Talk to Formcraft in Kampala: phone +256 753 929 921, email formcraftdesign@gmail.com, or send a message.");
+    const { details } = useSite();
+    usePageMeta("Contact", `Talk to Formcraft in Kampala: phone ${details.phone ?? ""}, email ${details.email ?? ""}, or send a message.`);
     const [status, setStatus] = useState("idle");
+    const tel = telHref(details.phone);
+    const wa = waHref(details.whatsapp);
+    const socials = socialLinks(details);
     const [error, setError] = useState(null);
 
     const onSubmit = async (event) => {
@@ -29,7 +36,7 @@ export const Contact = () => {
         setStatus("sending");
         setError(null);
         try {
-            await sendMessage({ name: form.get("name"), email: form.get("email"), subject: form.get("subject"), body: form.get("body") });
+            await sendMessage({ name: form.get("name"), email: form.get("email"), subject: form.get("subject"), body: form.get("body"), website: form.get("website") });
             setStatus("sent");
         } catch (e) {
             setError(e.message || "Something went wrong. Please try again, or call us.");
@@ -41,17 +48,18 @@ export const Contact = () => {
         <div className="contact">
             <PageHero eyebrow="Contact" title="Talk to us." sheet="A304" seed={81} crumbs={[["/", "Home"], [null, "Contact"]]}
                 lead="Tell us what you're planning — a home, a building, a piece of furniture or a partnership. We reply on the next working day.">
-                <a href="tel:+256753929921" className="btn btn-primary"><Icon name="phone" size={18} /> Call +256 753 929 921</a>
-                <a href="mailto:formcraftdesign@gmail.com" className="btn btn-line"><Icon name="mail" size={18} /> Email us</a>
+                {tel && <a href={tel} className="btn btn-primary"><Icon name="phone" size={18} /> Call {details.phone}</a>}
+                {wa && <a href={wa} className="btn btn-line" target="_blank" rel="noreferrer"><Icon name="chat" size={18} /> WhatsApp us</a>}
+                {details.email && <a href={`mailto:${details.email}`} className="btn btn-line"><Icon name="mail" size={18} /> Email us</a>}
             </PageHero>
-            <p className="wrap fine contact-todo">TODO: confirm reply time and the WhatsApp number.</p>
+            <p className="wrap fine contact-todo">TODO: confirm reply time{details.whatsapp ? "" : " and the WhatsApp number"}.</p>
 
             <Section tone="sheet" seed={2}>
                 <div className="grid-2">
                     {status === "sent" ? (
                         <div className="card card-pad stack" role="status" style={{ "--gap": "14px" }}>
                             <h2 className="h3">Message sent.</h2>
-                            <p className="body">Thanks for getting in touch. We'll reply by email or phone. Need us sooner? Call +256 753 929 921.</p>
+                            <p className="body">Thanks for getting in touch. We'll reply by email or phone.{details.phone ? ` Need us sooner? Call ${details.phone}.` : ""}</p>
                             <div className="row">
                                 <Link to="/projects" className="btn btn-line btn-sm">See our work</Link>
                                 <button type="button" className="btn btn-ink btn-sm" onClick={() => setStatus("idle")}>Send another</button>
@@ -60,6 +68,7 @@ export const Contact = () => {
                     ) : (
                         <form className="card card-pad form" onSubmit={onSubmit}>
                             <h2 className="h3">Send a message</h2>
+                            <Honeypot />
                             <div className="form-row">
                                 <div className="field">
                                     <label htmlFor="c-name">Name</label>
@@ -97,16 +106,16 @@ export const Contact = () => {
                                 <path className="contact-map-road" d="M0 110 C120 120 260 140 400 200" />
                             </svg>
                             <span className="contact-map-pin"><Icon name="pin" size={28} /></span>
-                            <span className="tag contact-map-label">Kampala · TODO: street address</span>
+                            <span className="tag contact-map-label">{details.address || "Kampala · TODO: street address"}</span>
                         </div>
                         <dl className="contact-list">
-                            <div><dt>Phone</dt><dd><a href="tel:+256753929921">+256 753 929 921</a></dd></div>
-                            <div><dt>WhatsApp</dt><dd className="todo">TODO: confirm number</dd></div>
-                            <div><dt>Email</dt><dd><a href="mailto:formcraftdesign@gmail.com">formcraftdesign@gmail.com</a></dd></div>
-                            <div><dt>Instagram</dt><dd>@formcraft.ug</dd></div>
-                            <div><dt>X</dt><dd>@formcraft_ug</dd></div>
-                            <div><dt>LinkedIn</dt><dd>formcraftinc</dd></div>
-                            <div><dt>Office hours</dt><dd className="todo">TODO</dd></div>
+                            <div><dt>Phone</dt>{tel ? <dd><a href={tel}>{details.phone}</a></dd> : <dd className="todo">TODO</dd>}</div>
+                            <div><dt>WhatsApp</dt>{wa ? <dd><a href={wa} target="_blank" rel="noreferrer">{details.whatsapp}</a></dd> : <dd className="todo">TODO: confirm number</dd>}</div>
+                            <div><dt>Email</dt>{details.email ? <dd><a href={`mailto:${details.email}`}>{details.email}</a></dd> : <dd className="todo">TODO</dd>}</div>
+                            {socials.map((s) => (
+                                <div key={s.key}><dt>{s.label}</dt><dd><a href={s.href} target="_blank" rel="noreferrer">{s.text}</a></dd></div>
+                            ))}
+                            <div><dt>Office hours</dt>{details.hours ? <dd>{details.hours}</dd> : <dd className="todo">TODO</dd>}</div>
                         </dl>
                     </div>
                 </div>

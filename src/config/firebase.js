@@ -66,9 +66,4 @@ export const getFunctionsService = once(async () => {
   return functions;
 });
 
-// Analytics only in production, loaded lazily so it never slows the first paint
-if (env.PROD && firebaseConfigured && env.VITE_FIREBASE_MEASUREMENT_ID) {
-  import("firebase/analytics")
-    .then(({ getAnalytics, isSupported }) => isSupported().then((ok) => ok && getAnalytics(app)))
-    .catch(() => {});
-}
+// Analytics starts only after cookie consent: see src/lib/analytics.js.
