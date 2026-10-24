@@ -3,7 +3,7 @@
 // visitor lets go, the body rests a moment, then glides back to its Kampala-clock place.
 // Plain JavaScript with no DOM, timers or React: the caller (Sky.jsx) owns requestAnimationFrame, the canvas and the
 // elements, and calls step(dt) each frame until it returns false (everything settled → stop drawing, zero frames).
-// The numbers come from the design (docs/brief-living-sky.md, Q1–Q2) and the owner's tuner page; see SKY_DEFAULTS.
+// The numbers are the owner's, set on the tuner page (2026-10-24), starting from the design (brief Q1–Q2); see SKY_DEFAULTS.
 
 /**
  * The design numbers. Units: px and seconds. Override any of them with createSkyField({ params }).
@@ -15,9 +15,9 @@
  * - cloudK, cloudZeta, cloudPush, cloudMax: the clouds' heavier spring, push and largest offset (px)
  */
 export const SKY_DEFAULTS = Object.freeze({
-    radiusX: 2.8, push: 2400, k: 18, zeta: 0.7, wake: 0.35,
-    rest: 1.2, returnK: 12,
-    cloudK: 5, cloudZeta: 0.85, cloudPush: 600, cloudMax: 140,
+    radiusX: 3.2, push: 2800, k: 18, zeta: 0.7, wake: 0.35,
+    rest: 1.5, returnK: 10,
+    cloudK: 1.5, cloudZeta: 0.85, cloudPush: 500, cloudMax: 140,
 });
 
 const DT = 1 / 120;               // fixed physics step: same feel at 60, 90 or 120 Hz
