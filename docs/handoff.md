@@ -112,6 +112,27 @@ change / object for each point; nobody edits `HotelScene` for this until you've 
    - Does the framing differ between portrait phones and desktop enough to need separate phone stills?
      Tell us the camera rule and we'll capture both if so.
 
+## Owner request: plant-a-tree as a small pop-up, not a centre window
+
+Raised by the owner on 2026-10-24: the plant-a-tree window shouldn't cover the centre of the page; it
+should be a small pop-up window.
+
+**Today:** `DonateFab` opens `Drawer side="center"`: a 560 px panel in the middle of the screen, the
+whole page dimmed and blurred behind it (`::backdrop`), and on phones a bottom sheet up to 92 % of the
+screen tall.
+
+**Wanted (please confirm or answer before building)**
+- A small card **anchored to the button**, bottom-right, opening upward from it (about 320–360 px
+  wide; on phones the full width minus 16 px gutters, sitting just above the button, not full height).
+- **The page stays visible and usable:** no dim or blur over the whole page. Escape and a × close it,
+  focus returns to the button, and Tab stays inside while it's open.
+- **Short content** so it fits: the live counter, quick picks 1 / 5 / 10 trees, the (TODO) price and
+  one "Plant" button, plus a "More options" link to `/donate` for species, the donor-wall name and
+  the rest. `/donate` keeps the full form.
+- Keep the cart button above it on phones so they never overlap (as now).
+- The `Drawer` component stays for the cart. This is either a new `Popover` in `components/ui/` or a
+  `side="corner"` variant: your call.
+
 ## From the local machine (for the cloud session)
 
 Latest: 2026-10-24, **round 3** (checked `f651610`). Draft PR: https://github.com/formcraft/formcraft-web-27/pull/1
