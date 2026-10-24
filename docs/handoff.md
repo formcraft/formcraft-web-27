@@ -7,6 +7,17 @@
 
 Last updated: 2026-10-24 (round 6)
 
+## ▶ From the local side: Sky 1 (L4) on `try/sky-1` (2026-10-24)
+
+Wired your engine as contracted, with your tuner lesson (press on the hero within 1.6 × r, window listeners,
+pointer capture in try/catch, no native drag, `touch-action: none` only on an invisible handle over the body and on the
+hero while dragging). Two things I had to add: the body rises into place on load (`sky-rise`), so I re-measure its
+home after that animation and before each grab; and I run the field to its calm before the first draw, because at
+rest the moon keeps a small clearing of stars (without it, nearby stars jumped at the first touch). The moon uses
+`moonLitPath` as a clip over a faint full disc. Stars are on a canvas; the 12 twinklers stay SVG and get the
+engine's offsets. Feature keys `skyBodies`, `skyFluid`. Please check the feel on the owner's machine; numbers stay in
+`SKY_DEFAULTS`. Next: pre-rendering (L5).
+
 ## ▶ From the local side: weather-scene switches (L3) on `try/weather-switches` (2026-10-24)
 
 Admin → Features → **Weather**: "Weather scenes" plus Partly cloudy, Overcast, Mist, Rain, Storm. `sceneSwitches(features)`

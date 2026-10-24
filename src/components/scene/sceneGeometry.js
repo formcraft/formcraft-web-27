@@ -561,5 +561,7 @@ export const starField = ({ seed = 7, n = 300, twinkle = 12, avoid = [70, 40, 86
     }
     const dot = (s) => `M${f(s.x - s.r)},${f(s.y)}a${f(s.r)},${f(s.r)} 0 1,0 ${f(2 * s.r)},0a${f(s.r)},${f(s.r)} 0 1,0 ${f(-2 * s.r)},0`;
     const paths = [0, 1, 2].map((b) => stars.filter((s) => s.b === b && !s.skip).map(dot).join(""));
-    return { paths, twinkle: tw, count: stars.length };
+    // raw positions too (viewBox units): the hero sky draws the stars on a canvas so they can move (Sky.jsx)
+    const raw = stars.filter((s) => !s.skip).map(({ x, y, r: size, b }) => ({ x, y, r: size, b }));
+    return { paths, twinkle: tw, stars: raw, count: stars.length };
 };

@@ -31,6 +31,9 @@ export const FEATURES = [
     { key: "plantTree", group: "Site", label: "Plant-a-tree button", help: "The round orange button in the bottom-right corner of every page. The /donate page stays.", on: true },
     { key: "home3d", group: "Home", label: "3D hotel model", help: "The paper model that builds itself on Home. Off: every visitor sees the 2D drawing instead.", on: true },
     { key: "scraps", group: "Home", label: "Falling paper scraps", help: "The small pieces of paper drifting through the 3D model.", on: true, needs: "home3d" },
+    // Sky in the page heroes (ideas #22). The moon is the owner's secret: no hint anywhere visitors can read.
+    { key: "skyBodies", group: "Sky", label: "Move the sun and moon", help: "Visitors can drag the sun (day) or the moon (night) around the hero sky; it glides back to its Kampala-clock place. Not announced anywhere on the site.", on: true },
+    { key: "skyFluid", group: "Sky", label: "Stars and clouds make way", help: "While the sun or moon is moved, stars part around it like water and clouds drift aside, then settle.", on: true, needs: "skyBodies" },
     // Weather scenes in the page heroes (owner, 2026-10-24: "turn off the thunderstorm or the rain and leave
     // the main daylight and night-time"). Clear day and night are always on. A scene that's off falls back to
     // the nearest calmer one that's on (fallbackScene in src/components/scene/sky/weatherShapes.js).
@@ -43,7 +46,7 @@ export const FEATURES = [
 ];
 
 /** The groups in Admin → Features, in order. */
-export const FEATURE_GROUPS = ["Site", "Home", "Weather"];
+export const FEATURE_GROUPS = ["Site", "Home", "Sky", "Weather"];
 
 /** Saved switches over the defaults: { key: true|false } for every feature (unknown saved keys are dropped). */
 export const mergeFeatures = (saved) => Object.fromEntries(FEATURES.map((f) => [f.key, typeof saved?.[f.key] === "boolean" ? saved[f.key] : f.on]));
