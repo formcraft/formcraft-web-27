@@ -31,6 +31,15 @@ If the user says the plan changed, re-read `docs/build-plan.md` before continuin
 7. **Commit per task.** Message starts with the task id: `P0.4: AuthContext, remove forced sign-in`. Don't push or deploy unless asked.
 8. **Missing facts → `TODO:`.** Never invent copy, prices, clients, testimonials, team members or numbers.
 
+## How we think (adapted from the MIT-licensed [karpathy-guidelines](https://github.com/multica-ai/andrej-karpathy-skills))
+
+These bias toward care over speed; for trivial fixes, use judgment.
+
+1. **Think before coding.** State your assumptions. When the owner's words allow more than one reading, say which readings you see and ask (or, when the owner said to go ahead without them, pick one, say so at the top of the reply and in `docs/handoff.md`). Never quietly upgrade or narrow what was asked. If something is unclear or the docs disagree, stop and name it. If a simpler way exists, say so and push back when it's warranted.
+2. **Simplicity first.** The least code that does what was asked: no extra features, no abstractions for one use, no settings nobody asked for, no handling for cases that can't happen. If 200 lines could be 50, rewrite it. Ask: would a senior engineer call this overcomplicated?
+3. **Surgical changes.** Every changed line should trace back to the request. Don't reformat, re-comment or refactor code that isn't part of the task; match the existing style. Remove imports, variables and files your own change made unused; mention other dead code, don't delete it unasked. (The doc updates required by "How we work" are part of every task, not extra.)
+4. **Goal-driven work.** Turn each task into checks you can run, and loop until they pass. For multi-step work, write a short plan where each step has its check, e.g. `1. Move the cart into CartContext → check: cart survives navigation at 360 px`. Our checks: `npm run lint`, `npm run build`, the page at 360 px and desktop by keyboard, rules tests in the emulator, screenshots for visual work. Report what you checked and what you couldn't.
+
 ## Stack (do not change without asking)
 
 - **React 19 + React Router 6 + Vite**, a single-page app. JavaScript and JSX; no TypeScript, Next.js, Tailwind or UI kits unless asked. Stay on React Router 6 until the plan says to upgrade.
