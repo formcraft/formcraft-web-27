@@ -239,7 +239,7 @@ formcraft-web-27/   (repo root)
 
 Needs Node.js 20+, Git and a Google account. The React app already exists, so there is no scaffold step.
 
-1. **Firebase project.** The existing code points at project `fromcraft-2026` (see open questions). In console.firebase.google.com, open it (or create the final one), make sure a Web app exists and copy its config. Enable Authentication (Email/Password + Google), Firestore and Storage. Pick the Firestore location nearest Kampala (e.g. `africa-south1` if offered; it can't be changed later) and deploy Functions to the same region. Upgrade to Blaze and set a budget alert. In Google Cloud console → APIs & Services → Credentials, restrict the web API key to your domains (the key is public by design; the restriction stops misuse).
+1. **Firebase project.** The project is `formcraft2027` (owner's decision, 2026-10-24; it replaces the misspelled `fromcraft-2026`). In console.firebase.google.com, open it (or create the final one), make sure a Web app exists and copy its config. Enable Authentication (Email/Password + Google), Firestore and Storage. Pick the Firestore location nearest Kampala (e.g. `africa-south1` if offered; it can't be changed later) and deploy Functions to the same region. Upgrade to Blaze and set a budget alert. In Google Cloud console → APIs & Services → Credentials, restrict the web API key to your domains (the key is public by design; the restriction stops misuse).
 2. **Install.**
    ```bash
    npm install
@@ -489,7 +489,7 @@ Caching: no Redis — Firebase Hosting CDN + pre-built pages + service worker + 
 - [ ] **Delivery:** areas served and how delivery is priced.
 - [ ] **Domain:** which domain (e.g. formcraft.co.ug) and who controls DNS.
 - [ ] **Contact email:** formcraftdesign@gmail.com or a domain email at launch.
-- [ ] **Firebase project:** the code uses `fromcraft-2026` (spelled "fromcraft"). Keep it, or create a correctly named project before any real data goes in? The project id can't be renamed later.
+- [x] **Firebase project:** decided 2026-10-24: a new project `formcraft2027` (the old `fromcraft-2026` was misspelled; ids can't be renamed). The code points at it; the owner creates it and pastes its web-app keys into `.env.local`.
 - [ ] **Region:** confirm the Firestore location of the existing project and use the same region for Functions (`VITE_FUNCTIONS_REGION`).
 - [ ] **Journal / blog:** keep the existing Blog page as a Journal (project stories, community news) only if someone will post regularly; otherwise drop it and redirect `/blog` to `/`.
 - [ ] **Shop products:** the current demo products (mugs, rattan baskets, tea towels) are placeholders. Get the real Stores catalogue, prices in UGX and photos.

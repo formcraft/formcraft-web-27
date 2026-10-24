@@ -40,7 +40,7 @@ Write plainly. Name files and components exactly. Don't describe planned feature
 | Lint | oxlint (`npm run lint`) | same |
 | Firebase SDK | `firebase` ^12; Auth eager; Firestore, Storage, Functions on demand; public reads over the Firestore REST API (no SDK) | same |
 | Firebase project files | `firebase.json` (SPA rewrite, cache and security headers), `.firebaserc`, `firestore.rules`, `storage.rules`, `firestore.indexes.json`, `functions/` (written, not deployed: needs Blaze) | same |
-| Firebase project | `fromcraft-2026`, config from `VITE_FIREBASE_*` | open question |
+| Firebase project | `formcraft2027` (`.firebaserc`, `.env.local`); keys from the new project still to paste in | `formcraft2027` |
 | Styling | tokens + shared styles in `src/styles/`, one CSS file per component, coarse paper textures | same |
 | State | `AuthContext` (user, role), `ThemeContext`, `CartContext`, `SiteContext` (page switches, contact details, motion timing) | same |
 | Content | `useContent()`: Firestore collection if the admin added items, else starter data in `src/data/` | Firestore |
@@ -238,7 +238,7 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 
 ## Known issues and notes
 
-- Firebase project id is `fromcraft-2026` (misspelled). Decide before real data goes in; ids can't be renamed (open question in the plan).
+- Firebase project: the code now points at `formcraft2027` (owner's decision). The project still has to be created in the Firebase console and its web-app keys pasted into `.env.local` (the four key lines are marked TODO there); until then local work runs against the emulators.
 - The Firebase web API key is in the repo history. It isn't a secret, but restrict it to the site's domains in Google Cloud console.
 - No tests. Rules tests arrive in Phase 3.
 - The latest commits (all pages, admin, textures, sky, service worker) were compiled with esbuild and checked in a headless browser only; run `npm run lint` and `npm run build` locally, and try Admin with a real admin account against the emulators.
