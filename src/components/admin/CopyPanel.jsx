@@ -1,4 +1,4 @@
-// Admin → Copy: every piece of text on the site that the team can edit, page by page, in the order it
+// Admin → Site text (the copy editor): every piece of text on the site that the team can edit, page by page, in the order it
 // appears (the register in src/data/copy.js). Each piece can be saved as a draft (team only, previewed on
 // the real page with ?preview=draft), published (public at once, and in the pre-built page heads from the
 // next build), or put back to the built-in wording. Every publish and revert is kept in a history.
@@ -129,7 +129,7 @@ export const CopyPanel = () => {
     return (
         <div className="stack copy" style={{ "--gap": "20px" }}>
             <div className="stack" style={{ "--gap": "6px" }}>
-                <h3 className="h3">Copy</h3>
+                <h3 className="h3">Site text</h3>
                 <p className="small">
                     The words on the site, page by page. Save a draft to try it on the real page, then publish. “Back to the original” restores the built-in wording. Plain text with <code>**bold**</code>, <code>*italic*</code> and line breaks. The tagline is fixed (Brand Guide) and isn’t listed.
                 </p>

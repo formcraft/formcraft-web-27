@@ -17,7 +17,7 @@ import { ResultsView } from "./ResultsView";
 import { Composer } from "./Composer";
 import "./StudioPanel.css";
 
-// Admin → Studio: Formcraft's social media planning. Everything lives in Firestore
+// Admin → Social planner (was "Studio"; renamed so it isn't confused with the Studio division): Formcraft's social media planning. Everything lives in Firestore
 // (socialChannels, occasions, socialTopics, socialPosts, settings/studio) and is edited here.
 // Editors plan drafts; marketing and admins approve, schedule, publish and manage the lists.
 const TABS = [
@@ -34,7 +34,7 @@ const TAB_KEY = "fc-studio-tab";
 
 const byName = (a, b) => String(a.name ?? "").localeCompare(String(b.name ?? ""));
 
-/** Admin → Studio, the marketing calendar: loads the shared data and shows the tabs (Calendar, Queue, Generate, Bulk, Channels, Topics, Occasions, Results) the person's role allows. */
+/** Admin → Social planner, the social media calendar: loads the shared data and shows the tabs (Calendar, Queue, Generate, Bulk, Channels, Topics, Occasions, Results) the person's role allows. */
 export const StudioPanel = () => {
     const { user, role, isMarketing, isEditor } = useAuth();
     const tabs = TABS.filter((t) => isMarketing || t.editor);
@@ -88,7 +88,7 @@ export const StudioPanel = () => {
         <div className="stack studio" style={{ "--gap": "18px" }}>
             <div className="between" style={{ alignItems: "center" }}>
                 <div className="stack" style={{ "--gap": "4px" }}>
-                    <h3 className="h3">Marketing studio</h3>
+                    <h3 className="h3">Social planner</h3>
                     <p className="small">
                         Plan, approve and publish Formcraft’s social posts. Times are Kampala time (EAT).
                         {!isMarketing && " You can write drafts and send them for review; marketing approves and publishes."}

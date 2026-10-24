@@ -8,8 +8,8 @@ import { CONTENT } from "../data/content";
 import { Section } from "../components/page/Section";
 import { PagesPanel } from "../components/admin/PagesPanel";
 import { ContentPanel } from "../components/admin/ContentPanel";
-import { InboxPanel } from "../components/admin/InboxPanel";
-import { INBOXES } from "../components/admin/inboxes";
+import { RecordsPanel } from "../components/admin/RecordsPanel";
+import { RECORDS } from "../components/admin/records";
 import { LeadsPanel } from "../components/admin/LeadsPanel";
 import { LinkBuilderPanel } from "../components/admin/LinkBuilderPanel";
 import { DetailsPanel } from "../components/admin/DetailsPanel";
@@ -21,7 +21,8 @@ import { FeaturesPanel } from "../components/admin/FeaturesPanel";
 import { firebaseConfigured } from "../config/firebase";
 import "./Admin.css";
 
-// The team's control room: leads, which pages are open, the site's content, and what visitors sent.
+// The team's control room, grouped by what the person came to do: leads, social media, the website's
+// content, records (orders, donations, members) and settings. Each menu label is also its panel's heading.
 // Each item says which team roles see it (custom claims: admin, role "marketing", role "editor");
 // admins see everything. Everything here is enforced again by firestore.rules / storage.rules.
 // To add a section, add an item { key, label, roles, render } to a group; `owner: true` shows it to the
@@ -39,32 +40,37 @@ const SiteMotion = () => {
 };
 
 const SECTIONS = [
+    { group: "", items: [{ key: "overview", label: "Overview", roles: ["admin"], render: (go) => <Overview go={go} /> }] },
     {
-        group: "Marketing",
+        group: "Leads",
         items: [
             { key: "leads", label: "Leads", roles: TEAM, render: () => <LeadsPanel /> },
-            { key: "studio", label: "Studio", roles: ["admin", "marketing", "editor"], render: () => <StudioPanel /> },
             { key: "links", label: "Link builder", roles: TEAM, render: () => <LinkBuilderPanel /> },
         ],
     },
     {
-        group: "Site",
+        group: "Social media",
+        items: [{ key: "studio", label: "Social planner", roles: ["admin", "marketing", "editor"], render: () => <StudioPanel /> }],
+    },
+    {
+        group: "Website content",
+        items: [{ key: "copy", label: "Site text", roles: TEAM, render: () => <CopyPanel /> }].concat(
+            Object.entries(CONTENT).map(([k, v]) => ({ key: k, label: v.label, roles: TEAM, render: () => <ContentPanel key={k} name={k} /> }))
+        ),
+    },
+    {
+        group: "Records",
+        items: Object.entries(RECORDS).map(([k, v]) => ({ key: k, label: v.label, roles: ["admin"], render: () => <RecordsPanel key={k} name={k} /> })),
+    },
+    {
+        group: "Settings",
         items: [
-            { key: "overview", label: "Overview", roles: ["admin"], render: (go) => <Overview go={go} /> },
             { key: "pages", label: "Pages", roles: ["admin"], render: () => <PagesPanel /> },
-            { key: "details", label: "Site details", roles: ["admin"], render: () => <SiteDetails /> },
             { key: "features", label: "Features", roles: ["admin"], render: () => <FeaturesPanel /> },
-            { key: "motion", label: "Motion", roles: ["admin"], render: () => <SiteMotion /> },
+            { key: "details", label: "Site details", roles: ["admin"], render: () => <SiteDetails /> },
+            { key: "motion", label: "Animation timing", roles: ["admin"], render: () => <SiteMotion /> },
             { key: "team", label: "Team", roles: ["admin"], owner: true, render: () => <TeamPanel /> },
         ],
-    },
-    {
-        group: "Content",
-        items: [{ key: "copy", label: "Copy (site text)", roles: TEAM, render: () => <CopyPanel /> }].concat(Object.entries(CONTENT).map(([k, v]) => ({ key: k, label: v.label, roles: TEAM, render: () => <ContentPanel key={k} name={k} /> }))),
-    },
-    {
-        group: "Inbox",
-        items: Object.entries(INBOXES).map(([k, v]) => ({ key: k, label: v.label, roles: ["admin"], render: () => <InboxPanel key={k} name={k} /> })),
     },
 ];
 
@@ -130,7 +136,7 @@ export const Admin = () => {
         body = (
             <div className="card card-pad stack admin-gate" style={{ "--gap": "14px" }}>
                 <h2 className="h3">Sign in to the admin page</h2>
-                <p className="body">Only Formcraft team accounts (admin, marketing or editor) can use this page.</p>
+                <p className="body">Only Formcraft team accounts can use this page.</p>
                 <button type="button" className="btn btn-primary" style={{ alignSelf: "flex-start" }} onClick={openSignIn}>Sign in</button>
             </div>
         );
@@ -145,10 +151,24 @@ export const Admin = () => {
     else {
         body = (
             <div className="admin-layout">
+                <div className="field admin-picker">
+                    <label htmlFor="admin-section">Admin section</label>
+                    <select id="admin-section" value={tab} onChange={(e) => go(e.target.value)}>
+                        {sections.map((s) =>
+                            s.group ? (
+                                <optgroup key={s.group} label={s.group}>
+                                    {s.items.map(({ key, label }) => <option key={key} value={key}>{label}</option>)}
+                                </optgroup>
+                            ) : (
+                                s.items.map(({ key, label }) => <option key={key} value={key}>{label}</option>)
+                            )
+                        )}
+                    </select>
+                </div>
                 <nav className="admin-nav" aria-label="Admin sections">
                     {sections.map((s) => (
-                        <div key={s.group} className="stack" style={{ "--gap": "2px" }}>
-                            <p className="fine admin-nav-head">{s.group}</p>
+                        <div key={s.group || "top"} className="stack" style={{ "--gap": "2px" }}>
+                            {s.group && <p className="fine admin-nav-head">{s.group}</p>}
                             {s.items.map(({ key, label }) => (
                                 <button key={key} type="button" className="admin-nav-btn" aria-current={tab === key ? "page" : undefined} onClick={() => go(key)}>
                                     {label}

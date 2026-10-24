@@ -63,6 +63,12 @@
 @media (max-width: 360px) {
   .header-brand img { height: 22px; }
 }
+/* team members: on phones the admin icon lives in the menu instead (five icons don't fit a 360 px screen) */
+.header-mobile-admin { display: none !important; }
+@media (max-width: 480px) {
+  .header-admin { display: none; }
+  .header-mobile-admin { display: flex !important; }
+}
 
 @media (hover: none), (max-width: 820px) {
   .header { -webkit-backdrop-filter: none; backdrop-filter: none; background: color-mix(in srgb, var(--ground) 96%, transparent); }

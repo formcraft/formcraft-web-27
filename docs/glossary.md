@@ -11,6 +11,13 @@ person's account, set only from the server (`scripts/set-admin.js` or Admin → 
 can edit in Admin → Copy, with its built-in wording and length limit. A *draft* is an unpublished edit (team only,
 previewed with `?preview=draft`); *publishing* makes it public.
 
+**Records / Leads (admin).** *Leads* are people who contacted Formcraft (messages, quote requests, investor
+requests, subscribers), worked in Admin → Leads with one status list. *Records* are the read-only lists of orders,
+donations and members.
+
+**Social planner.** Admin → Social planner (formerly "Studio"): the social media calendar, posts, channels and
+occasions. Not to be confused with **Studio**, Formcraft's design division and its page.
+
 **Build.** Turning the source code into the finished site in `dist/` (`npm run build`): files are combined,
 shrunk and given unique names so browsers can cache them safely.
 

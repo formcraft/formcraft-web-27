@@ -2,13 +2,15 @@ import { useMemo, useState } from "react";
 import { useCollection } from "../../hooks/useCollection";
 import { setStatus } from "../../lib/adminContent";
 import { RankBars, WeekBars } from "./LeadCharts";
+import { LEAD_STATUSES as STATUSES } from "../../data/leads";
+import { formatUGX } from "../../lib/money";
 import "./LeadsPanel.css";
 
 // Every lead in one place: contact messages, sign-ups and course/event requests (messages with a
 // [topic] subject), quote requests, investor leads and email subscribers — with where each one came
 // from (source, campaign, page), a status pipeline, charts and CSV export. Contact clicks (`clicks`)
-// are counted alongside. firestore.rules let admins and the marketing team read these and set status.
-const STATUSES = ["new", "contacted", "qualified", "won", "lost"];
+// are counted alongside. firestore.rules let the team read these and set status. Leads is the one place
+// for people who contacted us, with one status list (src/data/leads.js).
 const TYPES = [
     ["leads", "All leads"],
     ["message", "Messages"],
@@ -48,7 +50,7 @@ const normalise = (collection, d) => {
             return { ...base, type: topic ? "interest" : "message", name: d.name, contact: d.email, detail: topic || d.subject || "", note: d.body };
         }
         case "quotes":
-            return { ...base, type: "quote", name: d.name, contact: d.contact, detail: [d.type, d.location].filter(Boolean).join(" · "), note: d.message };
+            return { ...base, type: "quote", name: d.name, contact: d.contact, detail: [d.type, d.location, d.budgetUGX ? `budget ${formatUGX(d.budgetUGX)}` : "", d.files?.length ? `${d.files.length} drawing${d.files.length === 1 ? "" : "s"} attached` : ""].filter(Boolean).join(" · "), note: d.message };
         case "investorLeads":
             return { ...base, type: "investor", name: d.name, contact: d.email, detail: [d.org, d.ticketSize].filter(Boolean).join(" · "), note: d.message };
         case "subscribers":
@@ -178,7 +180,7 @@ export const LeadsPanel = () => {
         try {
             await setStatus(lead.collection, lead.id, value);
         } catch (e) {
-            setSaveError(e.code === "permission-denied" ? "This account can't change lead status (admin or marketing role needed)." : e.message);
+            setSaveError(e.code === "permission-denied" ? "This account can't change lead status: it isn't on the team yet (sign out and back in after you're added)." : e.message);
         }
     };
 

@@ -113,7 +113,7 @@ export const Header = () => {
                 <div className="header-tools">
                     <ThemeSwitch />
                     {isEditor && (
-                        <Link to="/admin" className="icon-btn" aria-label="Admin" title="Admin">
+                        <Link to="/admin" className="icon-btn header-admin" aria-label="Admin" title="Admin">
                             <Icon name="layers" size={19} />
                         </Link>
                     )}
@@ -153,6 +153,11 @@ export const Header = () => {
                                 {group.label}
                             </NavLink>
                         )
+                    )}
+                    {isEditor && (
+                        <NavLink to="/admin" className="header-mobile-top header-mobile-admin">
+                            Admin
+                        </NavLink>
                     )}
                     <Link to="/studio#quote" className="btn btn-primary btn-block">
                         Request a quote

@@ -7,6 +7,15 @@
 
 Last updated: 2026-10-24 (round 6)
 
+## ▶ From the local side: admin tidy (#25) on `try/admin-tidy` (2026-10-24)
+
+Built from your proposal, all seven points: one status list (bug fixed), Leads the one place, Inbox → Records,
+menu regrouped, label = heading ("Site text", "Pages", "Animation timing", "Social planner"), "team" wording,
+an intro sentence on every panel. Also found by the new **`npm run check:admin`** (your point 7, emulators): every
+admin screen scrolled sideways at 360 px; fixed with a grouped "Admin section" menu on phones, a wrapping
+signed-in tag, and the header's admin icon moving into the phone menu below 480 px. 21 screens × 2 widths, 0
+errors. On top of `try/features` (which has the pilot); for the owner to click through.
+
 ## ▶ From the local side: copy pilot (step A) on `try/copy-pilot` (2026-10-24)
 
 Built from your answers in `questions-for-cloud.md` (thank you; the living-sky design answers are merged in too).

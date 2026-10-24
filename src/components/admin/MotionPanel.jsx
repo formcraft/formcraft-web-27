@@ -36,7 +36,7 @@ export const MotionPanel = () => {
             await setMotion(values);
             setNote({ ok: true, text: "Saved. Visitors get the new timing on their next visit; the opening animation from their following visit." });
         } catch (e) {
-            setNote({ ok: false, text: e.code === "permission-denied" ? "Firestore refused the change: only admins can change the timing." : e.message });
+            setNote({ ok: false, text: e.code === "permission-denied" ? "Firestore refused the change: this account isn't on the team yet." : e.message });
         } finally {
             setBusy(false);
         }
@@ -55,10 +55,10 @@ export const MotionPanel = () => {
     return (
         <form className="card card-pad form admin-editor motion-panel" onSubmit={onSubmit} aria-labelledby="motion-title">
             <div className="stack" style={{ "--gap": "6px" }}>
-                <h3 className="h3" id="motion-title">Motion</h3>
+                <h3 className="h3" id="motion-title">Animation timing</h3>
                 <p className="small">How long the site's animations take. 1× is the default; slide right to slow an animation down, left to speed it up. Visitors who ask their device for reduced motion never see these animations.</p>
             </div>
-            {!isAdmin && <p className="alert">Only admins can change these.</p>}
+            {!isAdmin && <p className="alert">Only the team can change these.</p>}
             <div className="motion-panel-list">
                 {MOTION_FIELDS.map((f) => (
                     <div className="field motion-panel-row" key={f.key}>

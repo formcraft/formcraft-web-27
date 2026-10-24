@@ -27,9 +27,9 @@ export const PagesPanel = () => {
     return (
         <div className="stack" style={{ "--gap": "22px" }}>
             <div className="stack" style={{ "--gap": "6px" }}>
-                <h3 className="h3">Pages on the site</h3>
+                <h3 className="h3">Pages</h3>
                 <p className="small">
-                    {onCount} of {PAGES.length} pages open to visitors. Start small: open a page when there's real content behind it. Changes reach visitors on their next visit.
+                    Which pages visitors can open: {onCount} of {PAGES.length} are open. Open a page when there's real content behind it. Changes reach visitors on their next visit.
                 </p>
             </div>
             {error && <p className="alert alert-error" role="alert">{error}</p>}

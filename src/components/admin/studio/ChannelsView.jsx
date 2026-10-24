@@ -229,7 +229,7 @@ export const ChannelsView = ({ studio }) => {
             </div>
 
             <div className="card card-pad form">
-                <h4 className="h4">Studio settings</h4>
+                <h4 className="h4">Planner settings</h4>
                 <DayPicker id="days-global" label="Usual posting days" value={s.postingDays ?? []} onChange={(val) => setS({ postingDays: val })} />
                 <div className="form-row">
                     <div className="field">

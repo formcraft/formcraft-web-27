@@ -20,7 +20,7 @@ export const DetailsPanel = () => {
             await setDetails(values);
             setNote({ ok: true, text: "Saved. Visitors see the new details on their next visit (straight away in this browser)." });
         } catch (e) {
-            setNote({ ok: false, text: e.code === "permission-denied" ? "Firestore refused the change: only admins can edit the site details." : e.message });
+            setNote({ ok: false, text: e.code === "permission-denied" ? "Firestore refused the change: this account isn't on the team yet." : e.message });
         } finally {
             setBusy(false);
         }
@@ -34,7 +34,7 @@ export const DetailsPanel = () => {
                 <h3 className="h3" id="details-title">Site details</h3>
                 <p className="small">Contact details and social profiles shown in the footer, on the Contact page and on the Links page. Leave a field empty to take it off the site.</p>
             </div>
-            {!isAdmin && <p className="alert">Only admins can change these.</p>}
+            {!isAdmin && <p className="alert">Only the team can change these.</p>}
             <div className="admin-fields">
                 {DETAIL_FIELDS.map(([key, label, help]) => (
                     <div className="field" key={key}>

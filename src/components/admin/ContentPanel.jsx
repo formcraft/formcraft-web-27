@@ -33,7 +33,7 @@ export const ContentPanel = ({ name }) => {
             await fn();
             if (done) setNote({ ok: true, text: done });
         } catch (e) {
-            setNote({ ok: false, text: e.code === "permission-denied" ? "Firestore refused the change: this account doesn't have the admin or marketing role yet (sign out and back in after it's set)." : e.message });
+            setNote({ ok: false, text: e.code === "permission-denied" ? "Firestore refused the change: this account isn't on the team yet (sign out and back in after you're added)." : e.message });
         } finally {
             setBusy(false);
         }

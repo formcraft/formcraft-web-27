@@ -56,6 +56,7 @@ npm run build               # build to dist/
 npm run check               # offline quality check: lint, build, every page × 3 sizes × day/night in local Chrome, clicks, links, report in check-report/
 npm run check:fast          # the same with fewer sizes (about 3× quicker)
 npm run check:speed         # Lighthouse scores, locally
+npm run check:admin         # every admin screen signed in (needs the emulators running)
 firebase emulators:start    # Auth, Firestore, Functions, Storage locally
 firebase deploy             # only when the user asks
 ```

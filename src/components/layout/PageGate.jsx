@@ -29,7 +29,7 @@ export const PageGate = ({ pageKey, children }) => {
     return (
         <>
             <p className="page-gate-strip" role="status">
-                <b>Hidden from visitors.</b> Only admins can see “{page?.label}”. <Link to="/admin#pages">Turn it on in Admin</Link>
+                <b>Hidden from visitors.</b> Only the team can see “{page?.label}”. <Link to="/admin#pages">Turn it on in Admin</Link>
             </p>
             {children}
         </>

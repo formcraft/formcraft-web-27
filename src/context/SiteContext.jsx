@@ -16,7 +16,7 @@ import { FEATURES, FEATURES_CACHE, mergeFeatures } from "../data/features";
 //   pinterest } — public contact details (Admin → Site details), merged over src/data/contact.js
 // - `motion`: { intro, tear, build, reveal } — animation time scales (Admin → Motion), see src/data/motion.js
 // - `features`: { key: bool } — features switched on or off (Admin → Features), see src/data/features.js
-// firestore.rules let only admins write it.
+// firestore.rules let only the team write it.
 const CACHE = "fc-site-pages";
 const DETAILS_CACHE = "fc-site-details";
 
@@ -89,7 +89,7 @@ export const SiteProvider = ({ children }) => {
 
     const setPage = useCallback(
         async (key, on) => {
-            if (!isAdmin) throw new Error("Only admins can change which pages are shown.");
+            if (!isAdmin) throw new Error("Only the team can change which pages are shown.");
             if (pageByKey(key)?.locked) return;
             const previous = stored;
             const next = { ...(stored ?? {}), [key]: on };
@@ -109,7 +109,7 @@ export const SiteProvider = ({ children }) => {
     // Merge-write some of the contact details (admin only; the rules check the claim too)
     const setDetails = useCallback(
         async (partial) => {
-            if (!isAdmin) throw new Error("Only admins can change the site details.");
+            if (!isAdmin) throw new Error("Only the team can change the site details.");
             const clean = Object.fromEntries(
                 Object.entries(partial)
                     .filter(([k]) => k in CONTACT_DEFAULTS)
@@ -133,7 +133,7 @@ export const SiteProvider = ({ children }) => {
     // Animation timing (admin only): { key: scale } merged into settings/site.motion
     const setMotion = useCallback(
         async (partial) => {
-            if (!isAdmin) throw new Error("Only admins can change the animation timing.");
+            if (!isAdmin) throw new Error("Only the team can change the animation timing.");
             const clean = Object.fromEntries(Object.entries(partial).filter(([k]) => k in MOTION_DEFAULTS).map(([k, v]) => [k, clampMotion(v)]));
             const previous = savedMotion;
             const next = { ...(savedMotion ?? {}), ...clean };

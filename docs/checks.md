@@ -67,3 +67,15 @@ Google Lighthouse (mobile) for a few key pages: Performance, Accessibility, Best
 
 Run `npm run check` (no errors), then look through `check-report/index.html` at phone and desktop in both
 editions. Then build with the real domain: `SITE_URL=https://… npm run build`.
+
+## The admin pass: `npm run check:admin`
+
+Checks every screen of the admin page, signed in, at desktop width and at 360 px. It needs the emulators
+running (`firebase emulators:start --import=emulator-data`); it creates its own test account
+(check-admin@formcraft.test) in the auth emulator and starts its own dev server on port 4179, so the real
+Firebase project is never touched. On each screen it fails when:
+- the menu label and the panel heading don't say the same thing;
+- the screen scrolls sideways;
+- there's a script error or an accessibility error (axe);
+- a lead's status menu offers a value outside the one list (`src/data/leads.js`).
+Screenshots and `results.json` go to `check-report/admin/`.
