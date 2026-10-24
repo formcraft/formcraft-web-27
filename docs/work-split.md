@@ -29,7 +29,7 @@ If either side needs to change a file the other owns, write the change into `doc
 | C1 | **Living sky tuner**: a private page where the owner drags the sun and moon and tunes the springs. **Done**; the owner's numbers are in `SKY_DEFAULTS`. | Final numbers for C2 |
 | C2 | **Done.** **`src/components/scene/sky/skyPhysics.js` + `moonPhase.js`**: the stars/clouds/sun-and-moon engine from the tuner as plain JavaScript (no React), with the contract below. Plus the moon phase, the lit shape and the equator "boat moon" turn. | Something to wire into `Sky.jsx` (L4) |
 | C3 | **Done.** **`sky/weatherShapes.js` + the weather token block**: torn-paper cloud decks, the storm cloud and its glow timing, the mist "vellum" band, the rain-sliver and splash drawer (canvas), wet-paper overlay. Plus a tuner page for the scenes so the owner can see them first. | Shapes and drawers for L7 |
-| C4 | **`functions/weather.js`**: MET Norway sync every 30 min (User-Agent, `If-Modified-Since`, 4-decimal lat/lon), symbol → scene mapping as a pure, tested function, writes `stats/weather` and a private `weatherMeta/kampala`. Written, not deployed. | Something to test in the emulator (L9) |
+| C4 | **Done.** **`functions/weather.js`** (+ `weatherMap.js`, tested): MET Norway sync every 30 min (User-Agent, `If-Modified-Since`, 4-decimal lat/lon), symbol → scene mapping as a pure, tested function, writes `stats/weather` and a private `weatherMeta/kampala`. Written, not deployed. | Something to test in the emulator (L9) |
 | C5 | **Home 3D look**: paper tuning on feedback, the night edition, later rain and wind on the model (Sky 5). | — |
 | C6 | **Design reviews on request**: admin wording (done in `handoff.md`), page visuals, copy organisation. | Lists in `handoff.md` |
 
@@ -111,3 +111,18 @@ canvas, hero text. With reduced motion: draw one still frame of rain, no glow, n
 **Cloud look (owner, 2026-10-24):** paper-cut clouds like the owner's reference picture: layered sheets with soft
 shadows between them, white by day and navy-grey by night. The old one-piece `puffCloud` is gone; use `cloudGroup`
 or `puffsFor`.
+
+## Hand-over for C4 (live weather, for L3 and L9)
+
+- **`functions/index.js`** (yours): add `export { syncKampalaWeather } from "./weather.js";` next to the studio line.
+- **Admin → Features** (`src/data/features.js`, L3): add `liveWeather`, label "Live Kampala weather", default **off**,
+  `needs` the weather-scenes switch. The function does nothing while it's off, so nothing is downloaded before Blaze.
+- **Credit** while `liveWeather` is on: "Weather data: MET Norway (CC BY 4.0)" on `/privacy` and in the footer
+  small print. Don't use the name "Yr" or its logo.
+- **Rules:** nothing to add. `stats/*` is already public read and functions-only write; `weatherMeta/*` matches no
+  rule, so nobody can read or write it from a browser. Add a rules test that confirms that.
+- **Site side:** read `stats/weather` over REST and cache it. Treat it as stale after 3 h (use `at`) and show clear
+  then. Map `windMs` with `windFromMs(windMs, motion.wind, kind)`; the direction sign comes from `windFromDeg`
+  (east of north → the wind blows right → left, so negative).
+- **Test:** `node --test functions/weatherMap.test.js`. In the emulator, turn `liveWeather` on in Firestore and run
+  the schedule from the Functions emulator. The emulator makes a real request to api.met.no, so keep it to a few runs.
