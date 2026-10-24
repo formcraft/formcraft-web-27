@@ -58,15 +58,15 @@ Phase 0 finished plus Phase 1 pages, in the new **paper-cut** design:
 
 | Step | Done | Notes |
 | --- | --- | --- |
-| 1 Install | ☐ | |
-| 2 Firebase env | ☐ | |
-| 3 Lint | ☐ | |
-| 4 Build | ☐ | |
-| 5 Check by eye | ☐ | |
-| 6 three.js | ☐ | |
-| 7 Emulators | ☐ | |
-| 8 Docs | ☐ | |
-| 9 PR | ☐ | |
+| 1 Install | ☑ 2026-10-24 | three 0.184.0, firebase 12.19.0. `npm audit fix` (patch/minor only). Left: 4 high in `@grpc/grpc-js` (Node-only, via firebase) and 2 moderate in react-router 6 (fix needs v7). npm skipped the postinstall scripts of `@firebase/util` and `protobufjs`; not needed for the Vite build. |
+| 2 Firebase env | ☑ 2026-10-24 | `.env.local` from the old `fromcraft-2026` config. `VITE_FUNCTIONS_REGION` left empty (TODO: region open question). |
+| 3 Lint | ☑ 2026-10-24 | Passes; 1 warning (`useAuth` exported beside `AuthProvider`, hot reload only). |
+| 4 Build | ☑ 2026-10-24 (partial) | Passes. Main JS 220.7 kB gzipped, mostly Firebase loaded eagerly in `config/firebase.js`; trim before adding pages. No three.js chunk yet (nothing imports it). Re-check when the scene lands. |
+| 5 Check by eye | ☐ | Waiting for the layout, shop and Phase 1 commits. |
+| 6 three.js | ☐ | Waiting for `PaperScene`. |
+| 7 Emulators | ☐ | Not installed here: needs `firebase-tools` and Java 21+. Port 8080 clashes with the Revit MCP plugin on this machine. |
+| 8 Docs | ☑ 2026-10-24 | `current-code.md` status line, known issues, change log. |
+| 9 PR | ☑ 2026-10-24 | Opened as a draft (branch still being written). Not merged or deployed. |
 
 ## Still being written in the cloud session
 
