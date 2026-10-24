@@ -74,5 +74,12 @@ moonPhase(date)            // → { age, fraction, waxing, name }
 moonLitPath(phase, r = 44) // → { d, rotate } for the SVG clip of the lit part
 ```
 
+**Wiring the drag (lesson from the tuner page, where the drag first failed inside the claude.ai viewer):**
+- listen for `pointerdown` on the hero, not the disc, and start a drag only within 1.6 × the disc radius of its centre;
+- follow `pointermove` / `pointerup` / `pointercancel` on `window`, with `setPointerCapture` inside a try/catch;
+- set `user-select: none` on the hero and cancel `dragstart`, so a native text or image drag can't steal the
+  gesture;
+- use `touch-action: none` on the disc and on the hero only while dragging; everywhere else the page still scrolls.
+
 No DOM, no timers, no React in these modules: the caller owns `requestAnimationFrame`, the canvas and the elements.
 That keeps them easy to test and lets the local side decide how they fit the paper scene.
