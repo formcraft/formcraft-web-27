@@ -225,17 +225,92 @@ export const HotelScene = () => {
     );
 };
 
-// Development only: switch between what different devices get (reloads the page).
+// Development only (`npm run dev`, never in the live site): a small floating panel to switch between
+// what different devices get. Choosing an option reloads the page.
+// - It starts in the bottom-right corner, just above the plant-a-tree button.
+// - Drag its title bar (mouse or finger) to move it anywhere; the spot is remembered.
+//   Double-click the title to put it back in the corner.
+// - A plain click on the title folds it down to a small tab (also remembered).
+const PREVIEW_OPEN_KEY = "fc-3d-preview-open";
+const PREVIEW_SPOT_KEY = "fc-3d-preview-spot";
+const DRAG_THRESHOLD = 4; // px the pointer must move before a press counts as a drag, not a click
+
+/** Keeps a panel of size w × h fully on screen, with an 8 px margin. */
+const keepOnScreen = ({ x, y }, w, h) => ({
+    x: Math.min(Math.max(8, x), Math.max(8, window.innerWidth - w - 8)),
+    y: Math.min(Math.max(8, y), Math.max(8, window.innerHeight - h - 8)),
+});
+
 const HotelPreviewSwitch = ({ level }) => {
     const current = readJSON(PREVIEW_KEY, "auto");
     const gpu = webglInfo()?.renderer.replace(/^ANGLE \(|\s*\(0x.*$|,\s*Direct3D.*$/g, "") || "no WebGL";
+    const panelRef = useRef(null);
+    const drag = useRef(null); // { startX, startY, fromX, fromY, moved } while the pointer is down
+    // null = the default corner (CSS); otherwise { x, y } = the panel's top-left corner on screen
+    const [spot, setSpot] = useState(() => readJSON(PREVIEW_SPOT_KEY, null));
+
+    // Remember where the panel is (null = the default corner).
+    useEffect(() => writeJSON(PREVIEW_SPOT_KEY, spot), [spot]);
+
+    // If the window gets smaller, pull the panel back on screen.
+    useEffect(() => {
+        if (!spot) return undefined;
+        const onResize = () => {
+            const r = panelRef.current?.getBoundingClientRect();
+            if (r) setSpot((s) => (s ? keepOnScreen(s, r.width, r.height) : s));
+        };
+        window.addEventListener("resize", onResize);
+        return () => window.removeEventListener("resize", onResize);
+    }, [spot]);
+
     const choose = (key) => {
         writeJSON(PREVIEW_KEY, key);
         window.location.reload();
     };
+    const onPointerDown = (e) => {
+        if (e.button !== 0) return;
+        const r = panelRef.current.getBoundingClientRect();
+        drag.current = { startX: e.clientX, startY: e.clientY, fromX: r.left, fromY: r.top, moved: false };
+        e.currentTarget.setPointerCapture(e.pointerId);
+    };
+    const onPointerMove = (e) => {
+        const d = drag.current;
+        if (!d) return;
+        const dx = e.clientX - d.startX, dy = e.clientY - d.startY;
+        if (!d.moved && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
+        d.moved = true;
+        const r = panelRef.current.getBoundingClientRect();
+        setSpot(keepOnScreen({ x: d.fromX + dx, y: d.fromY + dy }, r.width, r.height));
+    };
+    // A click that ended a drag mustn't also fold the panel.
+    const onClick = (e) => {
+        if (drag.current?.moved) e.preventDefault();
+        drag.current = null;
+    };
+    const onDoubleClick = (e) => {
+        e.preventDefault();
+        setSpot(null);
+    };
+
     return (
-        <div className="hotel-preview" role="group" aria-label="3D preview, development only">
-            <span className="hotel-preview-title">Preview (dev only)</span>
+        <details
+            ref={panelRef}
+            className={`hotel-preview ${spot ? "is-moved" : ""}`}
+            style={spot ? { left: spot.x, top: spot.y } : undefined}
+            open={readJSON(PREVIEW_OPEN_KEY, true)}
+            onToggle={(e) => writeJSON(PREVIEW_OPEN_KEY, e.currentTarget.open)}
+            aria-label="3D preview, development only"
+        >
+            <summary
+                className="hotel-preview-title"
+                title="Drag to move · click to fold · double-click to put back in the corner"
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onClick={onClick}
+                onDoubleClick={onDoubleClick}
+            >
+                <span aria-hidden="true">⠿ </span>3D preview (dev only)
+            </summary>
             <div className="hotel-preview-options">
                 {PREVIEWS.map(([key, label]) => (
                     <button key={key} type="button" aria-pressed={current === key} onClick={() => choose(key)}>
@@ -246,7 +321,7 @@ const HotelPreviewSwitch = ({ level }) => {
             <span className="hotel-preview-info">
                 Showing: {level} · GPU: {gpu}
             </span>
-        </div>
+        </details>
     );
 };
 

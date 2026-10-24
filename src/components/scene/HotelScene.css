@@ -39,7 +39,14 @@
 @media (max-width: 600px) { .hotel-controls { top: calc(var(--fc-header-h) + 12px); left: 8px; } .hotel-controls button { width: 34px; height: 34px; } }
 
 /* development-only preview switch (HotelPreviewSwitch; from the local side's try/auto-live branch) */
-.hotel-preview { position: fixed; left: 12px; bottom: 12px; z-index: 60; display: grid; gap: 6px; max-width: calc(100vw - 96px); padding: 8px 10px; border-radius: 6px; background: var(--fc-navy); color: var(--fc-white); font-size: 12px; box-shadow: 0 6px 20px -8px var(--fc-black); }
+/* Dev-only preview panel: bottom-right, 12px above the 50px plant-a-tree button, same right edge.
+   Away from the cookie notice and the email prompt (bottom-left). Folds to a small tab. */
+.hotel-preview { position: fixed; right: 18px; bottom: calc(18px + 50px + 12px + env(safe-area-inset-bottom)); z-index: 60; display: grid; gap: 6px; max-width: min(360px, calc(100vw - 36px)); padding: 8px 10px; border-radius: 6px; background: var(--fc-navy); color: var(--fc-white); font-size: 12px; box-shadow: 0 6px 20px -8px var(--fc-black); }
+.hotel-preview:not([open]) { padding: 6px 10px; }
+.hotel-preview.is-moved { right: auto; bottom: auto; } /* dragged: placed by left/top instead */
+.hotel-preview summary { cursor: grab; list-style-position: inside; touch-action: none; user-select: none; }
+.hotel-preview summary:active { cursor: grabbing; }
+.hotel-preview summary:focus-visible { outline: 2px solid var(--fc-orange); outline-offset: 2px; }
 .hotel-preview-title { font-weight: 700; letter-spacing: .04em; text-transform: uppercase; font-size: 10px; opacity: .8; }
 .hotel-preview-options { display: flex; flex-wrap: wrap; gap: 4px; }
 .hotel-preview-options button { font: inherit; padding: 5px 8px; border-radius: 4px; border: 1px solid var(--fc-navy-3); background: var(--fc-navy-2); color: var(--fc-white); cursor: pointer; }

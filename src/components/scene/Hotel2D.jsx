@@ -44,23 +44,23 @@ const Moon = ({ vb, kind, uid }) => {
     const dx = 0.62, ix = dx / 2, iy = Math.sqrt(1 - ix * ix);
     const crescent = `M${ix} ${-iy}A1 1 0 1 0 ${ix} ${iy}A1 1 0 0 1 ${ix} ${-iy}Z`;
     return (
-        <g className="h2-moon" transform={`translate(${f1(cx)} ${f1(cy)}) scale(${f1(r)})`}>
+        <g className="hotel2d-moon" transform={`translate(${f1(cx)} ${f1(cy)}) scale(${f1(r)})`}>
             <circle r="5" fill={`url(#${uid}mg)`} />
-            <circle r="1.06" className="h2-moon-rim" />
-            <circle r="1" className="h2-moon-dark" />
-            <path d={crescent} className="h2-moon-lit" />
-            <circle cx="-.55" cy=".3" r=".19" className="h2-moon-sea" />
-            <circle cx="-.62" cy="-.26" r=".15" className="h2-moon-sea" />
-            <circle cx="-.3" cy="-.62" r=".11" className="h2-moon-sea" />
-            <circle cx="-.72" cy=".02" r=".08" className="h2-moon-pit" />
-            <circle cx="-.42" cy=".62" r=".06" className="h2-moon-pit" />
+            <circle r="1.06" className="hotel2d-moon-rim" />
+            <circle r="1" className="hotel2d-moon-dark" />
+            <path d={crescent} className="hotel2d-moon-lit" />
+            <circle cx="-.55" cy=".3" r=".19" className="hotel2d-moon-sea" />
+            <circle cx="-.62" cy="-.26" r=".15" className="hotel2d-moon-sea" />
+            <circle cx="-.3" cy="-.62" r=".11" className="hotel2d-moon-sea" />
+            <circle cx="-.72" cy=".02" r=".08" className="hotel2d-moon-pit" />
+            <circle cx="-.42" cy=".62" r=".06" className="hotel2d-moon-pit" />
         </g>
     );
 };
 
 const Item = ({ it, uid }) => (
-    <g className={it.kind === "lamp" ? "h2-pop" : "h2-grow"} style={{ "--d": it.delay }}>
-        {it.kind === "tree" && it.layers[1]?.[0] === "gr1" && <path className="h2-tsh" d={it.layers[1][1]} />}
+    <g className={it.kind === "lamp" ? "hotel2d-pop" : "hotel2d-grow"} style={{ "--d": it.delay }}>
+        {it.kind === "tree" && it.layers[1]?.[0] === "gr1" && <path className="hotel2d-tsh" d={it.layers[1][1]} />}
         {it.layers.map(([cls, d], i) => d && <path key={i} className={cls} d={d} fill={cls.startsWith("cyl-") ? `url(#${uid}${cls})` : undefined} />)}
     </g>
 );
@@ -82,7 +82,7 @@ export const Hotel2D = ({ edition = "day", animate = true }) => {
         let raf = 0;
         const update = () => {
             raf = 0;
-            el.style.setProperty("--h2-y", Math.min(window.scrollY, window.innerHeight * 1.5).toFixed(1));
+            el.style.setProperty("--hotel2d-y", Math.min(window.scrollY, window.innerHeight * 1.5).toFixed(1));
         };
         const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
         update();
@@ -98,17 +98,17 @@ export const Hotel2D = ({ edition = "day", animate = true }) => {
     const p = front.print;
 
     return (
-        <div ref={rootRef} className={`h2 ${moving ? "h2-anim" : ""}`} data-edition={night ? "night" : "day"} aria-hidden="true">
-            <svg className="h2-back" viewBox={viewBox} preserveAspectRatio="xMidYMid slice" focusable="false">
+        <div ref={rootRef} className={`hotel2d ${moving ? "hotel2d-anim" : ""}`} data-edition={night ? "night" : "day"} aria-hidden="true">
+            <svg className="hotel2d-back" viewBox={viewBox} preserveAspectRatio="xMidYMid slice" focusable="false">
                 <defs>
                     <linearGradient id={`${uid}fl`} gradientUnits="userSpaceOnUse" x1="0" y1={f1(back.horizon)} x2="0" y2={g.h}>
-                        <stop offset="0" className="h2-stop-bg" />
-                        <stop offset="1" className="h2-stop-floor" />
+                        <stop offset="0" className="hotel2d-stop-bg" />
+                        <stop offset="1" className="hotel2d-stop-floor" />
                     </linearGradient>
                     {night && (
                         <radialGradient id={`${uid}mg`}>
-                            <stop offset="0" className="h2-stop-moon" />
-                            <stop offset="1" className="h2-stop-moon0" />
+                            <stop offset="0" className="hotel2d-stop-moon" />
+                            <stop offset="1" className="hotel2d-stop-moon0" />
                         </radialGradient>
                     )}
                     {back.sheets.map((s) => (
@@ -121,66 +121,66 @@ export const Hotel2D = ({ edition = "day", animate = true }) => {
                 <path d={back.floor} fill={`url(#${uid}fl)`} />
                 {back.sheets.map((s) => (
                     <g key={s.i} clipPath={`url(#${uid}c${s.i})`}>
-                        <g className="h2-rise" style={{ "--d": s.delay, "--rise": `${s.rise}px` }}>
-                            <use href={`#${uid}s${s.i}`} className="h2-ssh h2-ssh-2" />
-                            <use href={`#${uid}s${s.i}`} className="h2-ssh" />
-                            <path d={s.rim} className={`h2-rim-${s.i}`} />
-                            <use href={`#${uid}s${s.i}`} className={`h2-sheet-${s.i}`} />
+                        <g className="hotel2d-rise" style={{ "--d": s.delay, "--rise": `${s.rise}px` }}>
+                            <use href={`#${uid}s${s.i}`} className="hotel2d-ssh hotel2d-ssh-2" />
+                            <use href={`#${uid}s${s.i}`} className="hotel2d-ssh" />
+                            <path d={s.rim} className={`hotel2d-rim-${s.i}`} />
+                            <use href={`#${uid}s${s.i}`} className={`hotel2d-sheet-${s.i}`} />
                         </g>
                     </g>
                 ))}
                 {/* the moon hangs in front of the far sheets, as in the 3D scene */}
                 {night && <Moon vb={vb} kind={vb.kind} uid={uid} />}
                 {back.stars && (
-                    <g className="h2-stars">
-                        <path d={back.stars.threads} className="h2-thread" />
-                        <path d={back.stars.small} className="h2-star" />
-                        <path d={back.stars.warm} className="h2-star h2-star-w" />
-                        <path d={back.stars.hung} className="h2-star h2-star-w" />
+                    <g className="hotel2d-stars">
+                        <path d={back.stars.threads} className="hotel2d-thread" />
+                        <path d={back.stars.small} className="hotel2d-star" />
+                        <path d={back.stars.warm} className="hotel2d-star hotel2d-star-w" />
+                        <path d={back.stars.hung} className="hotel2d-star hotel2d-star-w" />
                     </g>
                 )}
-                {back.scraps.map((s, i) => <path key={i} d={s.d} className={`h2-scrap ${s.m}`} />)}
+                {back.scraps.map((s, i) => <path key={i} d={s.d} className={`hotel2d-scrap ${s.m}`} />)}
             </svg>
 
-            <svg className="h2-front" viewBox={viewBox} preserveAspectRatio="xMidYMid slice" focusable="false" style={{ "--drop": `${-front.drop}px`, "--settle": `${-front.settle}px` }}>
+            <svg className="hotel2d-front" viewBox={viewBox} preserveAspectRatio="xMidYMid slice" focusable="false" style={{ "--drop": `${-front.drop}px`, "--settle": `${-front.settle}px` }}>
                 <defs>
                     {["w", "o", "n"].map((m) => (
                         <linearGradient key={m} id={`${uid}cyl-${m}`} x1="0" x2="1" y1="0" y2="0">
-                            <stop offset="0" className={`h2-cs-${m} h2-cs-hi`} />
-                            <stop offset=".5" className={`h2-cs-${m}`} />
-                            <stop offset="1" className={`h2-cs-${m} h2-cs-lo`} />
+                            <stop offset="0" className={`hotel2d-cs-${m} hotel2d-cs-hi`} />
+                            <stop offset=".5" className={`hotel2d-cs-${m}`} />
+                            <stop offset="1" className={`hotel2d-cs-${m} hotel2d-cs-lo`} />
                         </linearGradient>
                     ))}
                     {night && (
                         <radialGradient id={`${uid}glow`}>
-                            <stop offset="0" className="h2-stop-glow" />
-                            <stop offset="1" className="h2-stop-glow0" />
+                            <stop offset="0" className="hotel2d-stop-glow" />
+                            <stop offset="1" className="hotel2d-stop-glow0" />
                         </radialGradient>
                     )}
                 </defs>
-                <g className="h2-settle" style={{ "--d": 1.4 }}>
+                <g className="hotel2d-settle" style={{ "--d": 1.4 }}>
                     {front.board.map((b, i) => <path key={i} className={b.cls} d={b.d} />)}
-                    <path className="h2-pr-gfill" d={p.greenFill} />
-                    <path className="h2-pr h2-pr-fine" d={p.fine} />
-                    <path className="h2-pr h2-pr-contour" d={p.contour} />
-                    <path className="h2-pr h2-pr-grid" d={p.grid} />
-                    <path className="h2-pr h2-pr-strong" d={p.strong} />
-                    <path className="h2-pr h2-pr-acc" d={p.acc} />
-                    <path className="h2-pr h2-pr-green" d={p.green} />
-                    <path className="h2-pr h2-pr-ink" d={p.ink} />
+                    <path className="hotel2d-pr-gfill" d={p.greenFill} />
+                    <path className="hotel2d-pr hotel2d-pr-fine" d={p.fine} />
+                    <path className="hotel2d-pr hotel2d-pr-contour" d={p.contour} />
+                    <path className="hotel2d-pr hotel2d-pr-grid" d={p.grid} />
+                    <path className="hotel2d-pr hotel2d-pr-strong" d={p.strong} />
+                    <path className="hotel2d-pr hotel2d-pr-acc" d={p.acc} />
+                    <path className="hotel2d-pr hotel2d-pr-green" d={p.green} />
+                    <path className="hotel2d-pr hotel2d-pr-ink" d={p.ink} />
                     {front.contours.map((c, i) => <path key={i} className={c.cls} d={c.d} />)}
                 </g>
-                <path className="h2-gshadow" d={front.shadow} style={{ "--d": 4.3 }} />
-                {front.pools.map((pl, i) => <path key={i} className={`h2-pool ${pl.cls}`} d={pl.d} fill={`url(#${uid}glow)`} style={{ "--d": 5.2 }} />)}
-                <g className="h2-grow" style={{ "--d": 4.6 }}>
+                <path className="hotel2d-gshadow" d={front.shadow} style={{ "--d": 4.3 }} />
+                {front.pools.map((pl, i) => <path key={i} className={`hotel2d-pool ${pl.cls}`} d={pl.d} fill={`url(#${uid}glow)`} style={{ "--d": 5.2 }} />)}
+                <g className="hotel2d-grow" style={{ "--d": 4.6 }}>
                     {front.tufts.map((d, i) => <path key={i} className={`gr${i + 3}`} d={d} />)}
                 </g>
                 {front.backItems.map((it, i) => <Item key={i} it={it} uid={uid} />)}
-                <g className="h2-grow" style={{ "--d": front.creeper.delay }}>
+                <g className="hotel2d-grow" style={{ "--d": front.creeper.delay }}>
                     {front.creeper.d.map((d, i) => <path key={i} className={`gr${i + 2}`} d={d} />)}
                 </g>
                 {front.pieces.map((pc, i) => (
-                    <g key={i} className={pc.lamp ? "h2-pop" : "h2-drop"} style={{ "--d": pc.delay }}>
+                    <g key={i} className={pc.lamp ? "hotel2d-pop" : "hotel2d-drop"} style={{ "--d": pc.delay }}>
                         {pc.items.map((it, j) => <path key={j} className={it.cls} d={it.d} fill={it.cls === "cyl" ? `url(#${uid}cyl-w)` : undefined} />)}
                     </g>
                 ))}

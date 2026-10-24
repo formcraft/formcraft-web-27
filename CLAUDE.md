@@ -25,7 +25,7 @@ If the user says the plan changed, re-read `docs/build-plan.md` before continuin
 1. **One task at a time.** Phase 0 tasks have ids (P0.1–P0.10). Do them in order unless told otherwise. Say which task you're on.
 2. **Explain before big changes.** Before a change that touches more than ~3 files, deletes or moves files, or changes data access, list what you'll change and wait for a go-ahead. Small fixes can go straight ahead.
 3. **Reuse, don't rewrite.** Build on the existing components (see "What to keep" in `current-code.md`). Rename or move files only when the plan's structure needs it, and say so.
-4. **Check your work.** After each task: `npm run lint` and `npm run build` must pass. Open the page in `npm run dev` at 360px and desktop width and check it by keyboard.
+4. **Check your work.** After each task: `npm run check` (or `npm run check:fast` for small changes) must pass with no errors; it runs lint and build too. Look at the screenshots in `check-report/index.html`. There is no GitHub CI (it was removed to save money); these checks run on this computer.
 5. **Update `docs/current-code.md` in the same commit**, following its "How to keep this file up to date" steps: status line, file map, how-it-works paragraphs, checklist, change log.
 6. **Cloud ↔ local handoff (owner's rule).** Before and after every push: `git pull`, read what the other Claude Code session added (`docs/handoff.md`, `docs/ideas.md`, new branches), reconcile it with your work (port, merge or answer), and leave clear numbered tasks for the other side in `docs/handoff.md`.
 7. **Commit per task.** Message starts with the task id: `P0.4: AuthContext, remove forced sign-in`. Don't push or deploy unless asked.
@@ -44,6 +44,9 @@ If the user says the plan changed, re-read `docs/build-plan.md` before continuin
 npm run dev                 # local site, localhost:5173
 npm run lint                # oxlint
 npm run build               # build to dist/
+npm run check               # offline quality check: lint, build, every page × 3 sizes × day/night in local Chrome, clicks, links, report in check-report/
+npm run check:fast          # the same with fewer sizes (about 3× quicker)
+npm run check:speed         # Lighthouse scores, locally
 firebase emulators:start    # Auth, Firestore, Functions, Storage locally
 firebase deploy             # only when the user asks
 ```
