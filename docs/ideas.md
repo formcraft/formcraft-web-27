@@ -12,6 +12,9 @@
 
 | # | Idea | Area | Status | Where |
 | --- | --- | --- | --- | --- |
+| 18 | Documentation anyone can follow: guides in `docs/`, a plain-English header on every file, inputs/outputs on every export, a documentation standard in `CLAUDE.md` | All code | **proposed by owner**, local side, waiting for go-ahead | §16–18 below |
+| 17 | Full review of code and graphics: text overlapping, panels covering text while scrolling; clean and neat everywhere | All pages | **proposed by owner**, local side | §16–18 below |
+| 16 | Offline checks (GitHub Actions is blocked by billing): `npm run check` with lint, build, SEO files, size budget, every route × 3 widths × 2 editions in local Chrome, overlap detection while scrolling, screenshot report; `check:speed` with local Lighthouse | Tooling | **proposed by owner**, local side | §16–18 below |
 | 15 | Opening tear rips from one side, like a page torn out of a pad | Opening | **done** in the Home commit | handoff round 5 |
 | 14 | Animation timing settings in Admin | Admin, all pages | **done**: Admin → Motion | handoff round 5 |
 | 13 | Background first, then the 3D builds on it; 2D drawing only for the slowest devices; crisp everywhere; controls as a minimal left rail | Home | **done** in the Home commit | handoff round 5 |
@@ -29,6 +32,41 @@
 | 1 | Sky and landscape first, building fades in; Home's own sky; one shared sky for other pages; all-round landscape from the owner's models | Home, all heroes | accepted; shared sky done in `ffff37a`; models waiting for owner (A) | owner brief §1–2 |
 
 ---
+
+## §16–18 Offline checks, full review, documentation (owner, 2026-10-24)
+
+**Owner:** "Let us build offline checks, because I am broke. Then read through the entire codebase and the
+graphics of the site; I'm seeing a lot of text mismatching, some windows as I'm scrolling on the new version.
+I want it fully clean and neat. Add professional-level documentation to the code so that even a child could
+understand it, to share with developers or review in the future."
+
+**Context:** GitHub Actions runs on `paper-edition` all fail before starting: "recent account payments have
+failed or your spending limit needs to be increased". Not a code problem.
+
+**Plan (local side, in this order, once the owner approves):**
+1. **Offline checks.** `npm run check` runs:
+   - lint and build, plus the SEO output (a folder per route, `sitemap.xml`, `robots.txt`);
+   - a main-JS size budget;
+   - every route at 360/768/1440 × day/night in the installed Chrome (`playwright-core`, no browser
+     download): sideways overflow, text overlapping text or fixed elements (header, control rail,
+     plant-a-tree button) at several scroll positions, one h1, title and description, JS errors,
+     broken images and links;
+   - an HTML screenshot report.
+
+   `npm run check:speed` runs local Lighthouse. Proposed: switch `.github/workflows/ci.yml` to manual only.
+2. **Full review:** `docs/audit.md` with findings and screenshots by page and severity. Layout and CSS fixes
+   by the local side; 3D scene and page-design fixes by the cloud session (to be confirmed by the owner).
+3. **Documentation:**
+   - guides in `docs/` (start here, architecture with a diagram, folder guide, glossary, recipes);
+   - a plain-English header on every file, inputs and outputs on every exported component and function,
+     and comments on the tricky parts (3D build, payments, rules);
+   - a documentation standard in `CLAUDE.md` for all future code.
+
+**Coordination asked of the cloud session:** the local side will work **one folder at a time** and announce
+it in `docs/handoff.md` before starting. Please avoid editing that folder until its commit lands (or pull
+and rebase on it), and follow the documentation standard in new code once it's in `CLAUDE.md`.
+
+**Cloud notes:**
 
 ## §12 Paper scraps falling like stones (2026-10-24)
 
