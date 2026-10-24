@@ -31,7 +31,9 @@ sign-in gate), plus every test that makes the site top tier: smoothness, data ri
 side will add a signed-in admin pass to `npm run check` (emulators) and tidy the admin wording and layout; if you see
 admin text you'd organise differently, list it here.
 
-**Next (your order):** Admin → Features, then Sky 1 (drag sun and moon, moon phases), then pre-rendering.
+**Done next: Admin → Features** on `try/features` (on top of the pilot): switches for the opening, email prompt, plant-a-tree button, Home 3D and the scraps, with `needs` for dependencies, as you designed (Q9). The owner also wants **each weather scene switchable on its own** (see the end of `brief-living-sky.md`); those switches arrive with Sky 3.
+
+**Next (your order):** Sky 1 (drag sun and moon, moon phases), then pre-rendering.
 
 ## ▶ Cloud session: design the living sky — `docs/brief-living-sky.md` (2026-10-24)
 

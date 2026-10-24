@@ -7,6 +7,7 @@ import { PAGES, defaultVisibility, pageByKey } from "../data/pages";
 import { CONTACT_DEFAULTS } from "../data/contact";
 import { readJSON, writeJSON } from "../lib/storage";
 import { MOTION_CACHE, MOTION_DEFAULTS, applyMotion, clampMotion, mergeMotion } from "../data/motion";
+import { FEATURES, FEATURES_CACHE, mergeFeatures } from "../data/features";
 
 // Site settings from Firestore `settings/site`, read over REST (no SDK on public pages) and cached in
 // localStorage so the next visit knows straight away:
@@ -14,6 +15,7 @@ import { MOTION_CACHE, MOTION_DEFAULTS, applyMotion, clampMotion, mergeMotion } 
 // - `details`: { whatsapp, phone, email, address, hours, instagram, x, linkedin, tiktok, facebook,
 //   pinterest } — public contact details (Admin → Site details), merged over src/data/contact.js
 // - `motion`: { intro, tear, build, reveal } — animation time scales (Admin → Motion), see src/data/motion.js
+// - `features`: { key: bool } — features switched on or off (Admin → Features), see src/data/features.js
 // firestore.rules let only admins write it.
 const CACHE = "fc-site-pages";
 const DETAILS_CACHE = "fc-site-details";
@@ -44,6 +46,7 @@ export const SiteProvider = ({ children }) => {
     const [stored, setStored] = useState(() => readJSON(CACHE, null));
     const [savedDetails, setSavedDetails] = useState(() => readJSON(DETAILS_CACHE, null));
     const [savedMotion, setSavedMotion] = useState(() => readJSON(MOTION_CACHE, null));
+    const [savedFeatures, setSavedFeatures] = useState(() => readJSON(FEATURES_CACHE, null));
     const [loading, setLoading] = useState(restReady());
 
     useEffect(() => {
@@ -60,6 +63,9 @@ export const SiteProvider = ({ children }) => {
                 const motion = doc?.motion ?? {};
                 setSavedMotion(motion);
                 writeJSON(MOTION_CACHE, motion);
+                const features = doc?.features ?? {};
+                setSavedFeatures(features);
+                writeJSON(FEATURES_CACHE, features);
             })
             .catch((error) => {
                 if (error.name !== "AbortError") console.warn("Couldn't read site settings; using the defaults.", error);
@@ -78,6 +84,7 @@ export const SiteProvider = ({ children }) => {
 
     const details = useMemo(() => mergeDetails(savedDetails), [savedDetails]);
     const motion = useMemo(() => mergeMotion(savedMotion), [savedMotion]);
+    const features = useMemo(() => mergeFeatures(savedFeatures), [savedFeatures]);
     useEffect(() => applyMotion(motion), [motion]);
 
     const setPage = useCallback(
@@ -143,6 +150,26 @@ export const SiteProvider = ({ children }) => {
         [isAdmin, savedMotion]
     );
 
+    // Switch one feature on or off (admin only): merged into settings/site.features
+    const setFeature = useCallback(
+        async (key, on) => {
+            if (!isAdmin) throw new Error("Only the team can switch features.");
+            if (!FEATURES.some((f) => f.key === key)) return;
+            const previous = savedFeatures;
+            const next = { ...(savedFeatures ?? {}), [key]: Boolean(on) };
+            setSavedFeatures(next);
+            writeJSON(FEATURES_CACHE, next);
+            try {
+                await writeSettings({ features: { [key]: Boolean(on) } });
+            } catch (error) {
+                setSavedFeatures(previous);
+                writeJSON(FEATURES_CACHE, previous);
+                throw error;
+            }
+        },
+        [isAdmin, savedFeatures]
+    );
+
     const value = useMemo(
         () => ({
             visibility,
@@ -155,8 +182,10 @@ export const SiteProvider = ({ children }) => {
             setDetails,
             motion,
             setMotion,
+            features,
+            setFeature,
         }),
-        [visibility, loading, isAdmin, setPage, details, setDetails, motion, setMotion]
+        [visibility, loading, isAdmin, setPage, details, setDetails, motion, setMotion, features, setFeature]
     );
 
     return <SiteContext.Provider value={value}>{children}</SiteContext.Provider>;

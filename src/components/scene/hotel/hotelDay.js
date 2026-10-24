@@ -652,7 +652,7 @@ export async function createHotelScene(canvas, env) {
   // Their own random sequence (scene changes elsewhere never move them again), a near layer that
   // drops past the hero view, stronger colours and a stone-like fall (ideas log §12).
   var srnd = (function () { var s = 4242; return function () { s = (s * 16807) % 2147483647; return s / 2147483647; }; })();
-  var scraps = [], SN = small ? 12 : 34, NEAR = small ? 4 : 6;
+  var scraps = [], SN = env && env.scraps === false ? 0 : small ? 12 : 34, NEAR = small ? 4 : 6; // none when switched off in Admin → Features
   // the hero camera looks from (31, 15, 38) at (0.5, 6.5, 0): near pieces fall in that line of sight
   var PX = 0.78, PZ = -0.626; // sideways, across the view
   function placeNear(m, top) {

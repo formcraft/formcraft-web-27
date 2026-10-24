@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "../../hooks/useTheme";
-import { useSite } from "../../hooks/useSite";
+import { useFeature, useSite } from "../../hooks/useSite";
 import { readJSON, writeJSON } from "../../lib/storage";
 import { Hotel2D } from "./Hotel2D";
 import "./HotelScene.css";
@@ -123,7 +123,11 @@ export const HotelScene = () => {
     const { theme } = useTheme();
     const { motion } = useSite();
     const edition = theme === "night" ? "night" : "day";
-    const [level, setLevel] = useState(guessLevel);
+    // Admin → Features "3D hotel model" off: everyone gets the 2D drawing (the dev preview still wins)
+    const model3d = useFeature("home3d") || Boolean(devPreview());
+    const scraps = useFeature("scraps");
+    const [guessed, setLevel] = useState(guessLevel);
+    const level = model3d ? guessed : "2d";
     const [ready, setReady] = useState(false);
     const [switched, setSwitched] = useState(false); // 3D handed over to 2D mid-visit: no second build
     const canvasRef = useRef(null);
@@ -173,6 +177,7 @@ export const HotelScene = () => {
                         sheetUrl: "/images/fmc-sheet-a1.webp",
                         textures,
                         quality: level,
+                        scraps, // Admin → Features "Falling paper scraps"
                         buildScale: motion.build, // Admin → Motion
                         fixed: Boolean(devPreview()), // dev preview: shows exactly the chosen level
                         signal: controller.signal,
@@ -209,7 +214,7 @@ export const HotelScene = () => {
             handleRef.current?.dispose();
             handleRef.current = null;
         };
-    }, [live, level, edition, motion.build]); // a new build time replays the build (handy while tuning it in Admin)
+    }, [live, level, edition, motion.build, scraps]); // a new build time replays the build (handy while tuning it in Admin)
 
     return (
         <>

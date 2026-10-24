@@ -19,6 +19,13 @@ edit them. From then on the site shows what's in Firestore.
 **Admin → Site details.** They appear in the footer, the Contact page and the Privacy page at once. Fields left
 empty simply don't show.
 
+## Turn a feature off or on (no code)
+
+**Admin → Features**: the opening animation, the email sign-up prompt, the plant-a-tree button, the 3D model on Home
+(off = everyone sees the 2D drawing) and the falling paper scraps. Visitors get the change on their next page load
+(the opening animation from their second visit). To add a switch for new code: an entry in `src/data/features.js`,
+then `useFeature("key")` where the feature is shown.
+
 ## Turn a page off or on (no code)
 
 **Admin → Pages.** A page that's off disappears from the header, footer and home page for visitors, and its

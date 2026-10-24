@@ -38,7 +38,10 @@
         var bot = navigator.webdriver || /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|embedly|skype/i.test(navigator.userAgent);
         var mode = "none";
         try {
-          if (!bot && ss && !ss.getItem("fc-intro")) {
+          // Admin → Features "Opening animation" (cached by the app on the last visit; src/data/features.js)
+          var off = false;
+          try { off = (JSON.parse(ls.getItem("fc-site-features") || "{}") || {}).intro === false; } catch (e) {}
+          if (!bot && !off && ss && !ss.getItem("fc-intro")) {
             mode = matchMedia("(prefers-reduced-motion: reduce)").matches ? "fade" : ls.getItem("fc-intro-seen") ? "quick" : "full";
             ss.setItem("fc-intro", "1");
             ls.setItem("fc-intro-seen", "1");

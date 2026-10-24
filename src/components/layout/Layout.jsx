@@ -9,6 +9,7 @@ import { SubscribePrompt } from "../forms/SubscribePrompt";
 import { initAttribution } from "../../lib/attribution";
 import { installClickTracking } from "../../lib/track";
 import { loadCopy } from "../../lib/copyStore";
+import { useFeature } from "../../hooks/useSite";
 import { pageForPath } from "../../data/pages";
 
 // On a new page: go to the top (or to the #section in the link) and move focus to the main area
@@ -57,6 +58,9 @@ export const Layout = ({ children }) => {
     useScrollOnNavigate();
     useFunnel();
     useCopyEarly();
+    // Admin → Features
+    const plantTree = useFeature("plantTree");
+    const subscribePrompt = useFeature("subscribePrompt");
     return (
         <>
             <a className="skip-link" href="#main">
@@ -67,10 +71,10 @@ export const Layout = ({ children }) => {
                 {children}
             </main>
             <Footer />
-            <DonateFab />
+            {plantTree && <DonateFab />}
             <CartDrawer />
             <ConsentBanner />
-            <SubscribePrompt />
+            {subscribePrompt && <SubscribePrompt />}
         </>
     );
 };

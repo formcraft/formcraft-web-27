@@ -52,3 +52,6 @@
   .admin-item { grid-template-columns: 56px minmax(0, 1fr); }
   .admin-item > .tag, .admin-item > .row { grid-column: 2; justify-self: start; }
 }
+
+/* Admin → Features: a switch whose parent feature is off */
+.admin-page-row.is-dim { opacity: .55; }

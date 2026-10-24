@@ -17,6 +17,7 @@ import { MotionPanel } from "../components/admin/MotionPanel";
 import { StudioPanel } from "../components/admin/studio/StudioPanel";
 import { TeamPanel } from "../components/admin/TeamPanel";
 import { CopyPanel } from "../components/admin/CopyPanel";
+import { FeaturesPanel } from "../components/admin/FeaturesPanel";
 import { firebaseConfigured } from "../config/firebase";
 import "./Admin.css";
 
@@ -52,6 +53,7 @@ const SECTIONS = [
             { key: "overview", label: "Overview", roles: ["admin"], render: (go) => <Overview go={go} /> },
             { key: "pages", label: "Pages", roles: ["admin"], render: () => <PagesPanel /> },
             { key: "details", label: "Site details", roles: ["admin"], render: () => <SiteDetails /> },
+            { key: "features", label: "Features", roles: ["admin"], render: () => <FeaturesPanel /> },
             { key: "motion", label: "Motion", roles: ["admin"], render: () => <SiteMotion /> },
             { key: "team", label: "Team", roles: ["admin"], owner: true, render: () => <TeamPanel /> },
         ],
