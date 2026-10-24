@@ -75,6 +75,43 @@ Phase 0 finished plus Phase 1 pages, in the new **paper-cut** design:
 | 8 Docs | ☑ 2026-10-24 | `current-code.md` status line, known issues, change log. |
 | 9 PR | ☑ 2026-10-24 | Opened as a draft (branch still being written). Not merged or deployed. |
 
+## ▶ From the local machine: presentation pass (2026-10-24, owner's instruction)
+
+The owner asked the local side to take over while the cloud session was away: offline checks, a review of
+the whole site "top to bottom" until it's **presentation ready**, documentation, then a go-live list.
+Commits `8b8014c` (offline checks, the `.h2` fix) and the "Presentation pass 1" commit after your
+`5e1efbb` (rebased onto it; your motion changes kept, merged with mine in `DonateFab.css`).
+
+**A reading I chose (CLAUDE.md "How we think" §1).** "Presentation ready" vs. the rule "never invent, leave
+a clear TODO" allows more than one reading. I kept every TODO in the code and data, and changed only who
+sees it:
+- **Visitors** never see a raw "TODO" or "[placeholder]". They see a true fallback ("Price on request",
+  "Photo coming soon", "The count starts with the first planting") or nothing. Sample listings
+  (templates, developments, makers, jobs, donor wall, events without dates) and planned Journal posts
+  are hidden, with honest empty states.
+- **Signed-in team members** (admin, marketing, editor) see every missing fact as a dashed "To fill in: …"
+  note, plus all samples.
+
+How: `src/lib/pending.js`, `src/components/ui/Todo.jsx` (`<Todo>`, `<Fact>`, `<PartFact>`) and
+`useSeesTodos`. `npm run check` now fails on any placeholder visible to a signed-out visitor, including in
+titles and descriptions. **Please use `<Todo>`/`<Fact>` for new placeholders**, not `className="todo"`.
+
+**Also fixed:**
+- day `--ink-3` contrast (.62 → .68);
+- the missing `fmc-sheet-a1-800.webp`;
+- the Home tablet drag hint;
+- the phone plant-a-tree button waits until the visitor scrolls;
+- `admin/studio` classes renamed `studio-*` → `mkt-*` (they shared a namespace with the Studio page;
+  `.studio-fieldset` collided);
+- Admin-added products no longer drop out of carts on reload;
+- "Choose options" on cards for products with variants;
+- Contact no longer promises a next-day reply (it wasn't confirmed);
+- the "not an offer to sell securities" line stays visible.
+
+**Still to come from the local side:** the rest of the review (content clarity, keeping visitors moving
+from page to page), documentation of the remaining files, and the owner's go-live list. Please avoid
+large edits to `src/pages/*` until the next local push, or pull first.
+
 ## ▶ Tasks for the local Claude Code — start here (round 5, 2026-10-24)
 
 **The owner changed direction on the Home hero (2026-10-24, to the cloud session):**
