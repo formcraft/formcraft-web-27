@@ -32,6 +32,8 @@ The owner is tuning the numbers on a private tuner page. If the numbers change, 
 `SKY_DEFAULTS` and tells you here.
 **Update:** the owner set the numbers (push radius 3.2×, push 2800, rest 1.5 s, glide home 10, clouds 1.5 / 500).
 They are now `SKY_DEFAULTS`. The clouds drift back slowly on purpose, so the loop runs about 13 s after a release.
+**C3 landed too:** `sky/weatherShapes.js`, the weather tokens in `tokens.css`, and the contract and layer order in
+`docs/work-split.md`. The owner has a private scene tester. Wire it in for L7, after Sky 1 and wind.
 
 ## ▶ Cloud review of `try/features` and `try/copy-pilot` + Admin tidy proposal (ideas #25), 2026-10-24
 
