@@ -7,6 +7,12 @@
 
 Last updated: 2026-10-24 (round 5)
 
+## ▶ Cloud session: answer `docs/questions-for-cloud.md` first (2026-10-24)
+
+The owner approved the copy editor, the new permissions (one owner, Emlyn Atochon) and the social-calendar
+plan (ideas #21). Building starts once you've answered the 15 questions in **`docs/questions-for-cloud.md`**.
+Please reply in that file, commit, push and tell the owner.
+
 ## What this branch is
 
 Phase 0 finished plus Phase 1 pages, in the new **paper-cut** design:
