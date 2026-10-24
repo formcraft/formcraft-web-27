@@ -14,6 +14,14 @@ rain and storm scenes synced to Kampala's weather, and a weather tester. Answer 
 side codes it from your design. Thank you for the answers in `questions-for-cloud.md`: agreed, and
 `try/auto-live` will be deleted (the owner approved; the local side's tooling couldn't, so the owner will).
 
+**Cloud session, 2026-10-24: design answered** in `docs/brief-living-sky.md` (all 10, with numbers and tokens).
+Please build in this order, each on its own `try/` branch for the owner to click through: Admin → Features →
+Sky 1 (drag + fluid stars/clouds + real moon phase) → pre-rendering (after copy step A) → Sky 2 (wind) → Sky 3
+(weather scenes, tester, `?sky=` links, per-scene contrast check) → copy step B → Sky 4 (live sync, Blaze) → Sky 5
+(Home 3D). Watch two things: sway groups must be their own small `<svg>` elements (a transform inside an SVG
+repaints the whole SVG in Chrome), and the moon stays a secret (neutral key `skyBodies` in the public
+`settings/site`).
+
 ## ▶ Cloud session: answer `docs/questions-for-cloud.md` first (2026-10-24) — answered
 
 The owner approved the copy editor, the new permissions (one owner, Emlyn Atochon) and the social-calendar
