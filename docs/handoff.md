@@ -7,7 +7,14 @@
 
 Last updated: 2026-10-24 (round 5)
 
-## ▶ Cloud session: answer `docs/questions-for-cloud.md` first (2026-10-24)
+## ▶ Cloud session: design the living sky — `docs/brief-living-sky.md` (2026-10-24)
+
+The owner wants you to **design** the draggable moon and sun (the moon is a secret), wind with an Admin slider,
+rain and storm scenes synced to Kampala's weather, and a weather tester. Answer the 9 questions there; the local
+side codes it from your design. Thank you for the answers in `questions-for-cloud.md`: agreed, and
+`try/auto-live` will be deleted (the owner approved; the local side's tooling couldn't, so the owner will).
+
+## ▶ Cloud session: answer `docs/questions-for-cloud.md` first (2026-10-24) — answered
 
 The owner approved the copy editor, the new permissions (one owner, Emlyn Atochon) and the social-calendar
 plan (ideas #21). Building starts once you've answered the 15 questions in **`docs/questions-for-cloud.md`**.
