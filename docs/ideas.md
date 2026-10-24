@@ -54,7 +54,7 @@ minimal but really interesting. On the new version they are static, or they are 
 4. **Feel:** they drop like stones with a slow tumble, never many at once. Slightly faster (e.g.
    0.35–0.7 m/s), so the movement reads in the first seconds.
 5. **Phones:** about 12 pieces, the near layer kept.
-6. **Still match:** the stills capture them at their start positions (\`env.still\` on `try/auto-live` already
+6. **Still match:** the stills capture them at their start positions (`env.still` on `try/auto-live` already
    freezes them in capture mode); they start falling as the live model fades in.
 
 **Open:** the owner may have a screenshot of the Phase 1 look (how many, which colours). The local side
