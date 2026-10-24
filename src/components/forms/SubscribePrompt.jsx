@@ -20,6 +20,7 @@ const allowed = () => {
     return !(Number.isFinite(last) && Date.now() - last < EVERY);
 };
 
+/** The small email sign-up slip that slides up on long pages (rules in the comment above). Rendered once by Layout.jsx. */
 export const SubscribePrompt = () => {
     const { pathname } = useLocation();
     const [open, setOpen] = useState(false);

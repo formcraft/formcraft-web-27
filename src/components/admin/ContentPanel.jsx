@@ -1,3 +1,6 @@
+// Admin → Content: add, edit, hide and delete site content (products, template homes, projects, developments,
+// Journal posts, courses, events, free downloads), with photo uploads. "Import the starter list" copies the
+// built-in examples from src/data/ into Firestore so they can be edited. Writes go through src/lib/adminContent.js.
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { CONTENT } from "../../data/content";

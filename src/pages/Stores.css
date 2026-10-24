@@ -1,3 +1,4 @@
+/* Stores: styles for Stores.jsx (classes start with .stores-). Colours come from tokens.css. */
 .stores-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(18px, 2vw, 28px) clamp(14px, 1.6vw, 22px); }
 .stores-tile { display: flex !important; flex-direction: column; gap: 14px; height: 100%; min-height: 260px; }
 .stores-tile .link { margin-top: auto; align-self: flex-start; }

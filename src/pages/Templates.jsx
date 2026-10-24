@@ -1,3 +1,7 @@
+// Templates page (/templates). Template builds, the home library: ready-to-build designs for 50 × 100 ft plots
+// (filter by type and bedrooms), what comes with every design, numbered releases, the free catalogue by
+// email, and how young architects can design for the library. Sample listings are for the team only;
+// visitors see an honest "first designs are being prepared" note until real designs are added.
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -104,6 +108,7 @@ const TemplateCard = ({ t }) => {
     );
 };
 
+/** The Templates page. Rendered by src/routes.jsx for /templates. */
 export const Templates = () => {
     usePageMeta("Template builds", "Ready-to-build, permit-ready home designs for 50 × 100 ft plots. Buy the plans, or have Formcraft adapt the design to your plot and build it.");
     const show = useShowLink();

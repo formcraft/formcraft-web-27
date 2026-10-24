@@ -1,3 +1,5 @@
+// ComingSoon page ((pages that are switched off)). The "opens soon" page shown in place of a page the admin has
+// switched off (see PageGate).
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { PageHero } from "../components/page/PageHero";

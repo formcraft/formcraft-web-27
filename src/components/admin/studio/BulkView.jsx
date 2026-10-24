@@ -1,3 +1,4 @@
+// Studio → Bulk: work on many posts at once: filter, select, change status or date, and import or export CSV.
 import { useMemo, useState } from "react";
 import { useCollection } from "../../../hooks/useCollection";
 import { channelLabel } from "../../../data/socialPlatforms";

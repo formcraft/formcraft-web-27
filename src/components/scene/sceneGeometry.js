@@ -4,6 +4,7 @@
 
 export const W = 1440;
 
+/** A repeatable random-number generator: the same seed always gives the same numbers, so scenes look the same every visit. @returns {() => number} numbers from 0 to 1 */
 export const random = (seed) => {
     let s = Math.abs(Math.floor(seed)) % 2147483646 || 1;
     return () => {
@@ -86,8 +87,10 @@ export const skyline = ({ base, seed, x0 = 640, x1 = W, tall = 1 }) => {
     return { blocks, roofs, windows, frame, crane };
 };
 
+/** A rectangle as an SVG path. @param {{x:number,y:number,w:number,h:number}} r */
 export const rectPath = ({ x, y, w, h }) => `M${f(x)},${f(y)}h${f(w)}v${f(h)}h${f(-w)}Z`;
 
+/** A building's roof as an SVG path ("pitch" for a pitched roof, otherwise a flat parapet). */
 export const roofPath = (roof) =>
     roof.type === "pitch"
         ? `M${f(roof.x)},${f(roof.y)}L${f(roof.x + roof.w / 2)},${f(roof.y - roof.h)}L${f(roof.x + roof.w)},${f(roof.y)}Z`
@@ -107,6 +110,7 @@ export const framePath = (fr) => {
     return d;
 };
 
+/** A tower crane (mast, jib and counter-jib) as an SVG path. */
 export const cranePath = (cr) => {
     const { mx, top, jibY, base } = cr;
     let d = [
@@ -123,6 +127,7 @@ export const cranePath = (cr) => {
     return d;
 };
 
+/** The shapes that make one paper cloud (a base and overlapping circles) around (cx, cy), scaled by s. */
 export const cloudCircles = (cx, cy, s, seed) => {
     const r = random(seed);
     const baseW = 160 * s;
@@ -133,6 +138,7 @@ export const cloudCircles = (cx, cy, s, seed) => {
     return { base: { x: cx - baseW / 2, y: cy, w: baseW, h: 18 * s }, circles };
 };
 
+/** A cloud from cloudCircles() as one SVG path. */
 export const cloudPath = (c) =>
     rectPath(c.base) +
     c.circles.map((k) => ` M${f(k.x - k.r)},${f(k.y)}a${f(k.r)},${f(k.r)} 0 1,1 ${f(2 * k.r)},0Z`).join("");
@@ -420,6 +426,7 @@ const motifMarket = (base, tall, seed) => {
     return { solid: solid.join(" "), glow: glow.join(" "), outline, puffs: [], trees };
 };
 
+/** The shapes for a page's motif in its hero (construction site, workshop, precast yard, plots, estate, forest…). */
 export const motifShapes = (motif, base, tall, seed) => {
     if (motif === "construction") return motifConstruction(base, tall, seed);
     if (motif === "workshop") return motifWorkshop(base, tall, seed);
@@ -439,6 +446,7 @@ export const motifShapes = (motif, base, tall, seed) => {
 // ground so the silhouette joins the hill.
 const circle = (cx, cy, r) => `M${f(cx - r)},${f(cy)}a${f(r)},${f(r)} 0 1,0 ${f(2 * r)},0a${f(r)},${f(r)} 0 1,0 ${f(-2 * r)},0Z`;
 
+/** One tree as an SVG path: "acacia", "broadleaf", "banana" or a rounded default, at (x, y), scaled by s. @param {() => number} r a random() generator */
 export const treeShape = (kind, x, y, s, r) => {
     if (kind === "acacia") {
         const lean = (r() - 0.5) * 10 * s;
@@ -521,6 +529,10 @@ export const SKY_H = 720;
 
 const inBox = (x, y, [x0, y0, x1, y1]) => x > x0 && x < x1 && y > y0 && y < y1;
 
+/**
+ * The night sky: a few hundred small stars and a dozen slow twinklers, kept away from the hero text.
+ * @param {{ seed?: number, n?: number, twinkle?: number, avoid?: number[] }} [options]  avoid: [x, y, w, h] to keep clear
+ */
 export const starField = ({ seed = 7, n = 300, twinkle = 12, avoid = [70, 40, 860, 470] } = {}) => {
     const r = random(seed);
     const stars = [];

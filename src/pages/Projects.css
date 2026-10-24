@@ -1,3 +1,4 @@
+/* Projects: styles for Projects.jsx (classes start with .projects-). Colours come from tokens.css. */
 .projects-bar { align-items: center; margin-bottom: 32px; }
 .projects-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(16px, 2vw, 26px); }
 .projects-wide { grid-column: span 2; grid-row: span 2; }

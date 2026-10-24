@@ -1,3 +1,4 @@
+/* RealEstateProject: styles for RealEstateProject.jsx (classes start with .real-). Colours come from tokens.css. */
 .real-estate-project-loading { display: flex; flex-direction: column; gap: 18px; padding-block: clamp(110px, 12vw, 150px) 60px; }
 .real-estate-project-head { padding-block: clamp(100px, 11vw, 140px) clamp(48px, 6vw, 80px); display: flex; flex-direction: column; gap: 24px; }
 .real-estate-project-top { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: clamp(28px, 4vw, 64px); align-items: start; }

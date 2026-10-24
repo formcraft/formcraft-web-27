@@ -1,3 +1,5 @@
+// ProjectPage page (/projects/:slug). One project's case study: summary, render gallery, the facts that are known
+// (client, location and year appear once confirmed), the brief and what Formcraft did, and the next project.
 import { Link, useParams } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { Section } from "../components/page/Section";
@@ -13,6 +15,7 @@ import { useSeesTodos } from "../hooks/useSeesTodos";
 import { known } from "../lib/pending";
 import "./ProjectPage.css";
 
+/** The ProjectPage page. Rendered by src/routes.jsx for /projects/:slug. */
 export const ProjectPage = () => {
     const { slug } = useParams();
     const { item: project, items: projects, loading } = useContentItem("projects", slug);

@@ -1,3 +1,5 @@
+// Contact page (/contact). Contact: the message form, and the phone, WhatsApp, email, social links and office hours
+// from Admin → Site details (each row shows once it's set). The map is an illustration, not a real map.
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -22,6 +24,7 @@ const SUBJECTS = [
     "Something else",
 ];
 
+/** The Contact page. Rendered by src/routes.jsx for /contact. */
 export const Contact = () => {
     const { details } = useSite();
     usePageMeta("Contact", `Talk to Formcraft in Kampala: phone ${details.phone ?? ""}, email ${details.email ?? ""}, or send a message.`);

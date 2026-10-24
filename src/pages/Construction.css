@@ -1,3 +1,4 @@
+/* Construction: styles for Construction.jsx (classes start with .construction-). Colours come from tokens.css. */
 .construction-steps { list-style: none; padding: 0; margin: 0; }
 .construction-services { list-style: none; padding: 0; margin: 28px 0 0; }
 .construction-library { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }

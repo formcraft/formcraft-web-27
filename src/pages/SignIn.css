@@ -1,3 +1,4 @@
+/* SignIn: styles for SignIn.jsx (classes start with .signin-). Colours come from tokens.css. */
 .signin-card { max-width: 440px; margin-inline: auto; }
 .signin-card p { margin: 0; }
 .signin-later { display: flex; align-items: flex-start; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--ink-3); }

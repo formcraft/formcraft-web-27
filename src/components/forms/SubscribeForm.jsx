@@ -34,6 +34,17 @@ const DownloadResult = ({ slug }) => {
     );
 };
 
+/**
+ * The email sign-up form (footer, cards, the prompt). Saves to Firestore `subscribers` with the topics picked.
+ * @param {object} props
+ * @param {"inline"|"card"|"footer"} [props.variant="inline"]  layout
+ * @param {string} [props.heading]   title (cards)
+ * @param {string} [props.intro]     sentence under the title
+ * @param {string} [props.download]  a free download to send (id in src/data/downloads.js), e.g. "template-catalogue"
+ * @param {string[]} [props.defaultInterests]  topics ticked to start with
+ * @param {string} [props.button="Subscribe"]  the button's words
+ * @param {string} [props.className]
+ */
 export const SubscribeForm = ({
     variant = "inline",
     heading,

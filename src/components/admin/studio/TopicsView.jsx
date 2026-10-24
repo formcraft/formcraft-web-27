@@ -7,6 +7,7 @@ import { formatDay, dayKey, importStarterDocs, saveDoc, removeDoc } from "../../
 // Editors can add ideas and start a post from one; marketing edits, archives and deletes.
 const empty = { pillar: PILLARS[0], newPillar: "", idea: "", notes: "", formats: ["feed"], active: true };
 
+/** Studio → Topics: the bank of post ideas by content pillar; start a post from one. @param {{ studio: object }} props */
 export const TopicsView = ({ studio }) => {
     const { topics, isMarketing, openComposer } = studio;
     const [pillar, setPillar] = useState("");

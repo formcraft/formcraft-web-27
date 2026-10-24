@@ -92,6 +92,7 @@ const ProductGallery = ({ images, title, firstAlt }) => {
     );
 };
 
+/** One product (/stores/:slug): photos (swipe on phones), price, options, quantity, add to cart, and the facts that are known. */
 export const ProductPage = () => {
     const { slug } = useParams();
     const { item: product, items: products, loading } = useContentItem("products", slug);

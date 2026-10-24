@@ -98,6 +98,13 @@ const num = (v) => {
     return s;
 };
 const add = (s, t) => s + (t[0] === "-" || /[a-zA-Z]$/.test(s) ? "" : " ") + t;
+/**
+ * Encodes a list of points as a compact SVG path ("M10,20L30,40Z"), the shortest way.
+ * @param {Array<[number, number]>} pts  the points
+ * @param {boolean} [close=true]  close the shape
+ * @param {number} [dec=1]  decimal places
+ * @returns {string}
+ */
 export const enc = (pts, close = true, dec = 1) => {
     const m = dec ? 10 : 1;
     let s = "", px = 0, py = 0;

@@ -28,9 +28,12 @@ export const DEV_STATUSES = [
     { id: "building", label: "Under construction" },
     { id: "complete", label: "Completed" },
 ];
-export const devStatusLabel = (status) => DEV_STATUSES.find((s) => s.id === status && s.id !== "all")?.label ?? "[status]";
+/** A development's stage as words ("Funding", "Under construction"…). */
+export const devStatusLabel = (status) => DEV_STATUSES.find((s) => s.id === status && s.id !== "all")?.label ?? (status || "");
+/** True for the sample developments (shown to the team only until real ones are added). */
 export const isSampleDev = (d) => String(d?.slug ?? "").startsWith("sample-");
 
+/** Starter list of developments (all samples for now). Admin → Content replaces it once real ones are added. */
 export const developments = [
     sample("sample-rental-apartments", {
         kind: "Rental apartments",

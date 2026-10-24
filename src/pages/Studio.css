@@ -1,3 +1,4 @@
+/* Studio: styles for Studio.jsx (classes start with .studio-). Colours come from tokens.css. */
 .studio .steps { list-style: none; padding: 0; margin: 0; }
 .studio-part { display: flex; flex-direction: column; gap: 12px; height: 100%; }
 .studio-part-letter { font: 600 34px/1 var(--fc-font-display); color: var(--ink-3); }

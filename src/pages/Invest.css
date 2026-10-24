@@ -1,3 +1,4 @@
+/* Invest: styles for Invest.jsx (classes start with .invest-). Colours come from tokens.css. */
 .invest-targets dt { margin: 0; overflow-wrap: anywhere; }
 .invest-targets dd { margin: 0; }
 .invest-markets-intro { margin-bottom: 20px; }

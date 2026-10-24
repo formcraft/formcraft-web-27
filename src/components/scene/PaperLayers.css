@@ -1,3 +1,4 @@
+/* PaperLayers: styles for PaperLayers.jsx (classes start with .paper-). Colours come from tokens.css. */
 .paper-layers { position: relative; height: var(--pl-h); pointer-events: none; }
 .pl-layer { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .pl-band, .pl-cloud, .pl-far, .pl-mid, .pl-city, .pl-near, .pl-front {

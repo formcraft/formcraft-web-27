@@ -1,3 +1,4 @@
+/* TeamPanel: styles for TeamPanel.jsx (classes start with .team-). Colours come from tokens.css. */
 .team-roles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 12px; margin: 0; }
 .team-roles > div { padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--fc-radius); background: var(--sheet); }
 .team-roles dt { font-weight: 700; margin-bottom: 4px; }

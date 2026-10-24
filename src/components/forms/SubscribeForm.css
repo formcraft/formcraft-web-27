@@ -1,3 +1,4 @@
+/* SubscribeForm: styles for SubscribeForm.jsx (classes start with .subscribe-). Colours come from tokens.css. */
 .subscribe { position: relative; display: flex; flex-direction: column; gap: 12px; }
 .subscribe.card { gap: 16px; }
 .subscribe-heading { margin: 0; }

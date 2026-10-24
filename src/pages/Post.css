@@ -1,3 +1,4 @@
+/* Post: styles for Post.jsx (classes start with .post-). Colours come from tokens.css. */
 .post-loading { display: flex; flex-direction: column; gap: 18px; padding-block: clamp(48px, 8vw, 120px); }
 .post-skel-title { height: 72px; max-width: 760px; }
 .post-skel-line { height: 22px; max-width: 520px; }

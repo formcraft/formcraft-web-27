@@ -17,6 +17,10 @@ const NotOpen = ({ label }) => {
     );
 };
 
+/**
+ * Shows the page, or the "opens soon" page when the admin has switched it off (team members still see it).
+ * @param {{ pageKey: string, children: import("react").ReactNode }} props  pageKey: the page's key in src/data/pages.js
+ */
 export const PageGate = ({ pageKey, children }) => {
     const site = useSite();
     const page = pageByKey(pageKey);

@@ -19,8 +19,10 @@ try {
 } catch {
     seoSiteUrl = "";
 }
+/** The site's address for links in posts (the configured domain, else the current one), without a trailing slash. */
 export const siteBase = () => String(seoSiteUrl || (typeof window !== "undefined" ? window.location.origin : "")).replace(/\/+$/, "");
 
+/** Text → a short web-safe name for campaign tags ("Eid al-Adha!" → "eid-al-adha"). */
 export const slug = (text) =>
     String(text ?? "")
         .toLowerCase()
@@ -37,6 +39,7 @@ const EAT_MS = 3 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const pad = (n) => String(n).padStart(2, "0");
 
+/** A Firestore timestamp, date or text → a Date (or null). */
 export const toDate = (v) => {
     if (!v) return null;
     if (v instanceof Date) return v;
@@ -67,7 +70,9 @@ export const fromEat = (day, time = "07:30") => {
     if (!y || !m || !d) return null;
     return new Date(Date.UTC(y, m - 1, d, (hh || 0) - 3, mm || 0));
 };
+/** Today as "YYYY-MM-DD" (the calendar's day keys). */
 export const todayKey = () => dayKey(new Date());
+/** A day key plus n days (n can be negative). @param {string} day "YYYY-MM-DD" @param {number} n */
 export const addDays = (day, n) => {
     const [y, m, d] = day.split("-").map(Number);
     const t = new Date(Date.UTC(y, m - 1, d + n));
@@ -78,13 +83,17 @@ export const weekday = (day) => {
     const [y, m, d] = day.split("-").map(Number);
     return ((new Date(Date.UTC(y, m - 1, d)).getUTCDay() + 6) % 7) + 1;
 };
+/** The Monday of the week a day key falls in. */
 export const startOfWeek = (day) => addDays(day, 1 - weekday(day));
+/** Whole days from day key a to day key b. */
 export const daysBetween = (a, b) => {
     const [y1, m1, d1] = a.split("-").map(Number);
     const [y2, m2, d2] = b.split("-").map(Number);
     return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / DAY_MS);
 };
+/** Short weekday names, Monday first (the calendar's header). */
 export const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+/** A day key as readable words ("Mon 24 Oct"). */
 export const formatDay = (day, opts = { weekday: "short", day: "numeric", month: "short" }) => {
     const [y, m, d] = String(day).split("-").map(Number);
     if (!y) return "—";
@@ -102,7 +111,9 @@ export const STATUSES = {
     failed: "Failed",
     skipped: "Skipped",
 };
+/** The statuses an editor may set; only marketing can approve, schedule or post (the rules check this too). */
 export const EDITOR_STATUSES = ["idea", "draft", "review"]; // all an editor may set (rules agree)
+/** Whether the person may edit a post: marketing always, editors only while it's an idea, draft or in review. */
 export const canEditPost = (post, isMarketing) => isMarketing || !post?.status || EDITOR_STATUSES.includes(post.status);
 
 // ── Channels on a post ───────────────────────────────────────────────────────────────────
@@ -117,6 +128,7 @@ export const campaignOf = (post, settings) => {
     return `${prefix}${slug(post?.pillar || post?.title || "social")}`;
 };
 
+/** The post's link with campaign tags added (utm_source = channel, utm_campaign = the post), so Admin → Leads can credit it. */
 export const trackedUrl = (post, channel, settings) => {
     const raw = String(post?.link ?? "").trim();
     if (!raw) return "";
@@ -156,6 +168,7 @@ export const countChars = (text, channel) => {
     if (channel?.platform === "x") return [...s.replace(/https?:\/\/\S+/g, "x".repeat(23))].length;
     return [...s].length;
 };
+/** A post's caption length on a channel against the platform's limit. @returns {{ n: number, limit: number|null, over: boolean }} */
 export const overLimit = (post, channel, settings) => {
     const limit = captionLimitOf(channel);
     const n = countChars(captionFor(post, channel, settings), channel);
@@ -164,10 +177,12 @@ export const overLimit = (post, channel, settings) => {
 
 // Promo words to warn about on "no promotions" occasions (register care notes)
 const PROMO = /\b(ugx|price[sd]?|discount|offer|sale|shop now|buy now|order now|deal|% off)\b/i;
+/** True when a caption sounds like hard selling (used to warn on sensitive awareness days). */
 export const looksPromotional = (text) => PROMO.test(String(text ?? ""));
 
 // ── Media ────────────────────────────────────────────────────────────────────────────────
 export const MAX_IMAGE = 15 * 1024 * 1024;
+/** Largest video that can be uploaded for a post (100 MB). */
 export const MAX_VIDEO = 100 * 1024 * 1024;
 
 const readDims = (file) =>
@@ -191,6 +206,7 @@ const readDims = (file) =>
         }
     });
 
+/** Uploads an image (up to 15 MB) or video (up to 100 MB) for a post to Storage, and returns the file's details (where it's stored, its address, its size). */
 export const uploadMedia = async (postId, file) => {
     const kind = file.type.startsWith("video/") ? "video" : file.type.startsWith("image/") ? "image" : null;
     if (!kind) throw new Error(`${file.name}: use an image (JPG, PNG, WebP) or a video (MP4).`);
@@ -222,6 +238,7 @@ const clean = (data) => {
     return out;
 };
 
+/** A new, unused id for a social post. */
 export const newPostId = async () => {
     const [db, { doc, collection }] = await fs();
     return doc(collection(db, "socialPosts")).id;
@@ -248,6 +265,7 @@ export const savePost = async (id, data, user, { isNew = false } = {}) => {
     return id;
 };
 
+/** Deletes a social post (its uploaded files stay in Storage). */
 export const deletePost = async (id) => {
     const [db, { doc, deleteDoc }] = await fs();
     await deleteDoc(doc(db, "socialPosts", id));
@@ -283,6 +301,7 @@ export const bulkUpdatePosts = async (posts, patch, user) => {
     });
     return commitInBatches(ops);
 };
+/** Deletes many social posts at once (in batches). @param {string[]} ids */
 export const bulkDeletePosts = (ids) => commitInBatches(ids.map((id) => ({ type: "delete", collection: "socialPosts", id })));
 
 // Manual publishing: the live link for one channel. When every enabled channel has one, the post is published.
@@ -313,11 +332,14 @@ export const saveDoc = async (collectionName, id, data, { merge = true } = {}) =
     await setDoc(ref, { ...data, updatedAt: serverTimestamp() }, { merge });
     return ref.id;
 };
+/** Deletes one document from a Studio collection (channels, topics, occasions). */
 export const removeDoc = async (collectionName, id) => {
     const [db, { doc, deleteDoc }] = await fs();
     await deleteDoc(doc(db, collectionName, id));
 };
+/** Saves the Studio's settings (posting targets, defaults) to settings/studio. */
 export const saveStudioSettings = (data) => saveDoc("settings", "studio", data);
+/** The Studio's settings with the defaults filled in. */
 export const studioSettings = (data) => ({ ...STUDIO_DEFAULTS, ...(data ?? {}) });
 
 // Copy starter data into a collection without touching documents that already exist
@@ -344,6 +366,7 @@ export const fetchPostsBetween = async (fromDay, toDay) => {
     const snap = await getDocs(q);
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 };
+/** Posts that have no date yet (ideas and drafts), for the calendar's side list. */
 export const fetchUnscheduled = async () => {
     const [db, { collection, query, where, getDocs }] = await fs();
     const snap = await getDocs(query(collection(db, "socialPosts"), where("scheduledAt", "==", null)));
@@ -501,6 +524,7 @@ export const planYear = ({ year, channels, occasions, topics, settings, existing
     return { occasionPosts, everydayPosts, ideas: occasionPosts.filter((p) => !p.day).length };
 };
 
+/** Saves a generated plan of posts (Studio → Generate) in batches, as drafts by the given person. */
 export const writePlan = async (plan, user) => {
     const [db, { collection, doc, serverTimestamp, Timestamp }] = await fs();
     const ops = [...plan.occasionPosts, ...plan.everydayPosts].map(({ day: _day, scheduledAt, ...p }) => ({
@@ -572,6 +596,7 @@ const csvCell = (v) => {
 // Leading BOM so Excel opens it as UTF-8
 export const toCSV = (rows) => `﻿${rows.map((r) => r.map(csvCell).join(",")).join("\r\n")}\r\n`;
 
+/** The columns of the Studio's CSV export and import, in order. */
 export const CSV_COLUMNS = ["date", "time", "channels", "title", "caption", "link", "pillar", "templateCode", "imageName", "status"];
 
 const normDate = (v) => {
@@ -654,6 +679,7 @@ export const csvToPosts = (rows, { channels, settings, files = [], isMarketing }
     return { header, items };
 };
 
+/** Posts → CSV text (one row per post, with its channels, tracked link and live links), for spreadsheets. */
 export const postsToCSV = (posts, channels, settings) => {
     const byId = Object.fromEntries(channels.map((c) => [c.id, c]));
     const rows = [["id", ...CSV_COLUMNS, "trackedLink", "liveLinks"]];
@@ -679,6 +705,7 @@ export const postsToCSV = (posts, channels, settings) => {
     return toCSV(rows);
 };
 
+/** Gives the visitor a text file to save (e.g. a CSV), without a server. */
 export const downloadText = (name, text, type = "text/csv;charset=utf-8") => {
     const url = URL.createObjectURL(new Blob([text], { type }));
     const a = document.createElement("a");
@@ -725,6 +752,7 @@ export const importCsvItems = async (items, user, onProgress) => {
 // touch's campaign (utm_campaign) and, where present, content (utm_content = post id).
 export const LEAD_COLLECTIONS = { messages: "Messages", quotes: "Quotes", investorLeads: "Investor leads", subscribers: "Subscribers", clicks: "Contact taps" };
 
+/** Enquiries and sign-ups grouped by campaign tag, for Studio → Results. @param {string[]} campaigns */
 export const fetchLeadsByCampaign = async (campaigns) => {
     const [db, { collection, query, where, getDocs }] = await fs();
     const list = [...new Set(campaigns.filter(Boolean))];

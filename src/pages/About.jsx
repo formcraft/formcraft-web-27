@@ -1,3 +1,6 @@
+// About page (/about). About Formcraft: how it started, the founders and team, mission and vision, the five
+// values, who Formcraft works for, and a closing call to action. Written from the Company Profile; team
+// portraits show "Portrait coming soon" until photos arrive.
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { PageHero } from "../components/page/PageHero";
@@ -26,6 +29,7 @@ const AUDIENCES = [
     { who: "Community & investors", title: "Artisans, creative trades, member investors", text: "Market access, skills training, fair economic partnerships and structured real estate returns.", to: "/community", cta: "Community" },
 ];
 
+/** The About page. Rendered by src/routes.jsx for /about. */
 export const About = () => {
     usePageMeta("About", "Formcraft Design and Construction Co. Ltd is a design-build firm in Kampala: architecture, engineering, concrete, joinery and real estate in one value chain, built with local craftspeople.");
     return (

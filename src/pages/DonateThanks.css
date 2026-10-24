@@ -1,3 +1,4 @@
+/* DonateThanks: styles for DonateThanks.jsx (classes start with .donatethanks-). Colours come from tokens.css. */
 .donatethanks-grid { display: grid; gap: 32px; align-items: start; }
 @media (min-width: 900px) { .donatethanks-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 48px; } }
 .donatethanks-count { display: flex; flex-direction: column; gap: 4px; padding: 20px 22px; border-radius: var(--fc-radius); }

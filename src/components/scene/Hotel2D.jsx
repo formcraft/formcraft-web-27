@@ -65,6 +65,11 @@ const Item = ({ it, uid }) => (
     </g>
 );
 
+/**
+ * The 2D drawing of the home page's hotel, for the slowest devices: the same model drawn as crisp SVG,
+ * with its own short build animation and a gentle scroll parallax.
+ * @param {{ edition?: "day"|"night", animate?: boolean }} props
+ */
 export const Hotel2D = ({ edition = "day", animate = true }) => {
     const rootRef = useRef(null);
     const uid = useId().replace(/[^a-zA-Z0-9]/g, "");

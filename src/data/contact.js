@@ -17,6 +17,7 @@ export const CONTACT_DEFAULTS = {
     pinterest: null, // TODO
 };
 
+/** The contact details the admin can set (Admin → Site details): [key, label, hint] for each field. */
 export const DETAIL_FIELDS = [
     ["whatsapp", "WhatsApp number", "With the country code, e.g. +256 7…"],
     ["phone", "Phone", "Shown as written; used for the call button"],
@@ -50,8 +51,10 @@ export const socialLinks = (details) =>
 
 const digits = (v) => String(v ?? "").replace(/\D/g, "");
 
+/** A phone number as a "tel:" link (digits only, keeping a leading +), or null when there's no number. */
 export const telHref = (phone) => (digits(phone) ? `tel:${String(phone).trim().startsWith("+") ? "+" : ""}${digits(phone)}` : null);
 
+/** The message a WhatsApp chat starts with, so the team knows the person came from the website. */
 export const WHATSAPP_HELLO = "Hello Formcraft, I found you on your website.";
 
 // wa.me link, only when a WhatsApp number is set

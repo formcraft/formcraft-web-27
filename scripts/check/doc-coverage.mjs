@@ -12,21 +12,28 @@ const files = ["src", "functions", "scripts"].flatMap((d) => walk(join(ROOT, d))
 
 let withHeader = 0, exportsTotal = 0, exportsDocumented = 0;
 const missing = [];
+const undocumented = new Map(); // file → export names without a comment above
 for (const f of files) {
     const text = readFileSync(join(ROOT, f), "utf8");
     // A header: a comment among the first lines, before or right after the imports.
     const lines = text.split("\n");
     const firstCode = lines.findIndex((l) => l.trim() && !/^\s*(import\b|\/\/|\/\*|\*|#!|["']use)/.test(l));
     const head = lines.slice(0, firstCode < 0 ? 30 : firstCode + 1).join("\n");
-    const hasHeader = /^\s*(\/\/|\/\*)/m.test(head) && (head.match(/^\s*(\/\/|\*|\/\*)/gm) || []).length >= 2;
+    // a header: comment text of at least 40 characters before the first line of code
+    const commentText = (head.match(/^\s*(\/\/|\/\*|\*).*$/gm) || []).join(" ");
+    const hasHeader = commentText.replace(/[/*\s]+/g, " ").trim().length >= 40;
     if (hasHeader) withHeader++; else missing.push(f);
     if (/\.css$/.test(f)) continue;
     for (const m of text.matchAll(/^export (?:const|function|async function|class|default function) ?([A-Za-z0-9_]*)/gm)) {
         exportsTotal++;
         const before = text.slice(0, m.index).trimEnd().split("\n").pop() || "";
-        if (/^\s*(\/\/|\*\/|\*)/.test(before)) exportsDocumented++;
+        if (/^\s*(\/\/|\/\*|\*\/|\*)/.test(before) || /\*\/\s*$/.test(before)) exportsDocumented++; // a comment line or a one-line /** … */ just above
+        else undocumented.set(f, [...(undocumented.get(f) ?? []), m[1] || "default"]);
     }
 }
 console.log(`${files.length} files: ${withHeader} with a header comment, ${missing.length} without`);
 console.log(`${exportsTotal} exports: ${exportsDocumented} with a comment right above, ${exportsTotal - exportsDocumented} without`);
 if (process.argv.includes("--list")) console.log("\nNo header:\n" + missing.join("\n"));
+if (process.argv.includes("--exports")) {
+    for (const [file, names] of [...undocumented].sort((a, b) => b[1].length - a[1].length)) console.log(`${String(names.length).padStart(3)} ${file}: ${names.join(", ")}`);
+}

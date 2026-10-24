@@ -1,3 +1,4 @@
+/* RealEstate: styles for RealEstate.jsx (classes start with .real-). Colours come from tokens.css. */
 .real-estate-bar { align-items: center; margin-bottom: 28px; }
 .real-estate-grid { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: clamp(16px, 2vw, 26px); }
 .real-estate-grid > * { min-width: 0; }

@@ -100,6 +100,7 @@ const careFor = (category, care = []) => {
     return ["safeMessaging", "helpline", "noPromo", "faith", "eidHold"].filter((k) => keys.has(k)).map((k) => CARE[k]);
 };
 
+/** Holidays and awareness days for the marketing calendar (Admin → Studio), each with its date rule and post idea. */
 export const STARTER_OCCASIONS = RAW.map(([id, name, category, rule, templateCode, postAngle, tone, extra = {}]) => ({
     id,
     name,
@@ -118,6 +119,7 @@ export const STARTER_OCCASIONS = RAW.map(([id, name, category, rule, templateCod
     siteTheme: { enabled: false, accent: null, intensity: "quiet" },
 }));
 
+/** Occasion kinds, as labels. */
 export const OCCASION_CATEGORIES = {
     "public-holiday": "Public holiday",
     awareness: "Health awareness",
@@ -125,6 +127,7 @@ export const OCCASION_CATEGORIES = {
     industry: "Industry",
 };
 
+/** How a post for an occasion should feel, as labels. */
 export const OCCASION_TONES = { celebrate: "Celebrate", remember: "Remember", awareness: "Awareness", sales: "Sales" };
 
 // ── Dates ──

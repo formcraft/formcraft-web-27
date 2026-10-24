@@ -33,6 +33,7 @@ const WALL = [
 
 const count = (n) => new Intl.NumberFormat("en-UG").format(n);
 
+/** The plant-a-tree page (/donate): choose the trees, the donor-wall option and how to pay (payments open once the partner and price are agreed). */
 export const Donate = () => {
     const seesTodos = useSeesTodos();
     usePageMeta("Plant a tree", "Give back some of what building takes: choose how many trees to plant with Formcraft and see the live count.");

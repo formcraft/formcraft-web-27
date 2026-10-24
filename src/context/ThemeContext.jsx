@@ -18,6 +18,10 @@ const readSaved = () => {
 
 const clockTheme = () => (isKampalaDay() ? "day" : "night");
 
+/**
+ * Wraps the app (App.jsx) and provides the edition: "day" or "night". It follows Kampala's clock until the
+ * visitor uses the header switch; their choice is saved on the device. Read it with useTheme().
+ */
 export const ThemeProvider = ({ children }) => {
     const [saved, setSaved] = useState(readSaved);
     const [clock, setClock] = useState(clockTheme);

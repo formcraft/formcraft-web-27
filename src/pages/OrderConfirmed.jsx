@@ -23,6 +23,7 @@ const HEADLINES = {
     cancelled: ["This order was cancelled.", "was cancelled. Nothing was charged, or the payment was returned."],
 };
 
+/** Order confirmed (/checkout/confirmed): reads the order's status from the database (never marks anything paid itself) and says what happens next. */
 export const OrderConfirmed = () => {
     usePageMeta("Order confirmation", "The status of your Formcraft order, read from our records after Flutterwave confirms payment.");
     const [params] = useSearchParams();

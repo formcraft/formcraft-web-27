@@ -39,6 +39,11 @@ const useFunnel = () => {
     }, []);
 };
 
+/**
+ * The frame around every page: skip link, header, the page itself (in <main>), footer, and the floating
+ * pieces (plant-a-tree, cart drawer, cookie notice, email prompt). Used once in App.jsx.
+ * @param {{ children: import("react").ReactNode }} props  the current page
+ */
 export const Layout = ({ children }) => {
     useScrollOnNavigate();
     useFunnel();

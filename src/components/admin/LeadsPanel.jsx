@@ -95,6 +95,7 @@ const today = () => new Date().toISOString().slice(0, 10);
 
 const when = (d) => d.toLocaleString("en-UG", { dateStyle: "medium", timeStyle: "short" });
 
+/** Admin → Leads: every enquiry and sign-up in one list, with where it came from, charts and a CSV download. */
 export const LeadsPanel = () => {
     const messages = useCollection("messages", (fs, ref) => recent(fs, ref, 500));
     const quotes = useCollection("quotes", (fs, ref) => recent(fs, ref, 500));

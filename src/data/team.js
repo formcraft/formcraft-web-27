@@ -8,6 +8,7 @@ export const ROLES = {
     editor: { label: "Editor", help: "Creates and edits drafts in the studio and sends them for review. Can't approve, publish, delete or see leads." },
 };
 
+/** The team members and their roles, until Admin → Team holds the real list. */
 export const STARTER_TEAM = [
     { name: "Emlyn Atochon", email: "formcraftinc@gmail.com", role: "admin", title: "Co-founder" },
     { name: "Peter Isingoma", email: null, role: "admin", title: "Co-founder" }, // TODO: sign-in email

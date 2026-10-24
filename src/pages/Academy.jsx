@@ -1,3 +1,5 @@
+// Academy page (/academy). Formcraft Academy: BIM and CAD courses, workshops and internships, how enrolment
+// works, and the enrolment form.
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -37,6 +39,7 @@ const formatDate = (value) => {
 
 const priceText = (price) => (price === 0 ? "Free" : formatUGX(price));
 
+/** The Academy page. Rendered by src/routes.jsx for /academy. */
 export const Academy = () => {
     usePageMeta("Academy", "Formcraft Academy: BIM and CAD courses, workshop sessions and internships for students and young professionals in Kampala, taught from how Formcraft works on projects.");
     const show = useShowLink();

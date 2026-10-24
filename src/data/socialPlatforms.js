@@ -22,6 +22,7 @@ const KIT = [
 ];
 const STORY = [[1080, 1920]];
 
+/** Social platforms the marketing studio posts to: label, post formats, sizes and text limits. */
 export const PLATFORMS = {
     instagram: {
         label: "Instagram",
@@ -124,8 +125,10 @@ export const PLATFORMS = {
     },
 };
 
+/** The platform ids, in order. */
 export const PLATFORM_KEYS = Object.keys(PLATFORMS);
 
+/** The platform settings for a channel ("other" when unknown). */
 export const platformOf = (channel) => PLATFORMS[channel?.platform] ?? PLATFORMS.other;
 
 // Channel name shown in lists: the channel's own name, else the platform label
@@ -137,6 +140,7 @@ export const captionLimitOf = (channel) => {
     return Number.isFinite(own) && own > 0 ? own : platformOf(channel).captionLimit;
 };
 
+/** A channel's usual post format (e.g. "feed"). */
 export const defaultFormatOf = (channel) => platformOf(channel).formats[0] ?? "feed";
 
 // Recommended sizes for a channel and format ([] when we don't know)

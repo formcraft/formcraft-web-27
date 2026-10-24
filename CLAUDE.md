@@ -98,3 +98,19 @@ Quietly confident, plain, honest, no hard selling, contractions are fine. Profes
 - Accessible by default: semantic HTML, `<button>` for actions, labelled form fields and icon buttons, visible focus states, alt text, Escape closes modals and drawers, focus returns to the button that opened them.
 - `localStorage` reads and writes are wrapped in try/catch; the app must work if storage is blocked.
 - **Motion:** follow `.claude/skills/emil-design-eng` (Emil Kowalski's rules, MIT, with Formcraft notes at the top). UI motion (buttons, menus, drawers, pop-ups) stays under 300 ms with the `--fc-ease-out` / `--fc-ease-drawer` curves, press feedback (`scale: .97` on `:active`) and hover motion only inside `@media (hover: hover) and (pointer: fine)`. Storytelling motion (opening, Home build, reveals) stays calmer and is tuned in Admin → Motion. Before committing animation work, run the `review-animations` skill on it.
+
+## Documentation standard (owner's request: "so that even a child could understand the code")
+
+Every change keeps the code readable by someone new: a developer joining, or the owner reviewing later.
+- **Every file starts with a short plain-English note:** what it is, what it's for, and anything surprising
+  (why it's done this way). Two to six lines is usual.
+- **Every exported component, hook and function gets a comment right above it:** what it does, its inputs
+  (`@param`) and what it gives back (`@returns`), in JSDoc form. Give an example when it helps.
+- **Tricky parts get a one-line "why"** at the spot: a workaround, a performance choice, a rule from the
+  owner. Don't comment the obvious.
+- **Plain words:** say "saves on the visitor's device", not "persists to client-side storage". Explain a
+  technical term the first time, or add it to `docs/glossary.md`.
+- **Placeholders for missing facts** use `<Todo>` / `<Fact>` / `<PartFact>` (`src/components/ui/Todo.jsx`),
+  never a visible `className="todo"`.
+- **Guides in `docs/` stay true:** `README.md`, `docs/architecture.md`, `docs/folders.md`, `docs/glossary.md`,
+  `docs/recipes.md`, `docs/checks.md`. Update the one a change affects in the same commit.

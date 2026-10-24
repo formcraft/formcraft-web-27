@@ -97,6 +97,7 @@ const Overview = ({ go }) => {
     );
 };
 
+/** The Admin page (/admin): the team's control room, by role (see the panels in src/components/admin/). */
 export const Admin = () => {
     usePageMeta("Admin", "Formcraft team admin.");
     const { user, isAdmin, isEditor, role, loading, openSignIn } = useAuth();

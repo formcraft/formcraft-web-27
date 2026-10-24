@@ -1,3 +1,4 @@
+/* ProductPage: styles for ProductPage.jsx (classes start with .product-). Colours come from tokens.css. */
 .product-page-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 72px); padding-block: clamp(32px, 5vw, 72px) clamp(64px, 8vw, 112px); align-items: start; }
 .product-page-gallery { position: sticky; top: calc(var(--fc-header-h) + 20px); display: flex; flex-direction: column; gap: 12px; }
 .product-page-photo { position: relative; touch-action: pan-y; user-select: none; }

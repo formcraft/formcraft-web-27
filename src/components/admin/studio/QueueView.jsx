@@ -26,6 +26,7 @@ const download = async (m) => {
     }
 };
 
+/** Studio → Queue: what's due to be posted today or this week, with copy buttons and "Mark as posted". @param {{ studio: object }} props */
 export const QueueView = ({ studio }) => {
     const { channelsById, settings, user, openComposer } = studio;
     const [span, setSpan] = useState("today");

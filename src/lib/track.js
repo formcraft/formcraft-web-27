@@ -60,6 +60,7 @@ const onClick = (event) => {
     });
 };
 
+/** Starts counting taps on contact links and main buttons (one listener for the whole page). Called once by Layout. */
 export const installClickTracking = () => {
     if (installed || typeof document === "undefined") return;
     installed = true;

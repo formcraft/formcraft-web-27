@@ -24,6 +24,7 @@ const deleteMember = async (email) => {
     await deleteDoc(doc(db, "team", email.toLowerCase()));
 };
 
+/** Admin → Team: add or remove team members and their role (admin, marketing, editor). Needs Cloud Functions to take effect. */
 export const TeamPanel = () => {
     const { user } = useAuth();
     const me = user?.email?.toLowerCase() ?? "";

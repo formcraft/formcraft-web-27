@@ -29,6 +29,10 @@ const thumb = (img) => {
     return /^(https?:|\/|blob:)/.test(name) ? name : `/images/${name}-800.webp`;
 };
 
+/**
+ * The three-step progress line of checkout (cart → details → payment).
+ * @param {{ current: number }} props  which step is active
+ */
 export const CheckoutSteps = ({ current }) => (
     <ol className="checkout-steps" aria-label="Checkout steps">
         {STEPS.map((s, i) => (
@@ -39,6 +43,7 @@ export const CheckoutSteps = ({ current }) => (
     </ol>
 );
 
+/** Checkout (/checkout): delivery or collection, contact details and the order summary; payment opens in Phase 3 (the server sets every price). */
 export const Checkout = () => {
     usePageMeta("Checkout", "Check your order, add delivery details and pay with MTN or Airtel mobile money or card.");
     const { items, update, remove } = useCart();

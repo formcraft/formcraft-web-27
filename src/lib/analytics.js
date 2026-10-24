@@ -27,6 +27,7 @@ const load = () => {
 // true / false once answered, null before
 export const getConsent = () => consent;
 
+/** Records the visitor's answer to the cookie notice (saved on the device); Analytics loads only after "Accept". */
 export const setConsent = (yes) => {
     consent = Boolean(yes);
     writeJSON(KEY, { analytics: consent, at: new Date().toISOString() });
@@ -57,6 +58,7 @@ export const track = (name, params = {}) => {
 
 // "Cookie settings" in the footer reopens the banner
 export const openConsent = () => window.dispatchEvent(new Event(OPEN_EVENT));
+/** Calls back when "Cookie settings" is clicked, so the notice can open again. @returns {() => void} a function that stops listening */
 export const onConsentOpen = (callback) => {
     window.addEventListener(OPEN_EVENT, callback);
     return () => window.removeEventListener(OPEN_EVENT, callback);

@@ -1,3 +1,4 @@
+/* MotionPanel: styles for MotionPanel.jsx (classes start with .motion-). Colours come from tokens.css. */
 .motion-panel-list { display: grid; gap: 22px; }
 .motion-panel-row { display: grid; gap: 6px; }
 .motion-panel-control { display: flex; align-items: center; gap: 16px; }

@@ -1,3 +1,4 @@
+/* Account: styles for Account.jsx (classes start with .account-). Colours come from tokens.css. */
 .account-signin { max-width: 560px; align-items: flex-start; }
 .account-signin p { margin: 0; }
 .account-notice { margin-bottom: 24px; }

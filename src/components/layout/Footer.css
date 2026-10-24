@@ -1,3 +1,4 @@
+/* Footer: styles for Footer.jsx (classes start with .footer-). Colours come from tokens.css. */
 .footer { position: relative; margin-top: auto; padding-bottom: env(safe-area-inset-bottom); }
 .footer-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 40px; padding-top: clamp(64px, 7vw, 96px); }
 .footer-brand { align-self: flex-start; }

@@ -345,6 +345,7 @@ const RailIcon = ({ children }) => (
         {children}
     </svg>
 );
+/** The slim rail of view buttons for the 3D model (Front, Back, Cutaway, Site, zoom in/out, reset), shown once the model is ready. */
 export const HotelControls = () => {
     const [view, setView] = useState("front");
     const go = (v) => {

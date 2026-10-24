@@ -1,3 +1,5 @@
+// Concrete page (/concrete). Formcraft Concrete: precast and in-situ products, green concrete and paving, and the
+// B2B supply enquiry for contractors (with quantities).
 import { usePageMeta } from "../hooks/usePageMeta";
 import { PageHero } from "../components/page/PageHero";
 import { Section, SectionHead } from "../components/page/Section";
@@ -44,6 +46,7 @@ const Sketch = ({ i }) => {
     );
 };
 
+/** The Concrete page. Rendered by src/routes.jsx for /concrete. */
 export const Concrete = () => {
     usePageMeta("Concrete", "Formcraft Concrete: precast columns, beams, lintels, pavers, facing bricks, facade panels and lower-carbon mixes, supplied to contractors and developers.");
     return (

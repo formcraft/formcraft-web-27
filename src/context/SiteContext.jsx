@@ -35,6 +35,10 @@ const writeSettings = async (data) => {
     await setDoc(doc(db, "settings", "site"), { ...data, updatedAt: serverTimestamp() }, { merge: true });
 };
 
+/**
+ * Wraps the app (App.jsx) and provides the admin's site settings: which pages are on, contact details and
+ * animation speed, plus the functions the admin page uses to change them. Read it with useSite().
+ */
 export const SiteProvider = ({ children }) => {
     const { isAdmin } = useAuth();
     const [stored, setStored] = useState(() => readJSON(CACHE, null));

@@ -108,6 +108,11 @@ const BUILDERS = {
     },
 };
 
+/**
+ * Cloud Function (callable): checks and saves a form submission (message, quote, investor request,
+ * subscriber) with a honeypot, per-connection and per-email rate limits and, when switched on, App Check.
+ * Used by src/lib/forms.js when VITE_FORMS_VIA_FUNCTIONS=true.
+ */
 export const submitLead = onCall({ enforceAppCheck: ENFORCE_APP_CHECK, cors: true }, async (req) => {
     const { type, data = {}, website } = req.data ?? {};
     const build = BUILDERS[type];

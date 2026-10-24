@@ -33,6 +33,14 @@ const setMeta = (attr, key, content) => {
 };
 const removeMeta = (attr, key) => document.head.querySelector(`meta[${attr}="${key}"]`)?.remove();
 
+/**
+ * Sets the page's title, description, link-preview tags and search-engine hints. Call it once at the top of a page.
+ * On the public pages, the values in src/data/seo.js win, so the live page matches its pre-built HTML file.
+ * @param {string|null} title        the page's own title ("Stores"); null on Home
+ * @param {string} [description]    one sentence, up to about 155 characters
+ * @param {{ image?: string|object, noindex?: boolean, canonical?: string }} [options]
+ *   image: the link-preview picture; noindex: keep it out of search results; canonical: the preferred address
+ */
 export const usePageMeta = (title, description, options = {}) => {
     const { pathname } = useLocation();
     const { noindex = false, canonical } = options ?? {};

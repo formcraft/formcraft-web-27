@@ -20,6 +20,7 @@ const DayPicker = ({ id, label, value, onChange }) => (
     </fieldset>
 );
 
+/** Studio → Channels: the social accounts the team posts to, with posting targets and the Buffer link. @param {{ studio: object }} props */
 export const ChannelsView = ({ studio }) => {
     const { channels, settings } = studio;
     const [editing, setEditing] = useState(null); // { id, values }

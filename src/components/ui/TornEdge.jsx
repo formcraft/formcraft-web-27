@@ -27,6 +27,10 @@ const tearPoints = (seed) => {
 
 const f = (n) => n.toFixed(1);
 
+/**
+ * The torn paper edge along the top of a section, cut from the same paper as the section, with loose fibres.
+ * @param {{ seed?: number, className?: string }} props  seed: picks the tear's shape
+ */
 export const TornEdge = ({ seed = 1, className = "" }) => {
     const { clip, fibre, hairs } = useMemo(() => {
         const pts = tearPoints(seed);

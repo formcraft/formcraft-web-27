@@ -33,6 +33,7 @@ const DETAIL = [
     ["/real-estate/", "I103", "Real estate · development"],
 ];
 
+/** The drawing-sheet number and name for an address, shown in the footer's title block: ["A101", "Studio · design & BIM"]. */
 export const sheetFor = (pathname) => {
     const clean = pathname.length > 1 ? pathname.replace(/\/$/, "") : pathname;
     if (SHEETS[clean]) return SHEETS[clean];

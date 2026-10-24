@@ -1,3 +1,4 @@
+// NotFound page (*). The 404 page ("This page isn't on the drawings"), with links back into the site.
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { PageHero } from "../components/page/PageHero";
@@ -11,6 +12,7 @@ const DOORS = [
     { who: "Investors", title: "Back us", text: "Invest in a development", to: "/invest" },
 ];
 
+/** The NotFound page. Rendered by src/routes.jsx for *. */
 export const NotFound = () => {
     usePageMeta("Page not found", undefined, { noindex: true });
     return (

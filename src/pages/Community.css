@@ -1,3 +1,4 @@
+/* Community: styles for Community.jsx (classes start with .community-). Colours come from tokens.css. */
 .community-kpis { max-width: 640px; }
 .community-kpis dd { margin: 0; }
 .community-note { margin-top: 12px; }

@@ -112,6 +112,7 @@ export const products = [
     },
 ];
 
+/** Shop categories, for the filter on /stores. */
 export const CATEGORIES = [
     { id: "all", label: "All" },
     { id: "furniture", label: "Furniture" },
@@ -119,6 +120,9 @@ export const CATEGORIES = [
     { id: "site-gear", label: "Site gear" },
 ];
 
+/** A category id as words ("site-gear" → "Site gear"). */
 export const categoryLabel = (id) => CATEGORIES.find((c) => c.id === id)?.label ?? id;
+/** A starter product by its id (the built-in list only; the shop itself reads useContent("products")). */
 export const productById = (id) => products.find((p) => p.id === id);
+/** A starter product by its web-address name. */
 export const productBySlug = (slug) => products.find((p) => p.slug === slug);

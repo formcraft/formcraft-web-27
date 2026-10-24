@@ -1,3 +1,4 @@
+/* About: styles for About.jsx (classes start with .about-). Colours come from tokens.css. */
 .about-timeline { list-style: none; margin: clamp(40px, 5vw, 64px) 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 16px; }
 .about-timeline li { display: flex; flex-direction: column; gap: 8px; }
 .about-person { overflow: hidden; height: 100%; }

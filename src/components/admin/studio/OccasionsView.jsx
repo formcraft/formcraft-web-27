@@ -25,6 +25,7 @@ const blank = {
 
 const num = (v, min, max) => Math.max(min, Math.min(max, Math.round(Number(v) || min)));
 
+/** Studio → Occasions: holidays and awareness days for a year, with their dates and post ideas. @param {{ studio: object }} props */
 export const OccasionsView = ({ studio }) => {
     const { occasions, occasionsStored, isMarketing } = studio;
     const [year, setYear] = useState(Number(todayKey().slice(0, 4)));

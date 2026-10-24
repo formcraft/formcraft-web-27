@@ -1,3 +1,6 @@
+// TemplateDesign page (/templates/:slug). One home design from the library: gallery, specs, the two ways to buy
+// (plans only, or plans + Formcraft build), the drawing set, versions, the build form (#build) and more
+// designs. Sample listings show visitors the "can't find that design" page.
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -35,6 +38,7 @@ const BUILD_TYPES = [
 ];
 
 
+/** The TemplateDesign page. Rendered by src/routes.jsx for /templates/:slug. */
 export const TemplateDesign = () => {
     const { slug } = useParams();
     const { hash } = useLocation();

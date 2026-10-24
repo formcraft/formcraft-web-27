@@ -1,3 +1,4 @@
+/* LeadsPanel: styles for LeadsPanel.jsx (classes start with .leads-). Colours come from tokens.css. */
 .leads-kpis .num { font-size: clamp(30px, 3.2vw, 44px); }
 .leads-filters { border: 0; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); gap: 12px 16px; }
 .leads-search { grid-column: span 2; }

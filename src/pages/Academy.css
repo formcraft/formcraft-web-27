@@ -1,3 +1,4 @@
+/* Academy: styles for Academy.jsx (classes start with .academy-). Colours come from tokens.css. */
 .academy-bar { align-items: center; margin-bottom: 28px; }
 .academy-skeleton { height: 280px; }
 .academy-courses { list-style: none; margin: 0; padding: 0; }

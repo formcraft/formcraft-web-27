@@ -7,6 +7,7 @@ import { setServerOffset } from "./skyClock";
 const env = import.meta.env;
 const emulated = env.DEV && env.VITE_USE_EMULATORS === "true";
 
+/** True when public content can be read (a real Firebase project, or the emulators in development). */
 export const restReady = () => firebaseConfigured || emulated;
 
 const root = () => {
@@ -32,6 +33,7 @@ export const decodeValue = (v) => {
     return null;
 };
 
+/** Turns Firestore's REST format ({ title: { stringValue: "…" } }) into plain values ({ title: "…" }). */
 export const decodeFields = (fields = {}) => Object.fromEntries(Object.entries(fields).map(([k, val]) => [k, decodeValue(val)]));
 
 const decodeDoc = (d) => ({ id: d.name.split("/").pop(), ...decodeFields(d.fields) });

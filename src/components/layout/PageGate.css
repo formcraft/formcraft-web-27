@@ -1,3 +1,4 @@
+/* PageGate: styles for PageGate.jsx (classes start with .page-). Colours come from tokens.css. */
 .page-gate-strip {
   position: sticky; top: var(--fc-header-h); z-index: 30;
   margin: 0; padding: 8px 16px; text-align: center;

@@ -1,3 +1,4 @@
+/* Donate: styles for Donate.jsx (classes start with .donate-). Colours come from tokens.css. */
 .donate-counter { display: flex; flex-direction: column; gap: 4px; padding: 16px 20px; border-radius: var(--fc-radius); max-width: 320px; }
 .donate-counter b { font: 600 clamp(34px, 5vw, 48px)/1 var(--fc-font-display); color: var(--fc-orange); }
 

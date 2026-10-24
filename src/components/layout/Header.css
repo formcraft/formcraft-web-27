@@ -1,3 +1,4 @@
+/* Header: styles for Header.jsx (classes start with .header-). Colours come from tokens.css. */
 .header {
   position: sticky; top: 0; z-index: 40;
   background: var(--head-bg);

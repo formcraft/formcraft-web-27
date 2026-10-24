@@ -58,6 +58,19 @@ const Quill = ({ id, d, seed, h, n, className }) => {
     );
 };
 
+/**
+ * The paper-cut landscape at the bottom of each page hero: stacked hills, a Kampala skyline or a page motif,
+ * trees, quilled paper and the sun or moon. Same seed, same landscape.
+ * @param {object} props
+ * @param {number} [props.seed=7]  picks the shapes
+ * @param {number} [props.height=560]  height in px
+ * @param {boolean} [props.city=true]  draw the skyline / motif
+ * @param {string} [props.motif="city"]  "city", "plots", "estate", "forest", "academy", "market", …
+ * @param {number} [props.tall=1]  how tall the buildings are (0–1)
+ * @param {{x:number,y:number,r:number}} [props.sun]  where the sun or moon sits
+ * @param {boolean} [props.accent=false]  colour the front hill in the division's accent
+ * @param {string} [props.className]
+ */
 export const PaperLayers = ({ seed = 7, height = 560, city = true, motif = "city", tall = 1, sun = { x: 1110, y: 120, r: 64 }, accent = false, className = "" }) => {
     const uid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
     const L = useMemo(() => landscape({ seed, h: height, city: city && motif === "city", tall }), [seed, height, city, motif, tall]);

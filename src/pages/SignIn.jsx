@@ -1,3 +1,5 @@
+// SignIn page (/sign-in). Sign in with Google. Nobody has to sign in to browse: this is for the team, accounts and
+// (later) checkout. After signing in it returns to the page in ?next=.
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -11,6 +13,7 @@ import "./SignIn.css";
 // Only same-site paths are allowed as ?next= so the page can't be used to send people elsewhere
 const safeNext = (next) => (next && next.startsWith("/") && !next.startsWith("//") ? next : "/account");
 
+/** The SignIn page. Rendered by src/routes.jsx for /sign-in. */
 export const SignIn = () => {
     usePageMeta("Sign in", "Sign in to Formcraft to see your orders, download plans, join the community or enrol on a course.");
     const { user, loading, signIn } = useAuth();

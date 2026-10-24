@@ -47,6 +47,7 @@ const Loading = () => (
 
 const LoadError = ({ what }) => <p className="alert alert-error" role="alert">We couldn't load your {what} just now. Check your connection and try again.</p>;
 
+/** The Account page (/account), for signed-in visitors: orders, downloads, courses, donations and profile. */
 export const Account = () => {
     usePageMeta("Your account", "Your Formcraft orders, downloads, courses, trees and profile.");
     const { user, loading: authLoading, openSignIn, signOut } = useAuth();

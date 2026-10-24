@@ -23,6 +23,7 @@ const useNarrow = () => {
 
 const monthLabel = (day) => formatDay(day, { month: "long", year: "numeric" });
 
+/** Studio → Calendar: the month (or week, on phones) of planned social posts; drag a post to move it. @param {{ studio: object }} props  the Studio's shared data */
 export const CalendarView = ({ studio }) => {
     const { channels, channelsById, occasions, isMarketing, user, openComposer } = studio;
     const narrow = useNarrow();

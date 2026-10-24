@@ -1,2 +1,3 @@
+/* Forms: styles for Forms.jsx (classes start with .forms-). Colours come from tokens.css. */
 .forms-sent { display: flex; flex-direction: column; gap: 14px; animation: fc-rise .45s var(--fc-ease) both; }
 .forms-sent .tick { width: 36px; height: 36px; }

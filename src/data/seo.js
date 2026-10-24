@@ -26,10 +26,15 @@ const fromVite = () => {
     }
 };
 
+/** The site's address (from SITE_URL / VITE_SITE_URL when building; the default until the domain is confirmed). */
 export const SITE_URL = String(fromNode() || fromVite() || DEFAULT_SITE_URL).replace(/\/+$/, "");
+/** The name used in titles and link previews. */
 export const SITE_NAME = "Formcraft";
+/** The brand tagline. Never reword it (Brand Guide). */
 export const TAGLINE = "Designing spaces. Empowering communities."; // never reworded
+/** Language and country for link previews (English, Uganda). */
 export const LOCALE = "en_UG";
+/** The link-preview picture used when a page has none of its own. */
 export const DEFAULT_OG_IMAGE = "/og/og.jpg";
 
 // Same format as usePageMeta has always used
@@ -257,6 +262,7 @@ const clean = (p) => {
     return path.length > 1 ? path.replace(/\/+$/, "") : "/";
 };
 
+/** The link-preview picture for a route (its own card in public/og/, or the default). */
 export const ogImageFor = (route) => (route?.key && !route.noindex) || route?.key === "links" ? `/og/${route.key}.jpg` : DEFAULT_OG_IMAGE;
 
 // Static route meta for a path, or null (detail pages and unknown paths)
@@ -273,6 +279,7 @@ export const metaForPath = (pathname) => {
     };
 };
 
+/** For a detail address (e.g. /stores/oak-armchair), its section's settings, or null. */
 export const detailSectionFor = (pathname) => DETAIL_SECTIONS.find((d) => clean(pathname).startsWith(d.prefix)) ?? null;
 
 // Text from starter data or the admin can carry "TODO: …" notes or "[placeholder]" words.
@@ -306,6 +313,7 @@ const ORG_ID = () => `${SITE_URL}/#organization`;
 const SITE_ID = () => `${SITE_URL}/#website`;
 const compact = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== null && v !== undefined && !(Array.isArray(v) && !v.length)));
 
+/** Builders for the structured data (JSON-LD) Google reads: the organisation, products, projects, posts… */
 export const jsonLdFor = {
     // GeneralContractor and ProfessionalService are both LocalBusiness types; multi-typing is valid schema.org
     organization: () =>

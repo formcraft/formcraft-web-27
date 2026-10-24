@@ -1,3 +1,6 @@
+// Invest page (/invest). Invest in Formcraft: the 2028 targets, the opportunity, the roadmap 2023 → 2028, property
+// schemes, and the investor-pack request form. Keeps "Nothing on this page is an offer to sell securities"
+// visible to everyone.
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -120,6 +123,7 @@ const PackForm = ({ show }) => {
     );
 };
 
+/** The Invest page. Rendered by src/routes.jsx for /invest. */
 export const Invest = () => {
     usePageMeta("Invest in Formcraft", "Formcraft's vision, roadmap from 2023 to 2028 and targets: $1M annual revenue and 20% of profits reinvested in artisans. Request the investor pack.");
     const show = useShowLink();

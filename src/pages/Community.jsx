@@ -1,3 +1,6 @@
+// Community page (/community). The Formcraft community for artisans, creatives and students: why join, the artisan
+// directory, jobs and commissions, events and workshops (book a place), and the join form. Until there are
+// real members, jobs and dated events, visitors see honest empty states; the team sees the samples.
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -71,6 +74,7 @@ const useSend = () => {
     return { status, error, send, reset: () => setStatus("idle") };
 };
 
+/** The Community page. Rendered by src/routes.jsx for /community. */
 export const Community = () => {
     usePageMeta("Community", "Join the Formcraft community: carpenters, welders, sculptors, designers and students working with Formcraft as equals — fair pricing, shared machinery and a steady market.");
     const show = useShowLink();

@@ -12,6 +12,11 @@ const when = (ts) => {
 };
 
 
+/**
+ * One inbox on the admin page (messages, quote requests, investor requests, orders, donations…): what
+ * visitors sent, newest first, with a status the team can set where the rules allow it.
+ * @param {{ name: string }} props  which inbox, a key of INBOXES in ./inboxes.js
+ */
 export const InboxPanel = ({ name }) => {
     const def = INBOXES[name];
     const { docs, loading, error } = useCollection(name, (fs, ref) => (name === "members" ? ref : fs.query(ref, fs.orderBy("createdAt", "desc"), fs.limit(200))), [name]);

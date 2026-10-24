@@ -34,6 +34,7 @@ const load = async (name) => {
     return items;
 };
 
+/** Fetches a content list again straight away (after the admin saves a change). @param {string} name e.g. "products" */
 export const refreshContent = (name) => {
     fetchedAt.delete(name);
     inflight.delete(name);
@@ -46,6 +47,12 @@ const fetchContent = (name) => {
     return inflight.get(name);
 };
 
+/**
+ * A list of site content (products, templates, projects, posts, courses, events, developments): shows the saved
+ * copy or the starter data at once, then fetches the latest from Firestore.
+ * @param {string} name  which list, a key of CONTENT in src/data/content.js
+ * @returns {{ items: object[], loading: boolean }}  items hidden by the admin are left out for visitors (marked "hidden" for admins)
+ */
 export const useContent = (name) => {
     const { isAdmin } = useAuth();
     const [items, setItems] = useState(() => memory.get(name) ?? readJSON(`fc-content-${name}`, null));

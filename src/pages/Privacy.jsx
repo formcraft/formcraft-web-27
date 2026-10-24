@@ -21,6 +21,7 @@ const COLLECTED = [
     ["Things kept in your own browser", "Your cart, day or night edition, cookie choice and where you came from are saved in your browser (local storage) so the site remembers them. They stay on your device; you can clear them in your browser settings."],
 ];
 
+/** The Privacy page (/privacy): what the site collects and why, in plain words. Legal parts wait for a lawyer's review (team notes). */
 export const Privacy = () => {
     usePageMeta("Privacy", "What the Formcraft website collects, why, who processes it and how to ask us to delete your details.");
     const { details } = useSite();

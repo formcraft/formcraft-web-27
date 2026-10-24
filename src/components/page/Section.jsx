@@ -9,6 +9,10 @@ export const Section = ({ tone = "ground", seed = 1, id, className = "", torn = 
     </section>
 );
 
+/**
+ * A section's heading block: small label, big heading, and an optional sentence or link.
+ * @param {{ eyebrow?: string, title: string, children?: import("react").ReactNode, align?: "between"|"center" }} props  align "center" stacks and centres it
+ */
 export const SectionHead = ({ eyebrow, title, children, align = "between" }) => (
     <div className={align === "between" ? "between" : "stack center"} style={{ marginBottom: "clamp(32px, 4vw, 56px)" }}>
         <div className="stack mw" style={{ "--gap": "16px", "--mw": "720px" }}>

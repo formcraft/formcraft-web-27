@@ -1,3 +1,6 @@
+// RealEstateProject page (/real-estate/:slug). One development: gallery, the facts that are set, the project story
+// and timeline (team only until written), documents, and the register-interest form. Sample developments
+// show visitors the "can't find that development" page.
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -124,6 +127,7 @@ const InterestForm = ({ dev }) => {
     );
 };
 
+/** The RealEstateProject page. Rendered by src/routes.jsx for /real-estate/:slug. */
 export const RealEstateProject = () => {
     const { slug } = useParams();
     const { item: found, loading, items: all } = useContentItem("developments", slug);

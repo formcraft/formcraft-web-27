@@ -1,3 +1,4 @@
+// Projects page (/projects). All projects, filterable by division, each card linking to its case study.
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -13,6 +14,7 @@ import "./Projects.css";
 
 const divisionLabel = (id) => DIVISIONS.find((d) => d.id === id)?.label ?? id;
 
+/** The Projects page. Rendered by src/routes.jsx for /projects. */
 export const Projects = () => {
     usePageMeta("Projects", "Work Formcraft has designed, built and made: from factory complexes and schools to landscapes and joinery.");
     const [filter, setFilter] = useState("all");

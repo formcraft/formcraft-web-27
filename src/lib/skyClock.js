@@ -18,6 +18,10 @@ export const kampalaMinutes = (now = Date.now() + offsetMs) => {
     return (d.getUTCHours() * 60 + d.getUTCMinutes() + 3 * 60) % (24 * 60);
 };
 
+/**
+ * True between Kampala's sunrise and sunset (the day edition's hours).
+ * @param {number} [m]  minutes since midnight in Kampala (defaults to now)
+ */
 export const isKampalaDay = (m = kampalaMinutes()) => m >= SUNRISE && m < SUNSET;
 
 // t runs 0 → 1 from rising (left horizon) to setting (right horizon), for whichever body is up.

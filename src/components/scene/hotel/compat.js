@@ -11,6 +11,10 @@ const factor = (light) => {
     return (Math.PI * legacy) / physical;
 };
 
+/**
+ * Turns a three.js light set up in the old units into today's physical units, so the hotel keeps its look.
+ * @param {import("three").Light} light
+ */
 export const legacyLight = (light) => {
     let raw = light.intensity;
     Object.defineProperty(light, "intensity", {

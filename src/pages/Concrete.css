@@ -1,3 +1,4 @@
+/* Concrete: styles for Concrete.jsx (classes start with .concrete-). Colours come from tokens.css. */
 .concrete-product { overflow: hidden; height: 100%; }
 .concrete-sketch {
   width: 100%; aspect-ratio: 176 / 120; padding: 18px; display: block;

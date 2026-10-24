@@ -1,3 +1,8 @@
+// Home page (/). The home page: Formcraft's pitch, from top to bottom:
+// the hero (the paper 3D hotel model builds itself behind the headline, or a 2D drawing on slow devices),
+// "Why Formcraft exists" (the founders' story), the value chain (the four divisions), how every project runs
+// (BIM), template builds, the site plan seen from above, flagship work, live counts (only once real numbers
+// exist), the roadmap to 2028, and four doors: Hire us, Shop, Join, Back us.
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { usePublicDoc } from "../hooks/usePublicDoc";
@@ -43,6 +48,7 @@ const Counter = ({ value, label }) =>
         </div>
     ) : null;
 
+/** The Home page. Rendered by src/routes.jsx for /. */
 export const Home = () => {
     usePageMeta(null, "Formcraft Design and Construction, Kampala: BIM-led design, construction, precast concrete and workshop-made furniture, in one value chain with local artisans.");
     const { data: stats } = usePublicDoc("stats/public");

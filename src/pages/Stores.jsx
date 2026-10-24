@@ -1,3 +1,5 @@
+// Stores page (/stores). Formcraft Stores, the shop: the collection (product cards with quick add to cart), the
+// community of makers, and made-to-order custom pieces. Prices show "Price on request" until they're set.
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";

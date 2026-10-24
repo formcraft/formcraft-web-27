@@ -1,3 +1,4 @@
+/* OrderConfirmed: styles for OrderConfirmed.jsx (classes start with .orderconfirmed-). Colours come from tokens.css. */
 .orderconfirmed-grid { display: grid; gap: 32px; align-items: start; }
 @media (min-width: 900px) { .orderconfirmed-grid { grid-template-columns: minmax(0, 1.3fr) minmax(300px, 1fr); gap: 48px; } }
 .orderconfirmed-grid .alert p { margin: 0 0 10px; }

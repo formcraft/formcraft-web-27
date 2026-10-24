@@ -1,3 +1,6 @@
+// RealEstate page (/real-estate). Formcraft Real Estate: developments designed and built by Formcraft that investors
+// can back. Headline facts, the developments (filter by stage), investor levels, how investing works with
+// the risk statement, and the register-your-interest form. Sample developments are for the team only.
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -122,6 +125,7 @@ const InterestForm = () => {
     );
 };
 
+/** The RealEstate page. Rendered by src/routes.jsx for /real-estate. */
 export const RealEstate = () => {
     usePageMeta("Real estate", "Rental apartments, hostels and homes designed by Formcraft Studio and built by Formcraft Construction. Back a development and share in its returns.");
     const show = useShowLink();

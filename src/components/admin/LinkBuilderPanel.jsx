@@ -47,6 +47,7 @@ const copyText = async (text) => {
     }
 };
 
+/** Admin → Link builder: makes tagged links (utm_source …) for posts and campaigns, so Leads can show which ones bring enquiries. */
 export const LinkBuilderPanel = () => {
     const uid = useId();
     const id = (n) => `lb-${uid}-${n}`;

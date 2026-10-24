@@ -1,3 +1,4 @@
+/* Admin: styles for Admin.jsx (classes start with .admin-). Colours come from tokens.css. */
 .admin-head { margin-bottom: 28px; align-items: center; }
 .admin-gate { max-width: 560px; }
 .admin-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: clamp(20px, 3vw, 40px); align-items: start; }

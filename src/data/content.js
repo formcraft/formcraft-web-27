@@ -18,6 +18,10 @@ const tail = [
     { name: "active", label: "Show on the site", type: "bool", default: true },
 ];
 
+/**
+ * Every kind of content the admin can edit (products, templates, projects, developments, posts, courses,
+ * events, downloads): its label, its fields for the admin form, and where its starter data comes from.
+ */
 export const CONTENT = {
     products: {
         label: "Shop products",
@@ -152,6 +156,7 @@ export const CONTENT = {
     },
 };
 
+/** Text → a web-address-friendly name: "Oak Armchair!" → "oak-armchair". */
 export const slugify = (text) =>
     String(text ?? "")
         .toLowerCase()

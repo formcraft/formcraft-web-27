@@ -1,3 +1,4 @@
+/* Privacy: styles for Privacy.jsx (classes start with .privacy-). Colours come from tokens.css. */
 .privacy-body { max-width: 760px; display: flex; flex-direction: column; gap: 18px; }
 .privacy-body .h3 { margin-top: 22px; }
 .privacy-draft { margin-bottom: 8px; }

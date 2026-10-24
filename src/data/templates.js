@@ -31,6 +31,7 @@ export const TEMPLATE_KINDS = [
     { id: "rental", label: "Rentals", name: "Rental units" },
 ];
 
+/** A design's type ("bungalow", "two-storey", "rental"…), from its tags. */
 export const templateKind = (t) => {
     const tags = (t?.tags ?? []).map((x) => String(x).toLowerCase());
     if (tags.includes("rental")) return "rental";
@@ -38,8 +39,10 @@ export const templateKind = (t) => {
     return "bungalow";
 };
 
+/** A design's type as words ("Two-storey home"). */
 export const templateKindName = (t) => TEMPLATE_KINDS.find((k) => k.id === templateKind(t))?.name ?? "Home";
 
+/** True for sample listings (shown to the team only until real designs are added). */
 export const isSample = (t) => (t?.tags ?? []).includes("sample");
 
 /** "3 bed · 2 bath", built only from the numbers that are set ("" when none are). */
@@ -48,6 +51,7 @@ export const templateSpec = (t) =>
 /** "120 m²", or null while the floor area isn't set. */
 export const templateArea = (t) => (Number.isFinite(t.areaM2) ? `${t.areaM2} m²` : null);
 
+/** Starter list of home designs (all samples for now). Admin → Content replaces it once real designs are added. */
 export const templates = [
     sample("sample-bungalow-2-bed", {
         bedrooms: 2, bathrooms: 1, floors: 1, tags: ["bungalow"],

@@ -1,3 +1,5 @@
+// Admin → Motion: sliders for how fast the site's animations run (the opening, the tear, the home model's
+// build, the page reveals). 1 = normal; saved in Firestore settings/site.motion and applied site-wide.
 import { useState } from "react";
 import { useSite } from "../../hooks/useSite";
 import { useAuth } from "../../hooks/useAuth";

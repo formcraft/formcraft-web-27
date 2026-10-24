@@ -1,3 +1,5 @@
+// Journal page (/journal). The Formcraft Journal: project stories, BIM notes and community news, with category
+// filters and the newsletter sign-up. Visitors see written posts only; planned topics are for the team.
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -61,6 +63,7 @@ const Byline = ({ post }) => {
     );
 };
 
+/** The Journal page. Rendered by src/routes.jsx for /journal. */
 export const Journal = () => {
     usePageMeta("Journal", "The Formcraft Journal: notes on construction, BIM and craft from real projects in Kampala, written by the team.");
     const { items: all, loading } = useContent("posts");

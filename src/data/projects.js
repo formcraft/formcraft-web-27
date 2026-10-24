@@ -108,6 +108,7 @@ export const flagship = [
     { title: "Ggaba Apartments", division: "Craft", text: "Furniture and joinery for 12 rental units across 4 floors", image: null },
 ];
 
+/** The project filter on /projects: all work, then each division. */
 export const DIVISIONS = [
     { id: "all", label: "All work" },
     { id: "studio", label: "Studio" },
@@ -116,4 +117,5 @@ export const DIVISIONS = [
     { id: "stores", label: "Craft & joinery" },
 ];
 
+/** A starter project by its web-address name. */
 export const projectBySlug = (slug) => projects.find((p) => p.slug === slug);

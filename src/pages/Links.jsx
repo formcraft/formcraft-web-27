@@ -24,6 +24,7 @@ const MAIN = [
     ["/contact", "Contact us", "Call, email or send a message"],
 ];
 
+/** The link-in-bio page (/links) for social profiles: the site's main doors, contact buttons and the email sign-up. */
 export const Links = () => {
     usePageMeta("Links", "Formcraft in Kampala: template homes, design and BIM, construction, the Stores and the community — all our links in one place.", { noindex: true });
     const show = useShowLink();

@@ -1,3 +1,5 @@
+// Construction page (/construction). Formcraft Construction: how we build (site process and services), template
+// builds (a card leading to the home library), the offer for young architects, and the "start a build" form.
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { PageHero } from "../components/page/PageHero";
@@ -35,6 +37,7 @@ const BUILD_TYPES = [
     ["construction-unsure", "Not sure yet"],
 ];
 
+/** The Construction page. Rendered by src/routes.jsx for /construction. */
 export const Construction = () => {
     const seesTodos = useSeesTodos(); // the team also sees rows that are still "TODO"
     usePageMeta("Construction", "Formcraft builds from a construction-ready model, zone by zone, and offers ready-to-build home designs for 50 × 100 ft plots.");

@@ -54,6 +54,7 @@ export const toForm = (name, item = {}) =>
         })
     );
 
+/** Saves one content item (admin only; the rules check). @param {string} name the list @param {string|null} id null for a new item @param {object} values the form's values */
 export const saveItem = async (name, id, values) => {
     const [db, { doc, collection, setDoc, serverTimestamp }] = await fs();
     const data = toDoc(name, values);
@@ -63,6 +64,7 @@ export const saveItem = async (name, id, values) => {
     return ref.id;
 };
 
+/** Deletes one content item (admin only). */
 export const deleteItem = async (name, id) => {
     const [db, { doc, deleteDoc }] = await fs();
     await deleteDoc(doc(db, name, id));

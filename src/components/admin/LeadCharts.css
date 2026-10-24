@@ -1,4 +1,4 @@
-/* charts */
+/* LeadCharts: the charts on Admin → Leads (leads per week, by source, by page and by campaign). Classes start with .lead-chart; colours come from tokens.css. */
 .lead-chart { display: flex; flex-direction: column; gap: 10px; margin: 0; min-width: 0; }
 .lead-chart-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
 .lead-chart-toggle { min-height: 36px; padding: 0 12px; font-size: 13px; }

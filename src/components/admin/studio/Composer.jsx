@@ -1,3 +1,5 @@
+// Studio → the post editor (Composer): write one social post for one or more channels, see the length limits and
+// recommended image sizes per platform, link it to an occasion or topic, add care notes, and set its status.
 import { useEffect, useMemo, useState } from "react";
 import { Drawer } from "../../ui/Drawer";
 import { PILLARS } from "../../../data/socialTopics";
@@ -55,6 +57,11 @@ const blank = (studio, draft = {}) => {
     };
 };
 
+/**
+ * The post editor (a side drawer): caption per channel with length limits, format, date, occasion, topic,
+ * images, care notes and status. Used for new and existing posts.
+ * @param {{ studio: object, post?: object, draft?: object, onClose: () => void }} props  post: the post to edit; draft: starting values for a new one
+ */
 export const Composer = ({ studio, post, draft, onClose }) => {
     const { channels, channelsById, occasions, occasionsById, topics, settings, isMarketing, user } = studio;
     const isNew = !post;

@@ -1,3 +1,4 @@
+/* Journal: styles for Journal.jsx (classes start with .journal-). Colours come from tokens.css. */
 .journal-bar { align-items: center; margin-bottom: 16px; }
 .journal-planned { margin-bottom: 28px; }
 

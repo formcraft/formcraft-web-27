@@ -32,6 +32,7 @@ const config = firebaseConfigured
 
 const firstLoad = getApps().length === 0; // guards against hot reload initialising twice
 
+/** The Firebase app (the connection to the formcraft2027 project, or the "demo-" project for the emulators). */
 export const app = firstLoad ? initializeApp(config) : getApp();
 // Auth without the Google pop-up helper: getAuth() would load Google's sign-in script (gapi) on every
 // page at start-up. AuthContext passes the helper only when someone actually signs in. The same
@@ -50,6 +51,7 @@ const once = (load) => {
   return () => (promise ??= load());
 };
 
+/** The Firestore database, loaded only the first time something needs it (it's a big download). @returns {Promise<import("firebase/firestore").Firestore>} */
 export const getDb = once(async () => {
   const { getFirestore, connectFirestoreEmulator } = await import("firebase/firestore");
   const db = getFirestore(app);
@@ -57,6 +59,7 @@ export const getDb = once(async () => {
   return db;
 });
 
+/** File storage, loaded on first use. @returns {Promise<import("firebase/storage").FirebaseStorage>} */
 export const getStorageService = once(async () => {
   const { getStorage, connectStorageEmulator } = await import("firebase/storage");
   const storage = getStorage(app);
@@ -64,6 +67,7 @@ export const getStorageService = once(async () => {
   return storage;
 });
 
+/** Cloud Functions, loaded on first use. @returns {Promise<import("firebase/functions").Functions>} */
 export const getFunctionsService = once(async () => {
   const { getFunctions, connectFunctionsEmulator } = await import("firebase/functions");
   const functions = getFunctions(app, env.VITE_FUNCTIONS_REGION || undefined);

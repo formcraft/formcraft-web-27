@@ -1,3 +1,5 @@
+// Post page (/journal/:slug). One Journal post: the article (plain text with "## " subheadings and "- " lists),
+// and "Keep reading" suggestions. A planned (unwritten) post shows visitors the "couldn't find that post" page.
 import { Link, useParams } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { useContentItem } from "../hooks/useContent";
@@ -41,6 +43,7 @@ const Body = ({ text }) =>
 
 const readMinutes = (text) => Math.max(1, Math.round(String(text ?? "").split(/\s+/).filter(Boolean).length / 200));
 
+/** The Post page. Rendered by src/routes.jsx for /journal/:slug. */
 export const Post = () => {
     const { slug } = useParams();
     const { item: found, loading, items } = useContentItem("posts", slug);

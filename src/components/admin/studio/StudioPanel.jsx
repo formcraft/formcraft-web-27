@@ -34,6 +34,7 @@ const TAB_KEY = "fc-studio-tab";
 
 const byName = (a, b) => String(a.name ?? "").localeCompare(String(b.name ?? ""));
 
+/** Admin → Studio, the marketing calendar: loads the shared data and shows the tabs (Calendar, Queue, Generate, Bulk, Channels, Topics, Occasions, Results) the person's role allows. */
 export const StudioPanel = () => {
     const { user, role, isMarketing, isEditor } = useAuth();
     const tabs = TABS.filter((t) => isMarketing || t.editor);

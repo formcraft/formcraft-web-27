@@ -134,4 +134,5 @@ const RAW = [
     T("Announcements", "Promo: [offer] until [date] (never on awareness or remembrance days)", ["feed", "story"], "Social post kit: promo."),
 ];
 
+/** Starter post topics for the marketing studio (each used in turn when the calendar is generated). */
 export const STARTER_TOPICS = RAW.map((t) => ({ ...t, channels: [], lastUsedAt: null, uses: 0, active: true }));

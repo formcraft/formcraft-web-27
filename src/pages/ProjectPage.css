@@ -1,3 +1,4 @@
+/* ProjectPage: styles for ProjectPage.jsx (classes start with .project-). Colours come from tokens.css. */
 .project-page-head { display: flex; flex-direction: column; gap: 20px; padding-block: clamp(40px, 6vw, 88px) 36px; }
 .project-page-hero { margin-bottom: clamp(56px, 7vw, 96px); }
 .project-page-facts { margin: 0 0 clamp(36px, 5vw, 56px); }

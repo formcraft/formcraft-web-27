@@ -1,3 +1,6 @@
+// Studio page (/studio). Formcraft Studio (design, pre-construction and BIM): from plot to building permit, the
+// pre-construction package, how fees work with a fee calculator, the BIM system, and the request-a-quote form
+// (#quote). For developers, engineers and homeowners.
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -150,6 +153,7 @@ const FeeCalculator = () => {
     );
 };
 
+/** The Studio page. Rendered by src/routes.jsx for /studio. */
 export const Studio = () => {
     usePageMeta("Studio · design, pre-construction & BIM", "Survey, design, engineering, costing and council approval for your building, at a clear percentage of the construction budget. BIM on projects that need it.");
     return (

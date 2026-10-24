@@ -27,8 +27,10 @@ export const PAGES = [
     { key: "admin", label: "Admin", paths: ["/admin"], group: "Account", locked: true, unlisted: true },
 ];
 
+/** The groups pages are listed under on Admin → Pages (the menu's four doors, then Company and Account). */
 export const PAGE_GROUPS = ["Hire us", "Shop", "Join", "Back us", "Company", "Account"];
 
+/** The page entry for a key, e.g. pageByKey("stores"). */
 export const pageByKey = (key) => PAGES.find((p) => p.key === key);
 
 const matches = (pattern, path) => {
@@ -43,4 +45,5 @@ export const pageForPath = (path) => {
     return PAGES.find((p) => p.paths.some((pattern) => matches(pattern, path))) ?? null;
 };
 
+/** Which pages are on before the admin has changed anything: { key: true|false }. */
 export const defaultVisibility = () => Object.fromEntries(PAGES.map((p) => [p.key, p.locked ? true : p.defaultOn !== false]));
