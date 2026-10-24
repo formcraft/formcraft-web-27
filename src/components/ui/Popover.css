@@ -5,7 +5,8 @@
   border: 1px solid var(--line); border-radius: 8px;
   box-shadow: 0 1px 1px var(--sh-2), 0 24px 60px -18px var(--sh);
   overflow: hidden; outline: none;
-  animation: popover-in .22s var(--fc-ease) both;
+  animation: popover-in .2s var(--fc-ease-out) both;
+  transform-origin: 100% 100%; /* grows out of the corner button that opens it */
 }
 .popover:focus-visible { outline: 3px solid var(--fc-orange); outline-offset: 2px; }
 

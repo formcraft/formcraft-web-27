@@ -35,22 +35,24 @@
   display: inline-flex; align-items: center; justify-content: center; gap: 12px;
   min-height: 52px; padding: 0 24px; border: 0; border-radius: var(--fc-radius);
   font: 700 16px/1 var(--fc-font-body); text-decoration: none; white-space: nowrap; cursor: pointer;
-  transition: translate .25s var(--fc-ease), box-shadow .25s ease, background-color .2s, color .2s;
+  transition: translate .25s var(--fc-ease-out), scale .16s var(--fc-ease-out), box-shadow .25s ease, background-color .2s, color .2s;
   -webkit-tap-highlight-color: transparent;
 }
-.btn svg { transition: translate .25s var(--fc-ease); }
-.btn:hover svg { translate: 3px 0; }
+/* press feedback: the button gives a little under the finger */
+.btn:active:not(:disabled) { scale: .97; }
+.btn svg { transition: translate .25s var(--fc-ease-out); }
+@media (hover: hover) and (pointer: fine) { .btn:hover svg { translate: 3px 0; } }
 .btn:disabled { opacity: .55; cursor: not-allowed; }
 .btn-primary {
   background: var(--tex-orange); color: var(--fc-navy);
   box-shadow: 0 3px 0 var(--fc-orange-edge), 0 14px 24px -12px var(--sh);
 }
-.btn-primary:hover { translate: 0 -2px; box-shadow: 0 5px 0 var(--fc-orange-edge), 0 20px 30px -14px var(--sh); }
+@media (hover: hover) and (pointer: fine) { .btn-primary:hover { translate: 0 -2px; box-shadow: 0 5px 0 var(--fc-orange-edge), 0 20px 30px -14px var(--sh); } }
 .btn-primary:active { translate: 0 2px; box-shadow: 0 1px 0 var(--fc-orange-edge); }
 .btn-line { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line-2); }
 .btn-line:hover { box-shadow: inset 0 0 0 1.5px var(--ink); }
 .btn-ink { background: var(--ink); color: var(--ground); box-shadow: 0 3px 0 var(--sh-2); }
-.btn-ink:hover { translate: 0 -2px; }
+@media (hover: hover) and (pointer: fine) { .btn-ink:hover { translate: 0 -2px; } }
 .btn-sm { min-height: 44px; padding: 0 18px; font-size: 15px; }
 .btn-block { width: 100%; }
 .link {
@@ -63,9 +65,10 @@
   position: relative; width: 44px; height: 44px; flex: none; border-radius: 50%;
   display: inline-flex; align-items: center; justify-content: center;
   border: 1px solid var(--line-2); background: transparent; color: var(--ink); text-decoration: none; cursor: pointer;
-  transition: background-color .2s, color .2s, border-color .2s, rotate .5s var(--fc-ease);
+  transition: background-color .2s, color .2s, border-color .2s, rotate .5s var(--fc-ease-out), scale .16s var(--fc-ease-out);
 }
 .icon-btn:hover { border-color: var(--ink); }
+.icon-btn:active { scale: .95; }
 
 /* ---------- paper objects ---------- */
 .card {
@@ -74,8 +77,8 @@
 }
 .card-pad { padding: clamp(22px, 2.4vw, 32px); }
 a.card, button.card { display: block; text-decoration: none; text-align: left; border: 0; width: 100%; font: inherit;
-  transition: translate .35s var(--fc-ease), box-shadow .35s ease; }
-a.card:hover, button.card:hover { translate: 0 -5px; box-shadow: inset 0 1px 0 var(--hl), 0 2px 2px var(--sh-2), 0 26px 40px -18px var(--sh); }
+  transition: translate .25s var(--fc-ease-out), box-shadow .25s ease; }
+@media (hover: hover) and (pointer: fine) { a.card:hover, button.card:hover { translate: 0 -5px; box-shadow: inset 0 1px 0 var(--hl), 0 2px 2px var(--sh-2), 0 26px 40px -18px var(--sh); } }
 .card-stacked { isolation: isolate; }
 .card-stacked::before, .card-stacked::after {
   content: ""; position: absolute; inset: 0; z-index: -1; border-radius: var(--fc-radius); background: var(--sheet-2);

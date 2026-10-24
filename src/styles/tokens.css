@@ -33,7 +33,11 @@
   --fc-font-display: "Clash Grotesk", "Satoshi", "Arial Narrow", sans-serif;
 
   /* Motion and shape */
-  --fc-ease: cubic-bezier(.2, .7, .2, 1);
+  --fc-ease: cubic-bezier(.2, .7, .2, 1);          /* storytelling: reveals, the opening, the Home build */
+  /* UI motion (from Emil Kowalski's design-engineering rules, .claude/skills/emil-design-eng) */
+  --fc-ease-out: cubic-bezier(.23, 1, .32, 1);      /* things entering/leaving, press and hover feedback */
+  --fc-ease-in-out: cubic-bezier(.77, 0, .175, 1);  /* things moving across the screen */
+  --fc-ease-drawer: cubic-bezier(.32, .72, 0, 1);   /* drawers and bottom sheets */
   --fc-radius: 4px;
   --fc-wrap: 1296px;
   --fc-header-h: 74px;

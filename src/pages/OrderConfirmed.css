@@ -14,5 +14,5 @@
 
 .orderconfirmed-next { list-style: none; margin: 0; padding: 0; }
 .orderconfirmed-card { display: flex; flex-direction: column; gap: 4px; height: 100%; color: var(--ink); text-decoration: none; transition: translate .2s; }
-.orderconfirmed-card:hover { translate: 0 -2px; }
+@media (hover: hover) and (pointer: fine) { .orderconfirmed-card:hover { translate: 0 -2px; } }
 .orderconfirmed-card:focus-visible { outline: 3px solid var(--fc-orange); outline-offset: 2px; }

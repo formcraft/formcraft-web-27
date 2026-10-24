@@ -80,7 +80,7 @@
 .home-door-photo { --ink: var(--fc-white); --ink-2: color-mix(in srgb, var(--fc-white) 86%, transparent); --ink-3: color-mix(in srgb, var(--fc-white) 80%, transparent); color: var(--fc-white); }
 .home-door-photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--fc-black) 25%, transparent), color-mix(in srgb, var(--fc-black) 82%, transparent)); }
 .home-door-photo > *:not(img) { z-index: 1; }
-.home-door:hover .home-door-img { scale: 1.04; }
+@media (hover: hover) and (pointer: fine) { .home-door:hover .home-door-img { scale: 1.04; } }
 .home-door-orange { background: var(--tex-orange); }
 
 @media (max-width: 1000px) {

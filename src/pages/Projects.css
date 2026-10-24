@@ -4,7 +4,7 @@
 .projects-card { display: flex !important; flex-direction: column; overflow: hidden; height: 100%; }
 .projects-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; transition: scale .6s var(--fc-ease); flex: 1; min-height: 0; }
 .projects-wide .projects-card img { aspect-ratio: auto; }
-.projects-card:hover img { scale: 1.03; }
+@media (hover: hover) and (pointer: fine) { .projects-card:hover img { scale: 1.03; } }
 .projects-card-body { display: flex; flex-direction: column; gap: 10px; padding: 20px 22px 24px; background: var(--tex-sheet); position: relative; }
 .projects-empty { padding: 40px 0; }
 @media (max-width: 1000px) {

@@ -8,9 +8,10 @@
   min-height: 64px; padding: 12px 18px; border-radius: var(--fc-radius);
   background: var(--tex-sheet); color: var(--ink); text-decoration: none;
   box-shadow: inset 0 1px 0 var(--hl), 0 2px 2px var(--sh-2), 0 14px 24px -16px var(--sh);
-  transition: translate .2s var(--fc-ease), box-shadow .2s var(--fc-ease);
+  transition: translate .2s var(--fc-ease-out), box-shadow .2s var(--fc-ease-out), scale .16s var(--fc-ease-out);
 }
-.links-btn:hover { translate: 0 -2px; box-shadow: inset 0 1px 0 var(--hl), 0 2px 2px var(--sh-2), 0 20px 30px -16px var(--sh); }
+@media (hover: hover) and (pointer: fine) { .links-btn:hover { translate: 0 -2px; box-shadow: inset 0 1px 0 var(--hl), 0 2px 2px var(--sh-2), 0 20px 30px -16px var(--sh); } }
+.links-btn:active { scale: .98; }
 .links-btn:focus-visible { outline: 3px solid var(--fc-orange); outline-offset: 3px; }
 .links-btn-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
 .links-btn-text strong { font-size: 17px; }

@@ -35,7 +35,7 @@
 .header-panel-link.active { box-shadow: inset 3px 0 0 var(--fc-orange); }
 .header-tools { display: flex; align-items: center; gap: 10px; }
 .header-mode { background: var(--ink); color: var(--ground); border-color: transparent; }
-.header-mode:hover { rotate: -24deg; border-color: transparent; }
+@media (hover: hover) and (pointer: fine) { .header-mode:hover { rotate: -24deg; border-color: transparent; } }
 .header-menu-btn { display: none; }
 .header-mobile { display: flex; flex-direction: column; gap: 6px; }
 .header-mobile a:not(.btn) {

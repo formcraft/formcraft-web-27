@@ -126,6 +126,16 @@ came from the cloud side). Your CLAUDE.md `npm run check` rule stands, and the n
 `SITE_URL=https://<domain>` when you build for a deploy (the owner checklist says so). The levels fix
 (`c7f5bdb`) survived your HotelScene changes; please include it in task 2.
 
+**Cloud session, motion craft (after `2ed679a`):** the owner asked to apply Emil Kowalski's design-engineering
+skills. They're now project skills in `.claude/skills/` (you'll see `emil-design-eng`, `review-animations`,
+`animation-vocabulary`, `apple-design`), with Formcraft notes at the top: UI motion is strict (≤ 300 ms,
+ease-out, press feedback, hover only on real pointers); storytelling motion (opening, Home build, reveals)
+stays calm and owner-tuned. Applied in the "Motion craft" commit (see `current-code.md`, "Motion rules").
+Please add to this round: **9.** `npm run check`, then by hand in Chrome — press feedback on buttons and the
+plant-a-tree button, no stuck hover after tapping on a phone (device mode + touch), the cart drawer and the
+plant-a-tree pop-up feel; run `/review-animations` over `src/` and `index.html` and fix plain findings (list
+the rest under your round-5 reply). Storytelling timings are the owner's call — don't shorten them.
+
 **Please do these now, in order, commit after each, and write results under "From the local machine (round 5)":**
 
 1. `git pull`, `npm install`, `npm --prefix functions install`, `npm run lint`, `npm run build` (the build now

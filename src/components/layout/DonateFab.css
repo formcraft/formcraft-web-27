@@ -5,19 +5,23 @@
   border: 0; border-radius: 50%; color: var(--fc-navy); cursor: pointer;
   background: var(--tex-orange);
   box-shadow: 0 2px 0 var(--fc-orange-edge), 0 10px 22px -8px var(--sh);
-  transition: translate .25s var(--fc-ease);
+  transition: translate .25s var(--fc-ease-out), scale .16s var(--fc-ease-out);
 }
-.donate-fab:hover, .donate-fab:focus-visible { translate: 0 -2px; }
+@media (hover: hover) and (pointer: fine) { .donate-fab:hover { translate: 0 -2px; } }
+.donate-fab:focus-visible { translate: 0 -2px; }
+.donate-fab:active { scale: .94; }
 .donate-fab:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
-.donate-fab svg { transition: rotate .4s var(--fc-ease); }
-.donate-fab:hover svg, .donate-fab[aria-expanded="true"] svg { rotate: -14deg; }
+.donate-fab svg { transition: rotate .3s var(--fc-ease-out); }
+@media (hover: hover) and (pointer: fine) { .donate-fab:hover svg { rotate: -14deg; } }
+.donate-fab[aria-expanded="true"] svg { rotate: -14deg; }
 .donate-fab-label {
   position: absolute; right: calc(100% + 10px); top: 50%; translate: 4px -50%;
   padding: 6px 10px; border-radius: var(--fc-radius); white-space: nowrap;
   font: 700 13px/1 var(--fc-font-body); background: var(--ink); color: var(--ground);
-  opacity: 0; pointer-events: none; transition: opacity .2s, translate .2s var(--fc-ease);
+  opacity: 0; pointer-events: none; transition: opacity .15s ease-out, translate .15s var(--fc-ease-out);
 }
-.donate-fab:hover .donate-fab-label, .donate-fab:focus-visible .donate-fab-label { opacity: 1; translate: 0 -50%; }
+@media (hover: hover) and (pointer: fine) { .donate-fab:hover .donate-fab-label { opacity: 1; translate: 0 -50%; } }
+.donate-fab:focus-visible .donate-fab-label { opacity: 1; translate: 0 -50%; }
 /* no tooltip while the card is open (it would sit over the card's corner) */
 .donate-fab[aria-expanded="true"] .donate-fab-label { opacity: 0; }
 @media (hover: none) { .donate-fab-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); padding: 0; } }
