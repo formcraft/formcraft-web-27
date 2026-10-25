@@ -7,10 +7,12 @@
 import * as THREE from "three";
 import { legacyLight } from "./compat";
 import { createBuild } from "./build";
+import { addWeather3D } from "./weather3d";
 
 // Builds the scene in steps, yielding to the browser between them so the page stays responsive while
 // the model is made (env.signal aborts a build that's no longer wanted). Resolves to a handle:
-// { dispose, setView(name), zoomBy(step), resetView() } — or null if aborted / WebGL is missing.
+// { dispose, setView(name), zoomBy(step), resetView(), setWeather(w) } — or null if aborted / WebGL is missing.
+// env.weather (optional): { kind, wind, amount } adds Kampala's weather (hotel/weather3d.js).
 export async function createHotelScene(canvas, env) {
   env = env || {};
   // the concept was written for three.js before colour management; keep its colour maths
@@ -896,12 +898,15 @@ export async function createHotelScene(canvas, env) {
     var nw = innerWidth, nh = innerHeight;
     if (vw > 1 && Math.abs(nw - vw) < 2 && Math.abs(nh - vh) < 160 && nw <= 980) return; // mobile address bar showing/hiding
     vw = nw; vh = nh; R.setSize(vw, vh, false);
-    var a = vw / vh; camera.aspect = a; wide = vw > 980;
+    var a = vw / vh; camera.aspect = a;
+    // landscape tablets and small laptops (700–980 px wide) also get the side framing, so the model sits to the right
+    // of the hero copy instead of behind the headline (cloud review of the night render at 960 × 600)
+    wide = vw > 980 || (vw >= 700 && a >= 1.25);
     fovMul = a < 1.5 ? Math.min(1.32, 1 + (1.5 - a) * 0.3) : 1;
     var f = 34 * Math.PI / 360;
     var ref = Math.tan(f) * (wide ? 1.6 : 1.25), now = Math.tan(f * fovMul) * a;
     fit = Math.max(1, ref / now) * (wide ? 1 : 0.95);
-    if (wide) camera.setViewOffset(vw, vh, -vw * 0.17, 0, vw, vh);
+    if (wide) camera.setViewOffset(vw, vh, -vw * (vw > 1200 ? 0.17 : 0.21), 0, vw, vh); // narrower screens: a little further right
     else camera.setViewOffset(vw, vh, 0, vh * (a < 0.8 ? 0.24 : 0.16), vw, vh);
     camera.updateProjectionMatrix(); measure();
   }
@@ -1067,6 +1072,7 @@ export async function createHotelScene(canvas, env) {
   function frame() {
     if (!visible) return; // resumes from the observer
     clock.update(); var dt = Math.min(0.05, clock.getDelta()), el = clock.getElapsed();
+    if (wx) wx.update(dt);
     // time starts at the first frame, so the first live frame is exactly the still picture; frozen for the still captures
     if (tStart < 0) tStart = el;
     var t = env.capture ? 0 : el - tStart, moving = !reduced && !env.capture;
@@ -1160,6 +1166,9 @@ export async function createHotelScene(canvas, env) {
       m.normalMap = normalTex; m.normalScale.set(k, k); m.bumpMap = null; m.needsUpdate = true;
     });
   });
+  // Kampala's weather on the model: leaves flutter, rain, dimmer light (only when HotelScene passes env.weather)
+  var wx = env.weather ? addWeather3D(THREE, { scene: scene, green: model.children.slice(bi1, bi2), lights: [key, fill], weather: env.weather, night: true, small: small, reduced: reduced }) : null;
+  if (wx) cleanup.push(wx.dispose);
   if (R.compileAsync) { try { await R.compileAsync(scene, camera); } catch (err) {} }
   if (stopped()) return null;
   // after compiling (hidden objects aren't compiled): hide the model for the opening build
@@ -1180,6 +1189,7 @@ export async function createHotelScene(canvas, env) {
     setView: setView,
     zoomBy: zoomBy,
     resetView: resetView,
+    setWeather: function (w) { if (wx) wx.set(w); }, // live changes; needs env.weather at creation
     dispose: function () {
       alive = false;
       window.cancelAnimationFrame(rafId);

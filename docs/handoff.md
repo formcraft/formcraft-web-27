@@ -5,7 +5,46 @@
 > linting and builds. Work through the checklist top to bottom, fix what fails, then tick it off
 > in this file and commit. Keep following `CLAUDE.md` (rules) and `docs/build-plan.md` (scope).
 
-Last updated: 2026-10-24 (round 6)
+Last updated: 2026-10-25 (round 6)
+
+## ▶ Cloud review of `try/sky-1` and `try/weather-switches` (2026-10-25)
+
+**`try/weather-switches`: no objections.** `sceneSwitches` + `fallbackScene` and the tests are right. When you
+do L9, add `liveWeather` there (off, `needs: "weather"`).
+
+**`try/sky-1`: the wiring follows the contract well.** The re-measure after `sky-rise`, the warm-up to the calm
+before the first draw, the twinklers following the engine, and the moon as a clip over a faint disc are all good.
+I built the branch and dragged in Chromium. The sun moves, the rings trail it, and nothing throws an error. There
+are four things to fix before the owner clicks through; **1 is a real bug in Chrome**:
+
+1. **The clouds never move in Chrome (verified).** `useSkyDrag` sets `style.transform` on `.pl-cloud`, but
+   `.pl-cloud` is a `.pl-layer`, and where scroll-driven animations are supported (Chrome, Edge) `.pl-layer`
+   runs `animation: …, pl-parallax`, which animates `transform`. A running CSS animation overrides inline
+   styles: after dragging the sun into a cloud, inline was `translate(10.5px, 14.2px)` but the computed
+   transform stayed `matrix(1, 0, 0, 1, 0, 0)`. (Inside, the cloud `path` has `pl-drift` on `transform` too.)
+   **Fix:** wrap each cloud path in a `<g class="pl-cloud-push">` in `PaperLayers` and set that group's SVG
+   `transform` attribute in viewBox units (px ÷ the layer's slice scale, like you do for the twinklers). Nothing
+   animates the `g`, so nothing overrides it.
+2. **Hover runs layout work on every mouse move, anywhere on the page.** `onMove` is a window listener; for a
+   mouse it calls `near()`, which calls `getBoundingClientRect` and `measureBody()`. That writes a transform,
+   reads a rect and writes it back, which forces a reflow on every `pointermove`, even when the hero is
+   scrolled away. **Fix:** check a cached hero rect first and return when the pointer is outside it (or when
+   `data-paused` is set on the hero). Re-measure the body only in `onDown`, not for the hover glow.
+3. **The invisible grab handle can cover the hero's links.** `.sky-grab` sits at `z-index: 3`, above
+   `.page-hero-copy` (`z-index: 2`), and is 44–72 px. When the sun or moon rests low, or behind the copy (it
+   often does by the clock: the sun rested at 180, 600 px on Studio this morning, just under "See what it
+   costs"), a tap on a nearby link or button picks up the sun instead. **Fix:** in `onDown`, if
+   `e.target.closest("a, button, input, select, textarea, label")` is set, let the event through. Better
+   still, keep the handle under the copy (`z-index: 1`) and rely on the hero `pointerdown` you already have;
+   the handle's only job is `touch-action: none`, so phones can drag. Or give it `pointer-events: none` while
+   it overlaps the copy's box.
+4. **The secret: no `cursor: grab` at rest.** `.sky-grab { cursor: grab }` shows a hand to every mouse user who
+   passes over the sun, and that's a hint. The design allowed only the soft glow on hover, then `grabbing`
+   while held. Keep `.is-sky-dragging { cursor: grabbing }` and remove `cursor: grab` from `.sky-grab`.
+
+**Small, optional:** the warm-up loop runs again on every `ResizeObserver` callback (it's up to 360 × 300-star
+steps). That's fine on desktop; on phones the address bar showing and hiding fires it often. Skip the warm-up
+when only the height changed by less than 160 px (the same rule `hotelDay.js` uses).
 
 ## ▶ From the local side: pre-rendering (L5) on `try/prerender` (2026-10-25)
 
@@ -103,6 +142,22 @@ They are now `SKY_DEFAULTS`. The clouds drift back slowly on purpose, so the loo
 **C4 landed:** `functions/weather.js` + `weatherMap.js` (tested). The hand-over list is at the end of
 `docs/work-split.md`: the `index.js` export line, the `liveWeather` switch (off), the credit line and a rules test.
 **Clouds:** the owner sent a paper-cut reference. `puffsFor` now returns layered sheets; see the updated contract.
+**Thanks for L1** (both `try/` branches merged up to date) and the `claimsFor` fix. Note: someone merged
+`paper-edition` into `try/auto-live`. It's still meant to be deleted (the owner approved); please don't build on it.
+
+**Home 3D, cloud review of the night edition at 960 × 600** (the first night render that worked here):
+- **Done (cloud, `hotel/*.js`):** landscape screens 700–980 px wide now get the side framing, so the model sits to
+  the right of the copy instead of behind "Designing spaces.". Please check 768 × 1024 (portrait: unchanged, model
+  on top) and 1024 × 768 and 900 × 600 (landscape: model on the right) on a real GPU.
+- **For you (`HotelScene.jsx` / `.css`):**
+  - the "Drag to turn the model" hint sits top centre and covers the model's labels ("levels 1–2 guest rooms…",
+    "G5 · from the same model"). Move it to the bottom right of the hero, as on desktop, or hide it once a label
+    is near.
+  - Labels whose anchor projects under the header (e.g. "Built" at 960 × 600) should hide instead of being cut off.
+
+**Sky 5 is ready on the cloud side:** `hotel/weather3d.js` (leaf flutter, rain, dimmer light). The scenes take
+`env.weather` and return `setWeather()`. Hand-over at the end of `docs/work-split.md`. Wire it last, after L7.
+
 
 ## ▶ Cloud review of `try/features` and `try/copy-pilot` + Admin tidy proposal (ideas #25), 2026-10-24
 

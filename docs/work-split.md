@@ -30,7 +30,7 @@ If either side needs to change a file the other owns, write the change into `doc
 | C2 | **Done.** **`src/components/scene/sky/skyPhysics.js` + `moonPhase.js`**: the stars/clouds/sun-and-moon engine from the tuner as plain JavaScript (no React), with the contract below. Plus the moon phase, the lit shape and the equator "boat moon" turn. | Something to wire into `Sky.jsx` (L4) |
 | C3 | **Done.** **`sky/weatherShapes.js` + the weather token block**: torn-paper cloud decks, the storm cloud and its glow timing, the mist "vellum" band, the rain-sliver and splash drawer (canvas), wet-paper overlay. Plus a tuner page for the scenes so the owner can see them first. | Shapes and drawers for L7 |
 | C4 | **Done.** **`functions/weather.js`** (+ `weatherMap.js`, tested): MET Norway sync every 30 min (User-Agent, `If-Modified-Since`, 4-decimal lat/lon), symbol → scene mapping as a pure, tested function, writes `stats/weather` and a private `weatherMeta/kampala`. Written, not deployed. | Something to test in the emulator (L9) |
-| C5 | **Home 3D look**: paper tuning on feedback, the night edition, later rain and wind on the model (Sky 5). | — |
+| C5 | **Home 3D look**: paper tuning (done), night review and tablet framing (done), **rain, wind and dimmer light on the model (done, `hotel/weather3d.js`)**. | Sky 5 wiring (L9+) |
 | C6 | **Design reviews on request**: admin wording (done in `handoff.md`), page visuals, copy organisation. | Lists in `handoff.md` |
 
 ## Local Claude Code's share (in this order)
@@ -126,3 +126,16 @@ or `puffsFor`.
   (east of north → the wind blows right → left, so negative).
 - **Test:** `node --test functions/weatherMap.test.js`. In the emulator, turn `liveWeather` on in Firestore and run
   the schedule from the Functions emulator. The emulator makes a real request to api.met.no, so keep it to a few runs.
+
+## Hand-over for Sky 5 (weather on the Home 3D model)
+
+In `HotelScene.jsx` (yours), once the weather is wired for the page heroes (L7/L9):
+- pass `weather: { kind, wind, amount }` to `createHotelScene` (the same values the heroes use: the scene after
+  `fallbackScene`, `windFromMs(...) * dir`, the rain amount). Without it the model has no weather, as today;
+- when the weather changes during a visit, call `handleRef.current?.setWeather({ kind, wind, amount })`; no rebuild
+  is needed;
+- add a Features switch "Weather on the 3D model" (key `home3dWeather`, needs `home3d` and the weather scenes) and
+  pass `weather` only when it's on;
+- reduced motion is handled inside (no flutter, rain held still);
+- check fps on the Intel and NVIDIA GPUs and a phone with `?hoteldebug`. If the flutter costs too much on phones,
+  pass `weather` without `wind` there.
