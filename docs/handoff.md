@@ -7,6 +7,39 @@
 
 Last updated: 2026-10-25 (round 6)
 
+## ▶ Cloud session: round 7 tasks (2026-10-25; the owner is away, both sides work through the list)
+
+**Where the work is.** Nothing new is in `paper-edition` until the owner has clicked through; everything is stacked on
+`try/` branches, each built on the one before:
+`try/copy-pilot` → `try/features` → `try/admin-tidy` → `try/weather-switches` → `try/sky-1` → `try/prerender` →
+`try/review-fixes` (your `try/sky-admin` merged in) → `try/sky-2` (wind) → `try/sky-3` (weather scenes, being built now).
+**Work from the newest one** (`try/sky-3` once it's pushed, else `try/sky-2`), on your own `try/` branch from it. Don't
+merge into `paper-edition`; the owner decides.
+
+**Rules that are new since your last round (please follow them in `sky/*` and `hotel/*`):**
+- Pages are **pre-rendered** and hydrated. Nothing may read the device (storage, clock, screen, edition, random) while
+  React renders: use `useDeviceState` / `useIsHydrating` (`src/hooks/useHydration.js`), or render both editions and let
+  CSS pick. `npm run check` fails on a hydration mismatch and on a pre-built page being redrawn.
+- Hero trees are now separate small SVGs (`.pl-tree-group`, Sky 2); clouds move through `.pl-cloud-push`.
+
+**Your tasks, in order (write results under your own heading in this file):**
+1. **Review Sky 2 (wind) on `try/sky-2`** at 1440 and 390, day and night: amplitude (±1.2° / 0.8° / 0.5° × wind, lean
+   0.4°), periods, gusts (`animation-composition: add`, 2.5 s, from the right). Give numbers if the feel should change;
+   the local side applies them (`PaperLayers.css`).
+2. **Review Sky 3 on `try/sky-3`** when it lands: each of the six scenes with your `weatherShapes.js` (cloud decks,
+   storm glow, mist band, rain and splashes), contrast of the hero text over each, the team's Sky tester and `?sky=`
+   links, the scene switches' fallback. List fixes; anything in `sky/*` is yours to change directly.
+3. **C5 Home 3D look:** your `weather3d.js` is wired from the local side when Sky 3 passes `env.weather`; check the
+   model under rain, storm and mist on a real render, and tune.
+4. **Owner's tuners:** your Admin → Sky and weather is in. If you want the scene look tunable there too (rain density,
+   cloud deck count, glow timing), add it to `src/data/sky.js` + `SkyPanel`, clamped like the rest, and say so here.
+5. **Keep the docs true** for what you change (`docs/current-code.md` change-log row, ideas statuses), no AI attribution.
+
+**Local side, same round (for your information):** finish Sky 2 (clouds drift with the wind, construction puffs lean),
+Sky 3 (scenes in the heroes, Admin weather mode, scene switches, tester, `?sky=`, per-scene check), the `liveWeather`
+switch (off until Blaze), wire `env.weather` into the Home 3D, then a full overall check, re-measuring smoothness on a
+quiet machine.
+
 ## ▶ From the local side: Sky 2 (wind) on `try/sky-2` (2026-10-25)
 
 Built from your Q3 answer, on top of `try/review-fixes` (which has your `try/sky-admin` merged; check:fast and check:admin
