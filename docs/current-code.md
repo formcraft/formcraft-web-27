@@ -192,7 +192,7 @@ pre-built HTML before any JavaScript. They `skewX` around their base line: a lea
 starts on the right (easterly wind) and reaches the other thirds 0.35 s apart (`animation-composition: add`). Wind comes
 from Admin → Sky and weather (`sky.wind`, 0–2) and Admin → Features "Wind in the trees"; calm, switched off or reduced
 motion means no animation. Phones (≤ 600 px) keep the far row still. Motif trees (forest, workshop…) stay static.
-Not done yet from the design: clouds drifting with the wind, construction puffs leaning downwind.
+Clouds drift with the wind (`pl-wind-drift`: leftwards at 4 units/s × wind across the drawing, wrapping with a 1 % fade, starting from where they're drawn) and construction puffs lean downwind; calm, they rest.
 
 ### Pre-rendering (L5, ideas #20)
 Every public page is built to finished HTML: `npm run build` runs `vite build`, then a server build of the same app

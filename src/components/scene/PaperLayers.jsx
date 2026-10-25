@@ -74,6 +74,14 @@ const TreeRow = ({ groups, kind, row, depth, h }) => (
 );
 const r1 = (v) => Math.round(v * 10) / 10;
 
+// Clouds drifting with the wind (Sky 2): from where the cloud is drawn, leftwards (an easterly) at 4 units a second ×
+// wind, off the left edge and back in from the right; PaperLayers.css turns these numbers into the animation.
+// cx: the cloud's centre in the 1440-wide drawing; s: its scale (half its width is about 122 × s).
+const drift = (cx, s) => {
+    const half = 122 * s;
+    return { "--from": Math.round(W - cx + half), "--to": Math.round(-(cx + half)) };
+};
+
 // Gusts (wind ≥ 0.6): every 8–20 s a gust rolls across the trees for 2.5 s, from the windward side. One timer per
 // landscape, only while its hero is on screen and the tab is visible; nothing with reduced motion.
 const useGusts = (ref, wind, on) => {
@@ -208,8 +216,8 @@ export const PaperLayers = ({ seed = 7, height = 560, city = true, motif = "city
             </>)}
             <SkyBody id={`${uid}moon`} r={Math.round(sun.r * (h < 420 ? 0.9 : 1))} />
             {/* .pl-cloud-push: moved aside by the sun (useSkyDrag); the layer and the path have their own animations */}
-            {layer("cloud pl-cloud-a", 0.12, <g className="pl-cloud-push"><path className="pl-f-cloud" d={paths.c1} /></g>)}
-            {layer("cloud pl-cloud-b", 0.1, <g className="pl-cloud-push"><path className="pl-f-cloud" d={paths.c2} /></g>)}
+            {layer("cloud pl-cloud-a", 0.12, <g className="pl-cloud-push"><path className="pl-f-cloud" d={paths.c1} style={drift(W * 0.7, 1)} /></g>)}
+            {layer("cloud pl-cloud-b", 0.1, <g className="pl-cloud-push"><path className="pl-f-cloud" d={paths.c2} style={drift(W * 0.92, 0.75)} /></g>)}
             {layer("far", 0.16, <path className="pl-f-far" d={paths.far} />)}
             {layer("mid", 0.22, <>
                 <path className="pl-f-mid" d={paths.mid} />

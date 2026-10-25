@@ -40,17 +40,26 @@
 
 /* motion */
 @keyframes pl-lay { from { opacity: 0; translate: 0 60px; } to { opacity: 1; translate: 0 0; } }
-@keyframes pl-drift { from { transform: translateX(-26px); } to { transform: translateX(30px); } }
 @keyframes pl-blink { 0%, 46%, 100% { opacity: 1; } 50%, 96% { opacity: .15; } }
 @keyframes pl-flick { 0%, 40% { opacity: 0; } 45%, 85% { opacity: 1; } 90%, 100% { opacity: 0; } }
 @keyframes pl-beam { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
 .pl-layer { animation: pl-lay 1.15s var(--fc-ease) both; animation-delay: calc(var(--depth) * 1.6s); }
-.pl-cloud-a path { animation: pl-drift 22s ease-in-out infinite alternate; }
-.pl-cloud-b path { animation: pl-drift 30s ease-in-out infinite alternate-reverse; }
+/* clouds drift with the wind (Sky 2): at 4 units/s × wind across the drawing, wrapping round, starting from where
+   they're drawn (the negative delay); a 1 % fade at each end hides the jump back. Calm: they rest. */
+@keyframes pl-wind-drift {
+  0% { transform: translateX(calc(var(--from) * 1px)); opacity: 0; }
+  1%, 99% { opacity: 1; }
+  100% { transform: translateX(calc(var(--to) * 1px)); opacity: 0; }
+}
+.pl-windy .pl-cloud path {
+  animation: pl-wind-drift calc((var(--from) - var(--to)) * 1s / (4 * var(--wind))) linear infinite;
+  animation-delay: calc(var(--from) * -1s / (4 * var(--wind)));
+}
 .pl-f-lamp { animation: pl-blink 2.4s steps(1) infinite; }
 .pl-f-off { animation: pl-flick var(--fd, 5s) ease-in-out infinite; }
 .pl-f-beam { animation: pl-beam 4s ease-in-out infinite; }
-@keyframes pl-puff { 0% { opacity: 0; transform: translate(0, 10px) scale(.6); } 25% { opacity: .95; } 100% { opacity: 0; transform: translate(26px, -40px) scale(1.3); } }
+/* site puffs rise and lean downwind (Sky 2: an easterly blows them left, more in stronger wind) */
+@keyframes pl-puff { 0% { opacity: 0; transform: translate(0, 10px) scale(.6); } 25% { opacity: .95; } 100% { opacity: 0; transform: translate(calc(6px - 32px * var(--wind, 0)), -40px) scale(1.3); } }
 .pl-puffs circle { animation: pl-puff 6s ease-out infinite; animation-delay: var(--pd, 0s); }
 @supports (animation-timeline: scroll()) {
   @keyframes pl-parallax { from { transform: translateY(0); } to { transform: translateY(calc((.5 - var(--depth)) * 240px)); } }
