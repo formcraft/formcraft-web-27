@@ -14,6 +14,23 @@ const memory = new Map(); // collection → items, shared by every component thi
 const inflight = new Map();
 const TTL = 5 * 60 * 1000; // refetch at most every 5 minutes per visit
 const fetchedAt = new Map();
+// The starter lists, loaded up front for pre-rendered pages (see preloadStarters): the build renders with them, and
+// React's first render in the browser must show exactly the same, so they have to be there before it starts.
+const starters = new Map();
+const tidy = (item) => ({ ...item, slug: item.slug || item.id, id: item.id || item.slug });
+
+/**
+ * Loads every content list's starter data (src/data/) so the first render can show it without waiting. Called by
+ * src/entry-server.jsx before building pages, and by main.jsx before adopting a pre-rendered page.
+ * @returns {Promise<void>}
+ */
+export const preloadStarters = async () => {
+    await Promise.all(
+        Object.entries(CONTENT).map(async ([name, def]) => {
+            if (!starters.has(name)) starters.set(name, ((await def.local().catch(() => [])) ?? []).map(tidy));
+        })
+    );
+};
 
 const load = async (name) => {
     const def = CONTENT[name];
@@ -28,7 +45,7 @@ const load = async (name) => {
             if (cached) return cached;
         }
     }
-    const items = (remote.length ? remote : local).map((item) => ({ ...item, slug: item.slug || item.id, id: item.id || item.slug }));
+    const items = (remote.length ? remote : local).map(tidy);
     memory.set(name, items);
     fetchedAt.set(name, Date.now());
     writeJSON(`fc-content-${name}`, items);
@@ -57,7 +74,8 @@ const fetchContent = (name) => {
 export const useContent = (name) => {
     const { isAdmin } = useAuth();
     // the device's saved copy after hydration (useHydration.js); the build and the first render use the starter data
-    const [items, setItems] = useDeviceState(() => memory.get(name) ?? readJSON(`fc-content-${name}`, null), null);
+    // (preloadStarters), so a pre-rendered product, project or post page is complete in its HTML
+    const [items, setItems] = useDeviceState(() => memory.get(name) ?? readJSON(`fc-content-${name}`, null) ?? starters.get(name) ?? null, starters.get(name) ?? null);
     const [loading, setLoading] = useState(!memory.has(name));
 
     useEffect(() => {

@@ -52,7 +52,8 @@ These bias toward care over speed; for trivial fixes, use judgment.
 ```bash
 npm run dev                 # local site, localhost:5173
 npm run lint                # oxlint
-npm run build               # build to dist/
+npm run build               # build to dist/ (pre-renders every public page)
+npm run build:deploy        # the same, but stops if Admin's page switches can't be read (use before a deploy)
 npm run check               # offline quality check: lint, build, every page × 3 sizes × day/night in local Chrome, clicks, links, report in check-report/
 npm run check:fast          # the same with fewer sizes (about 3× quicker)
 npm run check:speed         # Lighthouse scores, locally

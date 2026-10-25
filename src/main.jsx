@@ -11,6 +11,7 @@ import "./styles/base.css";
 import "./styles/components.css";
 import App from "./App.jsx";
 import { preloadPage } from "./routes";
+import { preloadStarters } from "./hooks/useContent";
 
 // Pre-rendered pages (scripts/prerender.mjs) arrive with their HTML already in #root: React adopts it
 // ("hydrates") instead of drawing it again, so the page doesn't flicker. That needs the HTML to be for this
@@ -31,7 +32,8 @@ if (root.firstElementChild && builtFor === here) {
         hydrateRoot(root, app, {
             onRecoverableError: (error) => console.error(`[hydration] ${error?.message ?? error}`),
         });
-    preloadPage(here).then(adopt, adopt);
+    // and the starter content the build rendered with (products, projects, posts…), so the first render matches
+    Promise.all([preloadPage(here), preloadStarters()]).then(adopt, adopt);
 } else {
     root.textContent = "";
     document.documentElement.classList.remove("fc-stale");

@@ -101,6 +101,9 @@ export const useSkyDrag = ({ skyRef, canvasRef, grabRef, field, drag, fluid, edi
         // build (or rebuild) everything for the hero's current size
         const setup = () => {
             starColor = getComputedStyle(sky).getPropertyValue("--sky-star").trim() || starColor;
+            // the hero first: on a pre-rendered page the sun or moon appears only after hydration, so measureBody()
+            // can return before measuring it, and the clouds below are measured against it (found 2026-10-25)
+            heroBox = hero.getBoundingClientRect();
             const b = measureBody();
             const stars = starsPx();
             // each cloud layer is a full-width drawing: measure the cloud shape itself

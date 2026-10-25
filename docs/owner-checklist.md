@@ -61,7 +61,7 @@
 11. **Nightly backups**: Google Cloud → Firestore → Disaster recovery / Backups → create a daily backup schedule (keep 7–14 days).
 12. **Lock the web API key**: Google Cloud → APIs & Services → Credentials → the Browser key → Application restrictions → HTTP referrers → add `https://<domain>/*`, `https://<project>.web.app/*`, `https://<project>.firebaseapp.com/*`, `http://localhost:5173/*`.
 13. **Admin 2-step sign-in**: Emlyn, Peter and Esther turn on 2-Step Verification on their Google accounts (myaccount.google.com → Security).
-14. **[CC] First deploy of the site**: `SITE_URL=https://<domain> npm run build && firebase deploy --only hosting` (only when you say go).
+14. **[CC] First deploy of the site**: `SITE_URL=https://<domain> npm run build:deploy && firebase deploy --only hosting` (only when you say go; `build:deploy` stops if it can't read which pages are switched off).
 15. **Custom domain**: Firebase console → Hosting → Add custom domain → add the DNS records at the registrar. HTTPS is automatic.
 16. **Search Console + sitemap** (2.5) and **Business Profile** (2.6) once the domain is live.
 17. **After a week live**:

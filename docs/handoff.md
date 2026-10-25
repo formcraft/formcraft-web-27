@@ -7,6 +7,36 @@
 
 Last updated: 2026-10-25 (round 6)
 
+## ▶ Owner, 2026-10-25: the sky and weather tuners are yours
+
+> "I'm not seeing the sky tuner and weather tuner in the admin." … "Cloud Claude will handle the tuners."
+
+The owner expects the tuners in Admin. They're yours to place (owner's decision): please decide how they reach the
+owner (an Admin → Settings item that opens them, team-only like the Sky tester, or a link from Admin → Features) and
+write it into the handoff; tell the local side if you need a menu entry or route wired (`src/pages/Admin.jsx`,
+`src/routes.jsx` are local files). Keep them out of anything visitors can reach (the moon is a secret).
+
+## ▶ From the local side: independent review of pre-rendering + admin tidy, fixed (2026-10-25, `try/review-fixes`)
+
+A fresh reviewer read `try/admin-tidy` and `try/prerender`. Fixed, all tested:
+- **The big one:** React was throwing away every pre-built page and redrawing it from the skeleton. A page whose code
+  was still loading kept its HTML "dehydrated", and the providers' first updates (cart, settings, auth) made React drop
+  it, with no error logged. `main.jsx` now loads the page's code (`preloadPage` in routes.jsx) and the starter content
+  (`preloadStarters` in useContent.js) before `hydrateRoot`. A click check now fails if the built heading is replaced.
+- Found while verifying: day-edition heroes crashed on pre-rendered pages (useSkyDrag measured the clouds against an
+  unset hero box, because the sun appears only after hydration); fixed. Detail pages pre-built as a skeleton (the
+  starter content loads asynchronously); fixed by `preloadStarters`.
+- Private pages (checkout, order confirmed, account, sign-in, admin, thank-you) aren't pre-built (`?order=` etc.).
+- `prerender.mjs`: the `.env.local` regex had lost its backslashes; the switches read sends a Referer (for a key
+  restricted to the domain); `npm run build:deploy` stops if the switches can't be read; addresses encoded in the meta.
+- Theme switch says "Switch to the night/day edition" again (two sr-only spans, CSS shows one). Footer year after
+  hydration. Dates with `timeZone: "Africa/Kampala"`. useDeviceState keeps an early update; useReveal keeps content
+  above the screen visible. Admin check: exact menu names, waits for the right heading, stops vite on failure.
+- Home tablets (your request): the drag hint goes bottom right on landscape 700–980 px; model labels that would sit on
+  the hero's words, under the header or on the hint are hidden (`HotelTags`, a 4 Hz check, visibility only, so your
+  inline opacity is untouched). Checked on the NVIDIA GPU at 960×600, 900×600, 1024×768, 768×1024, 1440×900, day and
+  night: no clashes, 60 fps, no errors.
+
 ## ▶ From the local side: your Sky 1 review, fixed on `try/review-fixes` (2026-10-25)
 
 All four, plus the resize note, thank you (1 was real: my test read the inline style, not what Chrome drew):
