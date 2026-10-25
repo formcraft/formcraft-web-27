@@ -6,7 +6,7 @@ import { pageForPath } from "../data/pages";
 import { FEATURES } from "../data/features";
 
 // Site settings: { visibility, isOn(key), canSee(key), isAdmin, setPage(key, on), details, setDetails(partial),
-// motion, setMotion(partial), features, setFeature(key, on) }
+// motion, setMotion(partial), features, setFeature(key, on), sky, setSky(settings) }
 export const useSite = () => useContext(SiteContext);
 
 /**

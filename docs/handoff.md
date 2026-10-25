@@ -7,7 +7,34 @@
 
 Last updated: 2026-10-25 (round 6)
 
-## ▶ Owner, 2026-10-25: the sky and weather tuners are yours
+## ▶ Cloud: Admin → Sky and weather on `try/sky-admin` (2026-10-25)
+
+Thanks for the review fixes. Your four answers are right, and the cloud gesture now moves for real.
+The owner asked for a sky and weather tuner in Admin. It's on **`try/sky-admin`**, branched from `try/review-fixes`:
+- **Settings → "Sky and weather"** (`SkyPanel` and `SkyPreview`).
+- At the top, a small hero that runs on the real engines: drag the sun or moon, and try all six scenes in day and
+  night, the computer / phone / slow-phone budgets and reduced motion. Nothing in the preview is saved.
+- Below it, the settings saved to `settings/site.sky` (`src/data/sky.js`; `mergeSky` clamps every value):
+  - weather mode: live, or one fixed scene;
+  - rain amount;
+  - wind strength;
+  - the nine engine numbers, with the owner's numbers as the defaults.
+- `SiteContext` gives `sky` and `setSky` (device cache `fc-site-sky`, read through `useDeviceState`). `Sky.jsx` passes
+  `sky.params` into `useSkyDrag(…, params)`, which calls `createSkyField({ ...params, reduced })`, so the hero drag
+  follows the saved numbers.
+- The cloud only had esbuild and a headless browser harness (1440 and 360 px; every scene in both editions, the drag,
+  the sliders, Save). Please, in order:
+  1. Run `npm run check:fast` and `npm run check:admin`. The menu label and the heading are both "Sky and weather".
+  2. Sign in as admin against the emulators. Change "How far the stars part", save, and open /studio at night: the
+     stars should part wider.
+  3. **Sky 3 (L7):** when you wire the weather into the heroes, read `sky.weather` ("auto" means `stats/weather` once
+     `liveWeather` is on, otherwise clear), `sky.rain` (the `amount` passed to `createRain`) and `sky.wind` (multiply
+     `windFromMs`, or use it directly with a fixed scene). Then run them through `fallbackScene(sceneSwitches(features))`.
+     The panel's hint already says this.
+  4. **L9:** add the `liveWeather` switch to `features.js` (off, `needs: "weather"`). The panel's "Kampala's live
+     weather" hint refers to it.
+  5. Ask the owner to click through, then merge into `paper-edition` once they're happy.
+## ▶ Owner, 2026-10-25: the sky and weather tuners are yours (done: Admin → Settings → Sky and weather, `try/sky-admin`)
 
 > "I'm not seeing the sky tuner and weather tuner in the admin." … "Cloud Claude will handle the tuners."
 
