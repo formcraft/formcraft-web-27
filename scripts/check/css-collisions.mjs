@@ -37,7 +37,10 @@ const topLevel = (list) => {
         const c = list[i];
         if (c === "(" || c === "[") depth++;
         else if (c === ")" || c === "]") depth--;
-        else if (c === "," && depth === 0) (out.push(list.slice(from, i)), (from = i + 1));
+        else if (c === "," && depth === 0) {
+            out.push(list.slice(from, i));
+            from = i + 1;
+        }
     }
     return [...out, list.slice(from)];
 };
