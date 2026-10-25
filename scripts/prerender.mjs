@@ -49,7 +49,26 @@ const pathFor = (file) => {
     return rel === "index" ? "/" : `/${rel.replace(/\/index$/, "")}`;
 };
 
-const { render } = await import(pathToFileURL(join(ROOT, "dist-ssr", "entry-server.js")).href);
+const { render, pageNameFor } = await import(pathToFileURL(join(ROOT, "dist-ssr", "entry-server.js")).href);
+
+// Each page's own stylesheets, from Vite's manifest: the page module's CSS plus that of everything it imports
+// statically. Linked in the head so the pre-built page paints already styled (otherwise it jumped into place when
+// the page's code brought its CSS). The browser's page loader sees them there and doesn't add them again.
+const manifest = JSON.parse(await readFile(join(DIST, ".vite", "manifest.json"), "utf8"));
+const entryCss = new Set((manifest["index.html"]?.css ?? []).map((c) => `/${c}`));
+const cssFor = (name) => {
+    const out = new Set(), seen = new Set();
+    const walk = (key) => {
+        if (!key || seen.has(key)) return;
+        seen.add(key);
+        const m = manifest[key];
+        if (!m) return;
+        (m.css ?? []).forEach((c) => out.add(`/${c}`));
+        (m.imports ?? []).forEach(walk);
+    };
+    walk(`src/pages/${name}.jsx`);
+    return [...out].filter((href) => !entryCss.has(href));
+};
 const { PAGES, defaultVisibility, pageForPath } = await import(pathToFileURL(join(ROOT, "src", "data", "pages.js")).href);
 
 // Which pages are switched on (Admin → Pages), read over REST; the defaults if the database can't be reached
@@ -103,7 +122,9 @@ for (const file of files) {
         // React lists image hints first; dropped: on a slow connection they compete with the stylesheet, and the
         // images are found in the HTML straight after anyway
         body = body.replace(/^(?:<link [^>]*rel="preload"[^>]*\/?>)+/, "");
+        const links = cssFor(pageNameFor(path)).filter((href) => !html.includes(`href="${href}"`));
         const out = html
+            .replace("</head>", `${links.map((href) => `    <link rel="stylesheet" crossorigin href="${href}">`).join("\n")}\n  </head>`)
             .replace(/<meta charset="UTF-8" \/>/i, (m) => `${m}\n    <meta name="fc-prerendered" content="${encodeURI(path)}" />`)
             .replace('<div id="root"></div>', `<div id="root">${body}</div>`);
         await writeFile(file, out);

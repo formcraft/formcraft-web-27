@@ -97,6 +97,14 @@ const matches = (pattern, path) => {
 };
 const prefetched = new Set();
 /**
+ * The page component's name for an address ("NotFound" when nothing matches), e.g. "/stores/oak-armchair" →
+ * "ProductPage". Also used at build time to find a page's stylesheets (scripts/prerender.mjs).
+ * @param {string} pathname
+ * @returns {string}
+ */
+export const pageNameFor = (pathname) => TABLE.find(([pattern]) => matches(pattern, pathname))?.[1] ?? "NotFound";
+
+/**
  * Loads the code of the page at an address and hands it over, so React can render that page straight away (no
  * Suspense). main.jsx does this before adopting a pre-rendered page: while a page is still loading, React keeps the
  * pre-built HTML on hold, and any update above it (the cart, settings, sign-in) makes React throw it away and draw it
@@ -105,7 +113,7 @@ const prefetched = new Set();
  * @returns {Promise<void>}
  */
 export const preloadPage = async (pathname) => {
-    const name = TABLE.find(([pattern]) => matches(pattern, pathname))?.[1] ?? "NotFound";
+    const name = pageNameFor(pathname);
     const mod = await load(name);
     registerPages({ [`./pages/${name}.jsx`]: mod });
 };

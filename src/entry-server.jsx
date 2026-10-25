@@ -8,6 +8,7 @@ import { prerenderToNodeStream } from "react-dom/static";
 import { StaticRouter } from "react-router-dom/server";
 import { AppTree } from "./App.jsx";
 import { registerPages } from "./lib/pageRegistry.js";
+export { pageNameFor } from "./routes.jsx"; // for scripts/prerender.mjs (which page's stylesheets a file needs)
 import { preloadStarters } from "./hooks/useContent.js";
 
 // every page's code up front, so the HTML holds the finished page (the browser keeps loading pages on demand)
