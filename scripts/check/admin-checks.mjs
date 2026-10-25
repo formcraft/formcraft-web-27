@@ -95,7 +95,13 @@ const main = async () => {
     await makeTestOwner(project);
     await mkdir(OUT, { recursive: true });
     const dev = await startDev();
-    const { browser, name } = await launchBrowser();
+    let browser, name;
+    try {
+        ({ browser, name } = await launchBrowser());
+    } catch (e) {
+        dev.kill();
+        throw e;
+    }
     const issues = [];
     const add = (severity, where, text) => issues.push({ severity, where, text });
     try {
@@ -127,12 +133,12 @@ const main = async () => {
             for (const label of labels) {
                 const where = `${label} @ ${width}px`;
                 // the side menu on wide screens; the grouped "Admin section" menu on phones
-                const navButton = page.locator(".admin-nav-btn", { hasText: label }).first();
+                const navButton = page.getByRole("button", { name: label, exact: true }).and(page.locator(".admin-nav-btn")).first();
                 if (await navButton.isVisible()) await navButton.click();
                 else await page.selectOption("#admin-section", { label });
-                // panels load their data live; wait for the heading
-                await page.locator(".admin-main h3").first().waitFor({ timeout: 10000 }).catch(() => {});
-                await wait(700);
+                // panels load their data live; wait until this panel's heading is there (not the previous one's)
+                await page.waitForFunction((l) => document.querySelector(".admin-main h3")?.textContent.trim() === l, label, { timeout: 10000 }).catch(() => {});
+                await wait(300);
                 const m = await page.evaluate(measure);
                 if (m.heading !== label) add("error", where, `Menu says “${label}”, the panel heading says “${m.heading || "(none)"}”.`);
                 if (m.overflow > 1) add("error", where, `The screen scrolls sideways by ${m.overflow}px.`);

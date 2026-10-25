@@ -94,13 +94,40 @@ export const CLICK_CHECKS = [
         async run(browser) {
             const ctx = await openContext(browser, { width: 1440, theme: "day" });
             const { page } = await open(ctx, "/about");
-            await page.getByRole("button", { name: /switch between the day and night editions/i }).first().click();
+            await page.getByRole("button", { name: /switch to the night edition/i }).first().click();
             await wait(300);
             const now = await page.evaluate(() => document.documentElement.dataset.theme);
             const saved = await page.evaluate(() => localStorage.getItem("fc-theme")); // what the next visit starts with
             await ctx.close();
             if (now !== "night") throw new Error(`edition after the switch: ${now}`);
             if (saved !== "night") throw new Error(`saved edition: ${saved}`);
+        },
+    },
+    {
+        // Pre-rendered pages must be adopted by React, not thrown away and drawn again from the skeleton (which
+        // flickers and replays the animations). Found in review on 2026-10-25: a page still loading while the
+        // providers updated made React redraw it; main.jsx now loads the page's code before adopting it.
+        name: "Pre-rendered pages are adopted, not redrawn (no skeleton, the built heading stays the same element)",
+        async run(browser) {
+            for (const path of ["/", "/studio", "/contact", "/stores/oak-armchair"]) {
+                const ctx = await openContext(browser, { width: 1440 });
+                await ctx.addInitScript(() => {
+                    window.__skeleton = false;
+                    document.addEventListener("DOMContentLoaded", () => {
+                        window.__builtH1 = document.querySelector("#root h1");
+                        new MutationObserver(() => {
+                            if (document.querySelector('#main [aria-busy="true"]')) window.__skeleton = true;
+                        }).observe(document.getElementById("root"), { childList: true, subtree: true, attributes: true, attributeFilter: ["aria-busy"] });
+                    });
+                });
+                const page = await ctx.newPage();
+                await page.goto(BASE + path, { waitUntil: "load" });
+                await wait(2500);
+                const r = await page.evaluate(() => ({ built: Boolean(window.__builtH1), kept: Boolean(window.__builtH1?.isConnected), skeleton: window.__skeleton }));
+                await ctx.close();
+                if (!r.built) throw new Error(`${path}: no pre-built heading in the HTML`);
+                if (!r.kept || r.skeleton) throw new Error(`${path}: the pre-built page was redrawn${r.skeleton ? " (skeleton shown)" : ""}`);
+            }
         },
     },
     {

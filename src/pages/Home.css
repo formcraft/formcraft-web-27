@@ -102,9 +102,14 @@
 
 @media (max-width: 980px) {
   .home-hero::before { background: linear-gradient(180deg, transparent 0%, transparent 34%, color-mix(in srgb, var(--ground) 92%, transparent) 50%, color-mix(in srgb, var(--ground) 97%, transparent) 100%); }
-  /* tablets and phones: just under the header, over the model and clear of the hero text below */
+  /* portrait tablets and phones: just under the header, over the model and clear of the hero text below */
   .home-drag-hint { right: auto; left: 50%; bottom: auto; top: calc(var(--fc-header-h) + 14px); translate: -50% 0; }
   .home-hero-strip li:last-child { display: none; }
+}
+/* landscape tablets and small laptops (700–980 px, wider than tall): the model sits to the right of the copy
+   (side framing in hotel/*.js), so the hint goes back to its desktop place, bottom right, off the model's labels */
+@media (min-width: 700px) and (max-width: 980px) and (min-aspect-ratio: 5/4) {
+  .home-drag-hint { left: auto; right: max(48px, 6vw); top: calc(min(100svh, 980px) - 170px); translate: none; }
 }
 @media (max-width: 600px) {
   .home-hero-inner { padding-top: 46svh; padding-bottom: 40px; gap: 28px; }

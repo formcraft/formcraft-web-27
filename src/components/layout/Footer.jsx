@@ -12,6 +12,9 @@ import { SubscribeForm } from "../forms/SubscribeForm";
 import { Icon } from "../ui/Icon";
 import { Logo, LogoMark } from "../ui/Logo";
 import { TornEdge } from "../ui/TornEdge";
+import { useDeviceState } from "../../hooks/useHydration";
+
+const BUILD_YEAR = new Date().getFullYear();
 import "./Footer.css";
 
 /** A footer link that disappears when the admin turns its page off. */
@@ -22,6 +25,8 @@ const L = ({ to, children }) => {
 
 /** The site footer. Rendered once by Layout.jsx under every page. */
 export const Footer = () => {
+    // the build's year in the pre-built HTML, the visitor's straight after (useHydration.js)
+    const [year] = useDeviceState(() => new Date().getFullYear(), BUILD_YEAR);
     const { pathname } = useLocation();
     const [sheet, name] = sheetFor(pathname);
     const show = useShowLink();
@@ -135,7 +140,7 @@ export const Footer = () => {
                     </div>
                 </div>
                 <div className="footer-legal">
-                    <span suppressHydrationWarning>© {new Date().getFullYear()} Formcraft Design and Construction Co. Ltd</span>
+                    <span>© {year} Formcraft Design and Construction Co. Ltd</span>
                     <span className="footer-legal-links">
                         <Link to="/privacy">Privacy</Link>
                         <button type="button" className="footer-cookie" onClick={openConsent}>Cookie settings</button>

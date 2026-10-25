@@ -27,7 +27,7 @@ const tearPoints = (seed) => {
 
 // Short numbers: one decimal, no trailing ".0", no leading zero (the edges are in every page's pre-built HTML,
 // twelve on a long page, so their size matters on slow connections)
-const f = (n) => (Math.round(n * 10) / 10).toString().replace(/^(-?)0./, "$1.");
+const f = (n) => (Math.round(n * 10) / 10).toString().replace(/^(-?)0\./, "$1.");
 // The tear as relative steps ("l3,1.7 10.4,3.7 …"), each rounded from where the last one landed, so the drawn
 // points stay within 0.05 px of the original: the same shape in about 60 % of the text.
 const steps = (pts) => {

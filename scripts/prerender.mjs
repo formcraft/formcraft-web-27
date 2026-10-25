@@ -15,7 +15,11 @@
 // soon" as before): the switches are read from Firestore settings/site over REST at build time, like the page
 // heads. A page switched off after a build still has its old pre-built HTML until the next build and deploy.
 //
-// Options: --dist <dir> (default dist). Needs: vite build --ssr src/entry-server.jsx --outDir dist-ssr first.
+// Private or address-dependent pages (checkout, order confirmed, account, sign-in, admin, the thank-you page) are never
+// pre-built: they depend on the visitor or on ?query values the build can't know.
+//
+// Options: --dist <dir> (default dist); --strict: fail when the page switches can't be read (npm run build:deploy),
+// instead of building every page as switched on. Needs: vite build --ssr src/entry-server.jsx --outDir dist-ssr first.
 
 import { readFile, readdir, writeFile } from "node:fs/promises";
 import { dirname, join, relative, resolve } from "node:path";
@@ -25,6 +29,9 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const argv = process.argv.slice(2);
 const DIST = resolve(process.cwd(), argv.includes("--dist") ? argv[argv.indexOf("--dist") + 1] : join(ROOT, "dist"));
 const SKIP_DIRS = new Set(["assets", "fonts", "images", "logos", "og", "textures"]);
+const STRICT = argv.includes("--strict");
+// pages that depend on the visitor or the address's ?query: rendered by the app as before
+const PRIVATE = new Set(["/checkout", "/checkout/confirmed", "/account", "/sign-in", "/admin", "/donate/thank-you"]);
 
 const htmlFiles = async (dir) => {
     const out = [];
@@ -49,7 +56,7 @@ const { PAGES, defaultVisibility, pageForPath } = await import(pathToFileURL(joi
 const env = async () => {
     try {
         const text = await readFile(join(ROOT, ".env.local"), "utf8");
-        return Object.fromEntries([...text.matchAll(/^s*([A-Z_]+)s*=s*(.*?)s*$/gm)].map((m) => [m[1], m[2].replace(/^["']|["']$/g, "")]));
+        return Object.fromEntries([...text.matchAll(/^\s*([A-Z_]+)\s*=\s*(.*?)\s*$/gm)].map((m) => [m[1], m[2].replace(/^["']|["']$/g, "")]));
     } catch {
         return {};
     }
@@ -61,7 +68,9 @@ const visibility = defaultVisibility();
 try {
     const project = envVar("VITE_FIREBASE_PROJECT_ID"), key = envVar("VITE_FIREBASE_API_KEY");
     if (!project || !key) throw new Error("no Firebase project in the environment");
-    const res = await fetch(`https://firestore.googleapis.com/v1/projects/${project}/databases/(default)/documents/settings/site?key=${key}`, { signal: AbortSignal.timeout(5000) });
+    // the Referer lets a key restricted to the site's domains (owner checklist) still answer the build
+    const site = (envVar("SITE_URL") || envVar("VITE_SITE_URL") || "https://formcraftdesign.com").replace(/\/+$/, "");
+    const res = await fetch(`https://firestore.googleapis.com/v1/projects/${project}/databases/(default)/documents/settings/site?key=${key}`, { signal: AbortSignal.timeout(5000), headers: { Referer: `${site}/` } });
     if (res.status !== 404) {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const saved = (await res.json()).fields?.pages?.mapValue?.fields ?? {};
@@ -69,6 +78,10 @@ try {
     }
 } catch (error) {
     switchNote = `page switches not read (${error.message}); every page counts as on`;
+    if (STRICT) {
+        console.error(`prerender: ${switchNote}. A page switched off in Admin could be pre-built, so the deploy build stops here.`);
+        process.exit(1);
+    }
 }
 for (const p of PAGES) if (p.locked) visibility[p.key] = true;
 let skipped = 0;
@@ -79,6 +92,7 @@ for (const file of files) {
     const html = await readFile(file, "utf8");
     if (!html.includes('<div id="root"></div>')) continue; // not an app page, or done already
     const path = pathFor(file);
+    if (PRIVATE.has(path)) continue;
     const pageKey = pageForPath(path)?.key;
     if (pageKey && visibility[pageKey] === false) {
         skipped++; // switched off in Admin → Pages: leave it to the app ("opens soon")
@@ -90,7 +104,7 @@ for (const file of files) {
         // images are found in the HTML straight after anyway
         body = body.replace(/^(?:<link [^>]*rel="preload"[^>]*\/?>)+/, "");
         const out = html
-            .replace(/<meta charset="UTF-8" \/>/i, (m) => `${m}\n    <meta name="fc-prerendered" content="${path}" />`)
+            .replace(/<meta charset="UTF-8" \/>/i, (m) => `${m}\n    <meta name="fc-prerendered" content="${encodeURI(path)}" />`)
             .replace('<div id="root"></div>', `<div id="root">${body}</div>`);
         await writeFile(file, out);
         done++;
@@ -99,7 +113,7 @@ for (const file of files) {
         failed.push(`${path}: ${error.message.split("\n")[0]}`);
     }
 }
-if (switchNote) console.log(`prerender: ${switchNote}`);
+if (switchNote) console.warn(`prerender: WARNING: ${switchNote}. Before a deploy, use npm run build:deploy (it stops when they can't be read).`);
 console.log(`prerender: ${done} pages (${Math.round(kb)} kB of HTML before compression)${skipped ? `, ${skipped} switched off in Admin left to the app` : ""}`);
 if (failed.length) {
     console.error(`prerender: ${failed.length} failed\n  ${failed.join("\n  ")}`);

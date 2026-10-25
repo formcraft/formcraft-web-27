@@ -11,7 +11,7 @@ import { createElement, lazy } from "react";
 import { Navigate } from "react-router-dom";
 import { PageGate } from "./components/layout/PageGate";
 import { pageForPath } from "./data/pages";
-import { loadedPage } from "./lib/pageRegistry";
+import { loadedPage, registerPages } from "./lib/pageRegistry";
 
 // One lazy chunk per page. Pages use named exports that match the file name.
 // At build time src/entry-server.jsx hands every page over up front (lib/pageRegistry.js), so React writes each page
@@ -101,6 +101,20 @@ const prefetched = new Set();
  * Each page is fetched at most once; outside links and unknown addresses are ignored.
  * @param {string} href  the link's address, e.g. "/studio"
  */
+/**
+ * Loads the code of the page at an address and hands it over, so React can render that page straight away (no
+ * Suspense). main.jsx does this before adopting a pre-rendered page: while a page is still loading, React keeps the
+ * pre-built HTML on hold, and any update above it (the cart, settings, sign-in) makes React throw it away and draw it
+ * again from a skeleton (found in review, 2026-10-25). The HTML is on screen meanwhile, so the wait costs nothing.
+ * @param {string} pathname  e.g. "/studio"
+ * @returns {Promise<void>}
+ */
+export const preloadPage = async (pathname) => {
+    const name = TABLE.find(([pattern]) => matches(pattern, pathname))?.[1] ?? "NotFound";
+    const mod = await load(name);
+    registerPages({ [`./pages/${name}.jsx`]: mod });
+};
+
 export const prefetchRoute = (href) => {
     if (!href?.startsWith("/")) return;
     const hit = TABLE.find(([pattern]) => matches(pattern, href));

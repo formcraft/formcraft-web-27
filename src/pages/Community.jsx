@@ -53,7 +53,7 @@ const JOIN_STEPS = [
 const formatDate = (value) => {
     if (!value) return null;
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString("en-UG", { day: "numeric", month: "short", year: "numeric" });
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString("en-UG", { day: "numeric", month: "short", year: "numeric", timeZone: "Africa/Kampala" });
 };
 
 // Small "send" helper shared by both forms on this page

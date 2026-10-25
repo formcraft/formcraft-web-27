@@ -390,9 +390,37 @@ export const HotelControls = () => {
     );
 };
 
+// A label must never sit on the hero's words or under the header (cloud review of the night render at 960 × 600).
+// The scene script moves the labels every frame and sets their opacity inline, so this marks a clashing label with
+// a class (CSS hides it with visibility, which the script doesn't touch). Checked four times a second, only while the
+// labels are showing: reading a few boxes is cheap, and a label that moves into the text is hidden within 250 ms.
+const CLASH_TARGETS = ".home-hero-copy .eyebrow, .home-hero-title, .home-hero-copy .lead, .home-hero-copy .row > *, .home-hero-strip, #drag-hint:not(.gone)";
+const overlaps = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+const useLabelClashes = (ref) => {
+    useEffect(() => {
+        const id = setInterval(() => {
+            const root = ref.current;
+            if (!root || document.hidden) return;
+            const labels = [...root.children];
+            if (!labels.some((el) => Number(el.style.opacity || 0) > 0.02)) return; // labels not showing (yet)
+            const headerBottom = document.querySelector(".header")?.getBoundingClientRect().bottom ?? 0;
+            const words = [...document.querySelectorAll(CLASH_TARGETS)].map((el) => el.getBoundingClientRect()).filter((r) => r.width && r.bottom > 0);
+            labels.forEach((el) => {
+                const r = el.getBoundingClientRect();
+                const clash = r.top < headerBottom + 4 || words.some((w) => overlaps(r, w));
+                if (clash !== el.classList.contains("is-clashing")) el.classList.toggle("is-clashing", clash);
+            });
+        }, 250);
+        return () => clearInterval(id);
+    }, [ref]);
+};
+
 // Labels pinned to the model by the scene script (it moves them each frame)
-export const HotelTags = () => (
-    <div className="hotel-tags" aria-hidden="true">
+export const HotelTags = () => {
+    const ref = useRef(null);
+    useLabelClashes(ref);
+    return (
+    <div ref={ref} className="hotel-tags" aria-hidden="true">
         <div id="tag-design">
             <b>In design</b>
             <i />
@@ -409,4 +437,5 @@ export const HotelTags = () => (
             <small>G5 · from the same model</small>
         </div>
     </div>
-);
+    );
+};

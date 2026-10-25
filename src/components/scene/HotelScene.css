@@ -56,3 +56,6 @@
 .hotel-preview-info { opacity: .8; font-size: 11px; }
 /* phones: the rail is enough of a hint that the model can be handled; keep the hero minimal */
 @media (max-width: 600px) { :root[data-hotel-ready] .home-drag-hint { display: none; } }
+
+/* a label that would sit on the hero's words, under the header or on the drag hint (HotelTags) */
+.hotel-tags > .is-clashing { visibility: hidden; }

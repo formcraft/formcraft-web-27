@@ -3,7 +3,7 @@
 // produce exactly the HTML that was built, and the build can't know anything about the visitor's device
 // (saved settings, cached text, the cart, the clock). These two hooks keep device reads out of that first render:
 // the component renders like the build did, then shows the device's values straight after.
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 const noSubscribe = () => () => {};
 const UNSET = Symbol("unset");
@@ -28,12 +28,16 @@ export const useIsHydrating = () => useSyncExternalStore(noSubscribe, () => fals
 export const useDeviceState = (read, fallback) => {
     const hydrating = useIsHydrating();
     const [state, setState] = useState(() => (hydrating ? UNSET : read()));
+    const touched = useRef(false); // set before the device read arrived: keep that, don't overwrite it
     useEffect(() => {
-        if (state === UNSET) setState(read());
+        if (state === UNSET && !touched.current) setState(read());
         // read once, after the first render: later changes go through setState
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     // an update before the device value arrives works from the fallback, never from the placeholder
-    const [set] = useState(() => (v) => setState((prev) => (typeof v === "function" ? v(prev === UNSET ? fallback : prev) : v)));
+    const [set] = useState(() => (v) => {
+        touched.current = true;
+        setState((prev) => (typeof v === "function" ? v(prev === UNSET ? fallback : prev) : v));
+    });
     return [state === UNSET ? fallback : state, set];
 };

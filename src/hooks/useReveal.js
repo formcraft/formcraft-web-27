@@ -46,7 +46,7 @@ export const useReveal = () => {
         }
         if (prerendered) {
             const r = node.getBoundingClientRect();
-            if (r.top < window.innerHeight && r.bottom > 0) return undefined; // seen already: no animation
+            if (r.top < window.innerHeight) return undefined; // on screen or already scrolled past: no animation
             setWaiting(true); // below the screen: hide it, ready to slide in
         }
         callbacks.set(node, () => setWaiting(false));

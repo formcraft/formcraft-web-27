@@ -24,7 +24,7 @@ const src = (name, small) => (isUrl(name) ? name : `/images/${name}${small ? "-8
 const formatDate = (value) => {
     if (!value) return null;
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString("en-UG", { day: "numeric", month: "short", year: "numeric" });
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString("en-UG", { day: "numeric", month: "short", year: "numeric", timeZone: "Africa/Kampala" });
 };
 
 // Planned = not written yet; draft = written but not published

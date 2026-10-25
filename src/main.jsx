@@ -10,6 +10,7 @@ import "./styles/tokens.css";
 import "./styles/base.css";
 import "./styles/components.css";
 import App from "./App.jsx";
+import { preloadPage } from "./routes";
 
 // Pre-rendered pages (scripts/prerender.mjs) arrive with their HTML already in #root: React adopts it
 // ("hydrates") instead of drawing it again, so the page doesn't flicker. That needs the HTML to be for this
@@ -24,9 +25,13 @@ const app = (
 const builtFor = document.querySelector('meta[name="fc-prerendered"]')?.content;
 const here = location.pathname.replace(/\/+$/, "") || "/";
 if (root.firstElementChild && builtFor === here) {
-    hydrateRoot(root, app, {
-        onRecoverableError: (error) => console.error(`[hydration] ${error?.message ?? error}`),
-    });
+    // the page's own code first (see preloadPage in routes.jsx): adopting it while it's still loading would make
+    // React redraw the page from a skeleton. The pre-built page stays on screen meanwhile.
+    const adopt = () =>
+        hydrateRoot(root, app, {
+            onRecoverableError: (error) => console.error(`[hydration] ${error?.message ?? error}`),
+        });
+    preloadPage(here).then(adopt, adopt);
 } else {
     root.textContent = "";
     document.documentElement.classList.remove("fc-stale");
