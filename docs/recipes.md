@@ -137,6 +137,13 @@ The person signs out and back in to pick it up. (Against the emulators, put
 
 ## Publish the site (only when the owner says go)
 
+**Normally:** open a pull request into `main` on GitHub. GitHub builds it and posts an unlisted **preview link** on the
+pull request (`preview.yml`; it expires after 7 days). When the owner is happy, press **Merge**: `publish.yml` builds
+and publishes the site within ~5 minutes. Run `npm run check` on this computer before merging; GitHub doesn't.
+**Undo:** Firebase console → Hosting → **Release history** → ⋮ on the previous version → **Roll back** (seconds).
+
+**By hand** (when GitHub can't run, e.g. a billing hold):
+
 ```bash
 npm run check                                              # must pass
 npm run build:deploy

@@ -232,7 +232,7 @@ formcraft-web-27/   (repo root)
 ├─ storage.rules
 ├─ firebase.json               # hosting: public dist, rewrites ** → /index.html
 ├─ .firebaserc
-└─ .github/workflows/deploy.yml
+└─ .github/workflows/publish.yml  preview.yml
 ```
 
 ## Setup instructions
@@ -339,7 +339,7 @@ Needs Node.js 20+, Git and a Google account. The React app already exists, so th
     npm run build
     firebase deploy
     ```
-    After that, merges to `main` deploy through `.github/workflows/deploy.yml`; pull requests get preview links.
+    After that, merges to `main` publish through `.github/workflows/publish.yml`; pull requests get preview links (`preview.yml`).
 12. **Domain:** Hosting → Add custom domain, add the DNS records; HTTPS is automatic.
 
 ## Security rules starter (`firestore.rules`)

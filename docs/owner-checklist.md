@@ -83,7 +83,9 @@
 17. **After a week live**:
     - Check the browser console for "Content-Security-Policy" reports; if clean, switch `Content-Security-Policy-Report-Only` to `Content-Security-Policy` in `firebase.json`. **[CC]**
     - Turn on App Check **enforcement** for Storage and Functions (Firebase console → App Check), and set `ENFORCE_APP_CHECK=true` for the functions. **[CC]**
-18. **Automatic deploys (optional)**: ask Claude Code to add a GitHub Actions deploy job with a Firebase service-account secret, so merging to `main` publishes the site. There's no GitHub CI any more (removed to save money); Claude Code on the office computer runs `npm run check` before every push instead.
+18. **Automatic publishing from GitHub** (set up 2026-10-25): merging into `main` publishes the site; every pull request gets a preview link first; Firebase → Hosting → Release history → Roll back undoes a release. Needs two things from you:
+    - **GitHub billing fixed**: github.com → your avatar → **Settings → Billing and plans**: update the card (the last runs failed with "recent account payments have failed"). Private repositories get 2,000 free minutes a month (a publish takes ~5); set the Actions **spending limit to $0** so it can never charge.
+    - **The publishing key**: in the VS Code terminal run `firebase init hosting:github` (Claude Code guides you; it stores a key named `FIREBASE_SERVICE_ACCOUNT_FORMCRAFTDESIGN2027` in GitHub).
 
 ## 4. Content only you can provide
 
