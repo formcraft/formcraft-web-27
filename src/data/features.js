@@ -43,6 +43,8 @@ export const FEATURES = [
     { key: "sceneOvercast", group: "Weather", label: "Overcast", help: "Torn-paper cloud decks; the sun or moon dims behind them.", on: true, needs: "weather" },
     { key: "sceneMist", group: "Weather", label: "Mist", help: "A band of tracing-paper mist over the hills. Off: partly cloudy instead.", on: true, needs: "weather" },
     { key: "sceneRain", group: "Weather", label: "Rain", help: "Cut-paper rain. Off: overcast instead.", on: true, needs: "weather" },
+    { key: "liveWeather", group: "Weather", label: "Kampala's live weather", help: "With Admin → Sky and weather on Auto, the heroes follow the real weather in Kampala (MET Norway, every 30 minutes). Needs the weather sync (Cloud Functions, Blaze plan): until it runs, Auto shows a clear sky.", on: false, needs: "weather" },
+    { key: "home3dWeather", group: "Home", label: "Weather on the 3D model", help: "The model's leaves flutter in the wind, rain falls over it and the light dims under cloud, matching the page heroes.", on: true, needs: "home3d" },
     { key: "sceneStorm", group: "Weather", label: "Storm", help: "Heavy rain, strong wind and a soft glow inside the clouds (never bright flashes). Off: rain instead.", on: true, needs: "weather" },
 ];
 

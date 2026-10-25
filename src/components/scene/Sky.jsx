@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useSky } from "../../hooks/useSky";
 import { useTheme } from "../../hooks/useTheme";
 import { useFeature, useSite } from "../../hooks/useSite";
@@ -6,6 +6,9 @@ import { W, SKY_H, starField } from "./sceneGeometry";
 import { moonLitPath, moonPhase } from "./sky/moonPhase";
 import { useSkyDrag } from "./useSkyDrag";
 import { useIsHydrating } from "../../hooks/useHydration";
+import { useWeather } from "../../hooks/useWeather";
+import { RainLayer, WeatherBack, WeatherWash } from "./Weather";
+import { useHeroSize, useWeatherMotion } from "./useWeatherMotion";
 import "./Sky.css";
 
 // The one sky shared by every page hero (Home has its own 3D sky). Drawn in the page, no images:
@@ -15,6 +18,9 @@ import "./Sky.css";
 // and the stars part around the moon; nothing on the site tells visitors (the owner's secret).
 // `horizon` is how far above the hero's bottom edge the hills meet the sky, in px at desktop width
 // (scaled down with the paper scene on smaller screens).
+// Weather (Sky 3): the scene from useWeather() is drawn by Weather.jsx (wash under the stars; clouds, decks, the storm
+// and mist over them; rain in front of the hills), and its effect on what's here (fewer stars, a dimmer sun or moon,
+// which of the hero's own clouds stay, wet hills) is passed to the hero as data attributes and CSS variables.
 /**
  * @param {{ seed?: number, horizon?: number, className?: string }} props  seed: picks the stars
  */
@@ -30,9 +36,34 @@ export const Sky = ({ seed = 7, horizon = 180, className = "" }) => {
     const grabRef = useRef(null);
     const params = useSite()?.sky?.params; // Admin → Sky and weather
     useSkyDrag({ skyRef, canvasRef, grabRef, field: night ? field : null, drag, fluid, edition: theme, params });
+
+    const weather = useWeather();
+    const size = useHeroSize(skyRef);
+    const glowRef = useRef(null);
+    const rainRef = useRef(null);
+    useWeatherMotion({ skyRef, canvasRef: rainRef, glowRef, weather, size });
+    // the scene's effect on the hero's own pieces (after hydration; the build shows the clear sky)
+    useEffect(() => {
+        const hero = skyRef.current?.parentElement;
+        if (!hero) return undefined;
+        const sc = weather.scene;
+        hero.dataset.weather = weather.kind;
+        hero.dataset.puffs = String(night ? 2 : Math.min(2, sc.puffs ?? 2));
+        hero.toggleAttribute("data-wet", Boolean(sc.wet));
+        hero.style.setProperty("--sky-stars-k", String(sc.stars ?? 1));
+        hero.style.setProperty("--sky-body-k", String((night ? sc.moon : sc.sun) ?? 1));
+        return () => {
+            delete hero.dataset.weather;
+            delete hero.dataset.puffs;
+            hero.removeAttribute("data-wet");
+            hero.style.removeProperty("--sky-stars-k");
+            hero.style.removeProperty("--sky-body-k");
+        };
+    }, [weather.kind, weather.scene, night]);
     return (
         <>
             <div ref={skyRef} className={`sky ${className}`.trim()} style={{ "--sky-horizon": `${Math.round(horizon)}px` }} aria-hidden="true">
+                <WeatherWash weather={weather} />
                 <canvas ref={canvasRef} className="sky-stars" />
                 <svg className="sky-stars sky-twinkles" viewBox={`0 0 ${W} ${SKY_H}`} preserveAspectRatio="xMidYMin slice" focusable="false">
                         <g className="sky-twinkle">
@@ -41,7 +72,9 @@ export const Sky = ({ seed = 7, horizon = 180, className = "" }) => {
                             ))}
                         </g>
                 </svg>
+                <WeatherBack weather={weather} size={size} night={night} horizon={horizon} glowRef={glowRef} />
             </div>
+            <RainLayer weather={weather} canvasRef={rainRef} />
             {/* invisible: lets a finger on the sun or moon move it instead of scrolling (above the hero text) */}
             {drag && <span ref={grabRef} className="sky-grab" aria-hidden="true" />}
         </>

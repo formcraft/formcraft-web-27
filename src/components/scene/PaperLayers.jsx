@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useRef } from "react";
-import { useFeature, useSite } from "../../hooks/useSite";
+import { useFeature } from "../../hooks/useSite";
+import { useWeather } from "../../hooks/useWeather";
 import { SkyBody } from "./Sky";
 import { W, random, ridgePath, rectPath, roofPath, framePath, cranePath, cloudCircles, cloudPath, landscape, motifShapes, plantTrees } from "./sceneGeometry";
 import "./PaperLayers.css";
@@ -159,9 +160,9 @@ const Quill = ({ id, d, seed, h, n, className }) => {
 export const PaperLayers = ({ seed = 7, height = 560, city = true, motif = "city", tall = 1, sun = { x: 1110, y: 120, r: 64 }, accent = false, className = "" }) => {
     const uid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
     // wind: Admin → Sky and weather ("wind", 0–2) and Admin → Features ("Wind in the trees"); calm = no animation
-    const site = useSite();
     const windOn = useFeature("wind");
-    const wind = windOn ? Math.max(0, Math.min(2, Number(site?.sky?.wind ?? 1))) : 0;
+    const weather = useWeather();
+    const wind = windOn ? weather.strength : 0;
     const rootRef = useRef(null);
     useGusts(rootRef, wind, wind > 0.05);
     const L = useMemo(() => landscape({ seed, h: height, city: city && motif === "city", tall }), [seed, height, city, motif, tall]);

@@ -1,0 +1,45 @@
+/* Weather in the page heroes (Weather.jsx). Colours come from the weather tokens in tokens.css (day and night). */
+.wx { position: absolute; inset: 0; pointer-events: none; animation: wx-in .9s var(--fc-ease) both; }
+@keyframes wx-in { from { opacity: 0; } to { opacity: 1; } }
+.wx-wash { position: absolute; inset: 0; }
+.wx-svg { position: absolute; left: 0; top: 0; overflow: visible; }
+/* layered paper sheets cast a soft shadow on what's behind them (the owner's paper-cut reference) */
+.wx-sheet { filter: drop-shadow(0 5px 6px var(--cloud-shadow)); }
+.wx-deck { filter: drop-shadow(0 6px 8px var(--cloud-shadow)); }
+.wx-cloud-front { fill: var(--sc-cloud); }
+.wx-cloud-back { fill: var(--cloud-back); }
+.wx-glow { opacity: 0; }
+/* paper clouds drift with the wind: 4 px a second × wind, wrapping round, starting from where they're drawn */
+@keyframes wx-drift {
+  0% { transform: translateX(calc(var(--from) * 1px)); opacity: 0; }
+  1%, 99% { opacity: 1; }
+  100% { transform: translateX(calc(var(--to) * 1px)); opacity: 0; }
+}
+.wx-puff.is-drifting {
+  animation: wx-drift calc((var(--from) - var(--to)) * 1s / (4 * var(--wind))) linear infinite;
+  animation-delay: calc(var(--from) * -1s / (4 * var(--wind)));
+}
+/* rain falls in front of the hills, behind the hero text (z-index 2) */
+.wx-rain { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; animation: wx-in .9s var(--fc-ease) both; }
+/* the rain thins out where the hero's words are, so they always read (the design: weather never covers the text):
+   from the left on wide screens, from the top on phones (where the words sit above the scene) */
+.wx-rain {
+  -webkit-mask-image: linear-gradient(90deg, color-mix(in srgb, var(--fc-black) 25%, transparent) 0, color-mix(in srgb, var(--fc-black) 25%, transparent) 30%, var(--fc-black) 58%);
+  mask-image: linear-gradient(90deg, color-mix(in srgb, var(--fc-black) 25%, transparent) 0, color-mix(in srgb, var(--fc-black) 25%, transparent) 30%, var(--fc-black) 58%);
+}
+@media (max-width: 760px) {
+  .wx-rain {
+    -webkit-mask-image: linear-gradient(180deg, color-mix(in srgb, var(--fc-black) 20%, transparent) 0, color-mix(in srgb, var(--fc-black) 20%, transparent) 50%, var(--fc-black) 75%);
+    mask-image: linear-gradient(180deg, color-mix(in srgb, var(--fc-black) 20%, transparent) 0, color-mix(in srgb, var(--fc-black) 20%, transparent) 50%, var(--fc-black) 75%);
+  }
+}
+
+/* the scene's effect on what's already there (data-weather and the --sky-*-k values are set by Sky.jsx) */
+.page-hero .sky-body-move { opacity: var(--sky-body-k, 1); transition: opacity 1.2s var(--fc-ease); }
+/* by day the hero's own two paper clouds count as the scene's first two */
+.page-hero[data-puffs="0"] .pl-cloud, .page-hero[data-puffs="1"] .pl-cloud-b { opacity: 0; transition: opacity 1.2s var(--fc-ease); }
+/* wet paper: the near and front hills a shade darker in rain */
+.page-hero[data-wet] .pl-near, .page-hero[data-wet] .pl-front {
+  filter: drop-shadow(0 -2px 3px var(--sh-2)) drop-shadow(0 -9px 16px var(--sh-2)) brightness(.9);
+}
+@media (prefers-reduced-motion: reduce) { .wx, .wx-rain { animation: none; } .wx-puff.is-drifting { animation: none; } }
