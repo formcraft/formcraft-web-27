@@ -7,6 +7,47 @@
 
 Last updated: 2026-10-25 (round 6)
 
+## ▶ Cloud session: round 8 tasks (2026-10-25; the owner is away, work through them in order)
+
+**Thank you for the Sky 2 review: all four points are applied** on `try/sky-3` (sway 1.4° / 1.8° (2.6° on phones) / 1.6°,
+front row still below 1260 px, gusts inside `@supports (animation-composition: add)`, `--vh` → `--pl-vh`).
+
+**Where the work is:** `try/sky-3` is the newest branch (stack: … → `try/review-fixes` → `try/sky-2` → `try/sky-3`; your
+`try/cloud-r7` is merged into it). Work on your own `try/` branch from `try/sky-3`. Don't merge into `paper-edition`.
+
+**What's new on `try/sky-3`** (details in `docs/current-code.md`, "Weather in the heroes"):
+- Your six scenes in every page hero: `src/hooks/useWeather.js` picks the scene (`?sky=` link or tester → Admin fixed
+  scene → live `stats/weather` with the `liveWeather` switch → clear; then the scene switches' `fallbackScene`);
+  `Weather.jsx` draws your shapes in your contract's order; `useWeatherMotion.js` runs your storm glow and rain.
+- Team **Sky tester** (`SkyTester.jsx`, lazy, signed-in team or `npm run dev` only): scenes, rain, wind, "Gust now",
+  day/night, phone budget, Reset, live status. Nothing about the sun or moon.
+- **Home 3D:** `HotelScene` passes `env.weather = { kind, wind, amount }` and calls `setWeather` on changes (Features
+  "Weather on the 3D model" + "Weather scenes").
+- **Weather contrast check** in `npm run check` (`scripts/check/weather-contrast.mjs`).
+
+**Your tasks:**
+1. **Storm by day fails contrast (the only finding).** The hero lead line ("We survey your plot…", "Furniture,
+   joinery…", "Our vision is…") is **3.96–4.15** against the worst 10 % of the pixels behind it; it needs 4.5. It fails on
+   Studio, Stores and Invest at 360 and 1440. Clear sky, every other scene, and every night scene pass (672 text
+   checks). Please tune the day storm tokens (the wash, deck tones) or the deck cover behind the words, in `tokens.css` /
+   `sky/*`. Re-run with `CHECK_PORT=5173` against `npm run dev` or as part of `npm run check:fast`. The findings are
+   warnings under "weather scenes (?sky=…)" in `check-report/index.html`; the target is none.
+2. **Review Sky 3 in the heroes** (round 7 task 2): each scene at 1440 and 390, day and night (`/studio?sky=storm`, …).
+   One thing I saw: **the storm's tall cloud is mostly hidden behind the decks**, because I followed your contract's order
+   (storm, then decks). If it should show, change the order or the deck heights. Anything in `sky/*` is yours to change
+   directly; for `Weather.jsx`, `Weather.css` and `useWeatherMotion.js`, give numbers or edit them and say so here.
+3. **Home 3D weather** (round 7 task 3): check the model under rain, storm and mist on a real render, and tune
+   `weather3d.js`. Separate from the weather: Chrome logs one
+   `GL_INVALID_OPERATION: glDrawElements: Mismatch between texture format and sampler type` on Home in **every** scene,
+   clear included (NVIDIA, `?sky=clear`). My guess: the first frame skips the shadow pass, so a shadow sampler is bound to a
+   non-depth texture for one draw. Please look in `hotelDay.js` / `hotelNight.js`.
+4. **Look over the tester** (`SkyTester.jsx`, `.css`) as a designer: the controls, the wording, the bottom-left tab
+   (under the cookie banner while it's closed).
+5. **Keep the docs true** for your changes (a change-log row, ideas #23), with no AI attribution.
+
+**Local side, same round:** a full overall check on `try/sky-3` (results below under "From the local side: overall
+check"), then the owner's go-ahead on merging the stack.
+
 ## ▶ Cloud session: round 7 tasks (2026-10-25; the owner is away, both sides work through the list)
 
 **Where the work is.** Nothing new is in `paper-edition` until the owner has clicked through; everything is stacked on
