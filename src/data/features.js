@@ -33,6 +33,7 @@ export const FEATURES = [
     { key: "scraps", group: "Home", label: "Falling paper scraps", help: "The small pieces of paper drifting through the 3D model.", on: true, needs: "home3d" },
     // Sky in the page heroes (ideas #22). The moon is the owner's secret: no hint anywhere visitors can read.
     { key: "skyBodies", group: "Sky", label: "Move the sun and moon", help: "Visitors can drag the sun (day) or the moon (night) around the hero sky; it glides back to its Kampala-clock place. Not announced anywhere on the site.", on: true },
+    { key: "wind", group: "Sky", label: "Wind in the trees", help: "Trees sway and bend in gusts. The strength is set in Admin → Sky and weather (0 = still).", on: true },
     { key: "skyFluid", group: "Sky", label: "Stars and clouds make way", help: "While the sun or moon is moved, stars part around it like water and clouds drift aside, then settle.", on: true, needs: "skyBodies" },
     // Weather scenes in the page heroes (owner, 2026-10-24: "turn off the thunderstorm or the rain and leave
     // the main daylight and night-time"). Clear day and night are always on. A scene that's off falls back to

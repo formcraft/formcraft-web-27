@@ -506,6 +506,7 @@ export const ridgeY = (pts, x) => {
 
 // Plant trees along a ridge in the given x ranges. Returns one path per tree (drawn as separate
 // shapes so overlapping parts never cancel out under the fill rule).
+/** A row of trees along a ridge: [{ d, x, y, s }] (the SVG path, the base point and the size), so PaperLayers can group them and sway them from their bases (wind). */
 export const plantTrees = ({ pts, seed, ranges, every = 70, scale = 1, kinds = ["broadleaf", "acacia", "cypress", "banana"], sink = 4 }) => {
     const r = random(seed);
     const out = [];
@@ -513,8 +514,12 @@ export const plantTrees = ({ pts, seed, ranges, every = 70, scale = 1, kinds = [
         for (let x = a + r() * every * 0.5; x < b; x += every * (0.55 + r() * 0.9)) {
             const kind = kinds[Math.floor(r() * kinds.length)];
             const s = scale * (0.75 + r() * 0.5);
-            out.push(treeShape(kind, x, ridgeY(pts, x) + sink, s, r));
-            if (r() < 0.3) out.push(treeShape("broadleaf", x + 14 * s, ridgeY(pts, x + 14 * s) + sink, s * 0.6, r)); // a young tree beside it
+            const y = ridgeY(pts, x) + sink;
+            out.push({ d: treeShape(kind, x, y, s, r), x, y, s });
+            if (r() < 0.3) {
+                const yy = ridgeY(pts, x + 14 * s) + sink;
+                out.push({ d: treeShape("broadleaf", x + 14 * s, yy, s * 0.6, r), x: x + 14 * s, y: yy, s: s * 0.6 }); // a young tree beside it
+            }
         }
     });
     return out;
