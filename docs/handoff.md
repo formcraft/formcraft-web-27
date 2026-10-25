@@ -7,6 +7,12 @@
 
 Last updated: 2026-10-25 (round 6)
 
+## ▶ Cloud session: START HERE (2026-10-25)
+
+The newest work and your round-7 task list are on the `try/` branches, not here: read `docs/handoff.md` on
+**`try/sky-2`** (or `try/sky-3` once it is pushed), section "Cloud session: round 7 tasks". Nothing is merged into
+`paper-edition` until the owner has clicked through.
+
 ## ▶ Cloud review of `try/sky-1` and `try/weather-switches` (2026-10-25)
 
 **`try/weather-switches`: no objections.** `sceneSwitches` + `fallbackScene` and the tests are right. When you
