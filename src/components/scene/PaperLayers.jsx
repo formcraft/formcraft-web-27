@@ -262,9 +262,11 @@ export const PaperLayers = ({ seed = 7, height = 560, city = true, motif = "city
                 <Trees list={M.trees} kind="near" />
                 {M.outline && <path className="pl-outline" d={M.outline} />}
             </>)}
-            {M && M.puffs.length > 0 && layer("puffs", 0.31, <g className="pl-puffs">
+            {/* the smoke drifts aside from the sun like the clouds (owner): .pl-smoke is found by useSkyDrag and moved
+                through .pl-cloud-push, since the puffs themselves are animated */}
+            {M && M.puffs.length > 0 && layer("puffs pl-smoke", 0.31, <g className="pl-cloud-push"><g className="pl-puffs">
                 {M.puffs.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r={p.r} style={{ "--pd": `${p.d}s` }} />)}
-            </g>)}
+            </g></g>)}
             {layer("near", 0.36, <>
                 <path className="pl-f-near" d={paths.near} />
                 <Quill id={`${uid}qn`} d={paths.near} seed={seed + 14} h={h} n={8} className="pl-q-near" />

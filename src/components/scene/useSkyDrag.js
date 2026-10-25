@@ -3,7 +3,7 @@
 // secret, so nothing on the site mentions it). The motion itself is the cloud session's engine
 // (sky/skyPhysics.js, numbers from the owner's tuner); this hook connects it to the page:
 // - finds the hero's pieces: the star canvas and twinklers (Sky), the body and its rings (SkyBody), the clouds
-//   (PaperLayers .pl-cloud) and the grab handle;
+//   and the chimney smoke (PaperLayers .pl-cloud, .pl-smoke) and the grab handle;
 // - starts a drag from a press anywhere on the hero within 1.6 × the disc's radius, and follows the pointer on
 //   the window (the lesson from the tuner: a drag must not depend on what's under the finger);
 // - runs requestAnimationFrame only while something moves, then stops (zero frames when the sky is still);
@@ -41,7 +41,7 @@ export const useSkyDrag = ({ skyRef, canvasRef, grabRef, field, drag, fluid, edi
 
         const bodyEl = () => hero.querySelector(".sky-body-move");
         const ringsEl = () => hero.querySelector(".sky-body-shift");
-        const clouds = () => [...hero.querySelectorAll(".pl-cloud")].filter((c) => c.getBoundingClientRect().width > 0);
+        const clouds = () => [...hero.querySelectorAll(".pl-cloud, .pl-smoke")].filter((c) => c.getBoundingClientRect().width > 0);
         // a cloud layer's px → its SVG units ("xMidYMax slice": the larger of the two scales)
         const svgScale = (svg) => {
             const vb = svg.viewBox?.baseVal, r = svg.getBoundingClientRect();
@@ -107,8 +107,8 @@ export const useSkyDrag = ({ skyRef, canvasRef, grabRef, field, drag, fluid, edi
             heroBox = hero.getBoundingClientRect();
             const b = measureBody();
             const stars = starsPx();
-            // each cloud layer is a full-width drawing: measure the cloud shape itself
-            const cl = fluid && !field ? clouds().map((c) => { const r = (c.querySelector("path") ?? c).getBoundingClientRect(); return { x: r.left + r.width / 2 - heroBox.left, y: r.top + r.height / 2 - heroBox.top, w: r.width, h: r.height }; }) : [];
+            // each cloud layer is a full-width drawing: measure the cloud shape (or the smoke) itself
+            const cl = fluid && !field ? clouds().map((c) => { const r = (c.querySelector(".pl-puffs, path") ?? c).getBoundingClientRect(); return { x: r.left + r.width / 2 - heroBox.left, y: r.top + r.height / 2 - heroBox.top, w: r.width, h: r.height }; }) : [];
             home = b;
             engine = b ? createSkyField({ stars: fluid ? stars : [], clouds: cl, discR, home: b, bounds: { w: hero.clientWidth, h: hero.clientHeight }, params, reduced }) : null;
             // start from the calm the field returns to (stars just around the resting moon sit a little apart),

@@ -37,15 +37,13 @@
   animation: sky-rise 1.15s var(--fc-ease) both; animation-delay: .12s;
 }
 .sky-body-svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 2px 3px var(--sh-2)) drop-shadow(0 10px 22px var(--sh-2)); }
-.sky-body-disc { fill: var(--sc-sun); }
 .sky-body-ring { fill: var(--sc-ring); }
 .sky-body-ring-3 { opacity: .45; }
 .sky-body-ring-2 { opacity: .7; }
 .sky-body-rings { transform-box: fill-box; transform-origin: center; animation: sky-pulse 9s ease-in-out infinite; }
-/* the sun is cut paper too: a lighter sheet laid on the disc, its edge shadowed, then the paper grain (PaperArt.css) */
-.sky-body-lit { fill: color-mix(in srgb, var(--sc-sun) 78%, var(--fc-white)); filter: drop-shadow(.6px 1.4px 1.2px var(--cloud-edge-shadow)); }
-.sky-body.is-low[data-body="sun"] .sky-body-lit { fill: color-mix(in srgb, var(--fc-rust) 82%, var(--fc-white)); }
-.sky-body.is-low[data-body="sun"] .sky-body-disc { fill: var(--fc-rust); }
+/* one paper disc with the paper grain on it (PaperArt.css); owner: a second, offset sheet on top read as two discs */
+.sky-body-disc { fill: color-mix(in srgb, var(--sc-sun) 78%, var(--fc-white)); }
+.sky-body.is-low[data-body="sun"] .sky-body-disc { fill: color-mix(in srgb, var(--fc-rust) 82%, var(--fc-white)); }
 .sky-body.is-low[data-body="moon"] { opacity: .75; }
 .sky-body.is-low .sky-body-rings { opacity: .5; }
 @keyframes sky-rise { from { opacity: 0; transform: translateY(60px); } to { opacity: 1; transform: none; } }

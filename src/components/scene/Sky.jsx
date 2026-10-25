@@ -144,7 +144,6 @@ export const SkyBody = ({ r, id }) => {
                         <>
                             <defs><PaperGrain id={`${id}g`} size={70} /></defs>
                             <circle className="sky-body-disc" r="44" />
-                            <circle className="sky-body-lit" cx="-3" cy="-4" r="38" />
                             <circle className="pa-grain" r="44" fill={`url(#${id}g)`} />
                         </>
                     )}
