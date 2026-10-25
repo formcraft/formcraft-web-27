@@ -121,3 +121,12 @@ person's role on every write.
 No paid online service is used. `npm run check` runs everything on the developer's own computer in the
 installed Chrome: lint, build, every page at phone, tablet and desktop sizes in both editions, clicks through
 the main journeys, every link, accessibility, and a screenshot report. See [checks.md](checks.md).
+
+## Pre-rendering: why the HTML already holds the page
+
+Phones on slow data used to wait for the JavaScript before seeing anything. Now `npm run build` renders every public page
+with React once, at build time, and saves the result in that page's HTML file (`scripts/prerender.mjs`). The phone shows
+the page straight from the HTML; when the JavaScript arrives, React *hydrates*: it adopts the HTML instead of drawing it
+again. For that to work, React's first render in the browser must match the build exactly, so anything about the
+visitor's device (saved settings, the cart, cached text, the clock) is applied a moment later
+(`src/hooks/useHydration.js`). If they ever differ, the browser console shows `[hydration] …` and `npm run check` fails.

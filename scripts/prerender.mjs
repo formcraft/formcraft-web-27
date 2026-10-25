@@ -11,6 +11,10 @@
 // another address (Hosting sends index.html for unknown addresses, and the service worker uses it offline), a
 // small script in index.html hides it before anything paints, and main.jsx starts fresh. See docs/architecture.md.
 //
+// Pages switched off in Admin → Pages are NOT pre-built (their file keeps an empty root, so the app shows "opens
+// soon" as before): the switches are read from Firestore settings/site over REST at build time, like the page
+// heads. A page switched off after a build still has its old pre-built HTML until the next build and deploy.
+//
 // Options: --dist <dir> (default dist). Needs: vite build --ssr src/entry-server.jsx --outDir dist-ssr first.
 
 import { readFile, readdir, writeFile } from "node:fs/promises";
@@ -39,6 +43,35 @@ const pathFor = (file) => {
 };
 
 const { render } = await import(pathToFileURL(join(ROOT, "dist-ssr", "entry-server.js")).href);
+const { PAGES, defaultVisibility, pageForPath } = await import(pathToFileURL(join(ROOT, "src", "data", "pages.js")).href);
+
+// Which pages are switched on (Admin → Pages), read over REST; the defaults if the database can't be reached
+const env = async () => {
+    try {
+        const text = await readFile(join(ROOT, ".env.local"), "utf8");
+        return Object.fromEntries([...text.matchAll(/^s*([A-Z_]+)s*=s*(.*?)s*$/gm)].map((m) => [m[1], m[2].replace(/^["']|["']$/g, "")]));
+    } catch {
+        return {};
+    }
+};
+const fileEnv = await env();
+const envVar = (k) => process.env[k] || fileEnv[k] || "";
+let switchNote = "";
+const visibility = defaultVisibility();
+try {
+    const project = envVar("VITE_FIREBASE_PROJECT_ID"), key = envVar("VITE_FIREBASE_API_KEY");
+    if (!project || !key) throw new Error("no Firebase project in the environment");
+    const res = await fetch(`https://firestore.googleapis.com/v1/projects/${project}/databases/(default)/documents/settings/site?key=${key}`, { signal: AbortSignal.timeout(5000) });
+    if (res.status !== 404) {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const saved = (await res.json()).fields?.pages?.mapValue?.fields ?? {};
+        for (const [k, v] of Object.entries(saved)) if (typeof v.booleanValue === "boolean") visibility[k] = v.booleanValue;
+    }
+} catch (error) {
+    switchNote = `page switches not read (${error.message}); every page counts as on`;
+}
+for (const p of PAGES) if (p.locked) visibility[p.key] = true;
+let skipped = 0;
 const files = await htmlFiles(DIST);
 let done = 0, kb = 0;
 const failed = [];
@@ -46,6 +79,11 @@ for (const file of files) {
     const html = await readFile(file, "utf8");
     if (!html.includes('<div id="root"></div>')) continue; // not an app page, or done already
     const path = pathFor(file);
+    const pageKey = pageForPath(path)?.key;
+    if (pageKey && visibility[pageKey] === false) {
+        skipped++; // switched off in Admin → Pages: leave it to the app ("opens soon")
+        continue;
+    }
     try {
         let body = await render(path);
         // React lists image hints first; dropped: on a slow connection they compete with the stylesheet, and the
@@ -61,7 +99,8 @@ for (const file of files) {
         failed.push(`${path}: ${error.message.split("\n")[0]}`);
     }
 }
-console.log(`prerender: ${done} pages (${Math.round(kb)} kB of HTML before compression)`);
+if (switchNote) console.log(`prerender: ${switchNote}`);
+console.log(`prerender: ${done} pages (${Math.round(kb)} kB of HTML before compression)${skipped ? `, ${skipped} switched off in Admin left to the app` : ""}`);
 if (failed.length) {
     console.error(`prerender: ${failed.length} failed\n  ${failed.join("\n  ")}`);
     process.exit(1);

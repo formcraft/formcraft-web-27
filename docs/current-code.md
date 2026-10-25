@@ -36,6 +36,7 @@ Write plainly. Name files and components exactly. Don't describe planned feature
 | --- | --- | --- |
 | Framework | React 19, StrictMode | same |
 | Routing | `react-router-dom` ^6.30; table in `src/routes.jsx`, every page `React.lazy`, prefetched on link hover/focus/touch | same |
+| Rendering | every public page pre-rendered to HTML at build time and hydrated in the browser (`scripts/prerender.mjs`, `src/entry-server.jsx`) | same |
 | Build | Vite ^8 with `@vitejs/plugin-react` | same |
 | Lint | oxlint (`npm run lint`) | same |
 | Firebase SDK | `firebase` ^12; Auth eager; Firestore, Storage, Functions on demand; public reads over the Firestore REST API (no SDK) | same |
@@ -69,7 +70,8 @@ formcraft-web-27/
 │  ├─ textures/    paper, navy, black, orange: 768 px tileable coarse paper (shown at 384 px);
 │  │               hotel-paper(-512).webp, hotel-normal-512.webp: the 3D model's paper and relief (make-hotel-textures.py)
 └─ src/
-   ├─ main.jsx (registers sw.js in production)  App.jsx  routes.jsx (lazy pages, PageGate, redirects, prefetchRoute)
+   ├─ main.jsx (hydrates pre-rendered pages; registers sw.js in production)  App.jsx (AppTree)  routes.jsx (lazy pages, PageGate, redirects, prefetchRoute)
+   ├─ entry-server.jsx (build time: renders a page to HTML for scripts/prerender.mjs)
    ├─ config/firebase.js
    ├─ context/     contexts.js  AuthContext  ThemeContext  CartContext  SiteContext
    ├─ styles/      tokens.css  fonts.css  base.css  components.css
@@ -79,9 +81,9 @@ formcraft-web-27/
    │               products.js  templates.js  projects.js  developments.js  posts.js  courses.js  events.js  sheets.js
    │               downloads.js  contact.js  seo.js (titles, keywords, JSON-LD)  motion.js (animation timing)
    │               socialPlatforms.js  socialChannels.js  occasions.js  socialTopics.js  team.js  (Marketing Studio)
-   ├─ hooks/       useAuth  useTheme  useCart  useSite (+ useShowLink)  useContent (+ useContentItem)  useCopy  useCollection
+   ├─ hooks/       useHydration (device values after the first render)  useAuth  useTheme  useCart  useSite (+ useShowLink)  useContent (+ useContentItem)  useCopy  useCollection
    │               useDocument  usePublicDoc  usePageMeta  useReveal  useSky
-   ├─ lib/         money.js  forms.js  storage.js  images.js  firestoreRest.js  adminContent.js  skyClock.js
+   ├─ lib/         pageRegistry.js (build time: pages loaded up front)  money.js  forms.js  storage.js  images.js  firestoreRest.js  adminContent.js  skyClock.js
    │               copyStore.js + copyText.jsx (Admin → Copy: loading and safe rendering)
    │               attribution.js (where visitors came from)  analytics.js (after consent)  track.js (contact clicks)  studio.js
    ├─ components/
@@ -175,6 +177,34 @@ All copy comes from the owner's designs and the Company Profile; anything unknow
 
 ### Scene: sky, hills, trees, motifs
 Every page hero sits under one shared sky (`Sky.jsx`, drawn by `PageHero` behind the hills): a gradient from `--sky-top` to `--sky-mid` with a glow at the horizon (`--sky-glow`, `--sky-glow-2`, `--sky-band`); the night edition adds ~300 fixed stars and 12 slowly twinkling ones (`starField` in `sceneGeometry.js`, seeded per page, off with reduced motion). The sun or moon (`SkyBody`) lives in `Sky.jsx` too. `PaperLayers` draws the paper landscape on top (two soft clouds by day; the old birds and per-scene stars are gone). The **sun (day edition) or moon (night edition) follows Kampala's clock** (`lib/skyClock.js`: sunrise 06:45, sunset 18:55 EAT, corrected by the server time when known): it rises on the left, is overhead at noon/midnight and sets on the right. It's placed in screen space so it's always in view, and rests low and rust-coloured when it's below the horizon. **Trees** (broadleaf, umbrella acacia, cypress and banana) are cut from the same sheet as their hill: small on the middle hills, a belt on the near hill and two big ones framing the front. Motifs per page: `design`, `construction`, `precast`, `workshop`, `plots` (template homes on pegged plots), `estate`, `forest` (staked saplings in front of grown trees), `academy`, `market`; others use the `city` skyline. With no saved choice, **the edition itself follows Kampala's clock** (day 06:45–18:55) and switches at dusk and dawn.
+
+### Pre-rendering (L5, ideas #20)
+Every public page is built to finished HTML: `npm run build` runs `vite build`, then a server build of the same app
+(`vite build --ssr src/entry-server.jsx --outDir dist-ssr`), then `scripts/seo-pages.mjs` (one HTML file per page with its
+own head), then `scripts/prerender.mjs`, which renders each of those pages with React (`entry-server.jsx`: the same
+`AppTree` as the browser, a fixed address, every page's code loaded up front through `lib/pageRegistry.js`) and writes
+the result into `<div id="root">`, with `<meta name="fc-prerendered" content="/studio">` in the head. In the browser,
+`main.jsx` **hydrates** (React adopts the HTML instead of drawing it again, so nothing flickers or replays); a mismatch is
+logged as `[hydration] …` and fails `npm run check` ("Hydration mismatch").
+- **Matching the build:** anything that depends on the visitor's device stays out of React's first render
+  (`src/hooks/useHydration.js`: `useIsHydrating`, `useDeviceState`): the cart, cached page switches, contact details,
+  motion and features, cached content and copy edits, stats, the cookie answer, the sky clock and the 3D level all show
+  their build-time defaults first and the device's values straight after. Edition-dependent markup is the same in both
+  editions and the CSS picks (the switch's two icons, the footer's "day/night edition", the stars, hidden by day); the
+  sun or moon appears after hydration (it rises in anyway).
+- **Reveal:** content is visible by default; only content below the screen waits to slide in (`useReveal`), so the
+  pre-built page shows at once. After a page change inside the site everything slides in as before.
+- **Other addresses:** Hosting serves `index.html` (Home's HTML) for unknown addresses and the service worker uses it
+  offline: a head script in `index.html` hides HTML built for another address (`.fc-stale`), and `main.jsx` clears it
+  and starts fresh.
+- **Page switches:** pages switched off in Admin → Pages aren't pre-built (the build reads `settings/site` over REST;
+  when it can't, every page counts as on and the build says so). A page switched off after a build keeps its old HTML
+  until the next build and deploy.
+- **Measured** (slow phone: 4× CPU, 1.6 Mbps, 150 ms; returning visitor; median of 3): the headline is on screen
+  1.2–1.5 s sooner (Home 3.1 → 1.8 s, Studio 3.3 → 2.2 s, Stores 3.0 → 1.6 s, Contact 3.1 → 1.5 s); Home's largest
+  paint 4.6 → 2.0 s. Lighthouse's mobile score barely moves, because it measures a first visit, where the opening
+  animation covers the page for ~5 s either way. Page HTML: Home 30 kB, Studio 56 kB compressed (torn edges written
+  as compact relative paths, pixel-identical). Main JS 85 kB gz.
 
 ### Moving the sun and moon (Sky 1, ideas #22; the owner's secret)
 Visitors can drag the sun (day) or the moon (night) around any page hero's sky; nothing on the site mentions it, the
@@ -279,6 +309,7 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 - Online unsubscribe isn't built; the privacy page tells people to ask by email.
 - Rules for `subscribers`, `clicks`, the `source` map and the Studio collections haven't been tested in the emulator yet (handoff).
 - Admin → Copy covers Home only (copy step B converts the other pages after pre-rendering). Rules tests for `copy` / `team` are a scratch script for now; move them into `@firebase/rules-unit-testing` tests with the rest.
+- Pre-rendering: detail pages are built from the starter data (`src/data/`), so items added only in Admin get pre-built HTML at the next build, and an edited item shows its starter text until the app takes over; published copy edits aren't baked into the HTML yet (they follow right after load). A page switched off after a build keeps its old pre-built HTML until the next build and deploy.
 - `pages/ComingSoon.jsx` is no longer routed (hidden pages use `PageGate`); kept for later phases.
 - The Firestore emulator runs on port **8081**, not the default 8080, because the Revit MCP plugin uses 8080 on the owner's machine. Keep `firebase.json` and `config/firebase.js` in step.
 - `npm audit`: 4 high in `@grpc/grpc-js` (pulled in by `firebase`, Node-only, not in the browser build) and 2 moderate in `react-router` 6 (fixed only in v7, a later task).
@@ -296,6 +327,7 @@ Newest first. One row per commit or task.
 
 | Date | Task | What changed | Files |
 | --- | --- | --- | --- |
+| 2026-10-25 | Pre-rendering (L5) | Every public page (51) built to HTML and hydrated; see "Pre-rendering" above. Found and fixed on the way: React split big sections out of the HTML (`progressiveChunkSize`); an `import.meta.glob` in routes.jsx put every page into the browser bundle (184 kB → back to 85 kB gz); React's image hints in the head competed with the stylesheet (dropped); reveal content was hidden until JavaScript (now visible by default). Torn edges written as compact relative paths (pixel-identical; Studio HTML 68 → 56 kB gz). Pages switched off in Admin aren't pre-built. Tested: 9 pages × day/night hydrate with no mismatch; full text with JavaScript off; unknown addresses hidden until the app starts; `npm run check:fast` 0 errors; slow-phone timings above. Theme switch label is now "Switch between the day and night editions" (both icons in the markup). | `src/entry-server.jsx`, `scripts/prerender.mjs`, `src/hooks/useHydration.js`, `src/lib/pageRegistry.js`, `src/main.jsx`, `src/App.jsx`, `src/routes.jsx`, `index.html`, contexts and hooks that read the device, `Sky.*`, `ThemeSwitch.jsx`, `Footer.*`, `Header.css`, `useReveal.js`, `Reveal.jsx`, `base.css`, `TornEdge.jsx`, `scripts/check/*`, `package.json`, docs |
 | 2026-10-24 | Sky 1 (L4) | Drag the sun and moon (ideas #22, the owner's secret), wired to the cloud's `sky/skyPhysics.js` and `sky/moonPhase.js`. New `useSkyDrag.js`; `Sky.jsx`: stars on a canvas (raw positions from `starField`), twinklers kept as SVG and moved along, invisible grab handle; `SkyBody`: `.sky-body-move` / `.sky-body-shift` wrappers, real moon phase. Re-measures after the rise animation and before each grab; settles the field before the first draw. Admin → Features: Sky group (`skyBodies`, `skyFluid`). Tested in Chrome on /studio at 1440 and 360, day and night: hover glow, drag, stars part (27 % of the star picture moves mid-drag, < 2 % sub-pixel difference once settled), clouds drift and settle, the loop stops, no errors. | `src/components/scene/useSkyDrag.js`, `Sky.jsx`, `Sky.css`, `sceneGeometry.js`, `src/data/features.js`, docs |
 | 2026-10-24 | Weather-scene switches (L3) | Owner: switch off the storm or the rain and keep clear day and night. Admin → Features gets a **Weather** group: "Weather scenes" (master) plus Partly cloudy, Overcast, Mist, Rain, Storm (greyed out while the master is off); `sceneSwitches()` in `src/data/features.js` feeds the cloud's `fallbackScene()`. They take effect when the scenes go live (Sky 3). New **`npm test`** (Node's test runner): the switch/fallback cases plus the cloud's weather-mapping tests (7 pass). `npm run check:admin`: 0 errors. Branch `try/weather-switches` (on top of `try/admin-tidy`). | `src/data/features.js`, `scripts/check/scene-switches.test.mjs`, `package.json`, docs |
 | 2026-10-24 | Admin tidy (#25) | Owner: "text mismatches in the admin section, not well organised"; the cloud's proposal. **Bug fixed:** Leads and Inbox wrote the same lead `status` from different lists (a quote marked "contacted" in Leads showed as "new" in Inbox and could be overwritten): one list in `src/data/leads.js`, Leads is the one place for leads (quote budget and drawings added there). Inbox → **Records** (orders, donations, members; read-only, `RecordsPanel` / `records.js`, each with an intro sentence). Menu regrouped (Overview · Leads · Social media · Website content · Records · Settings); label = heading (Site text, Pages, Animation timing, Social planner); "team" wording instead of admin/marketing/editor. Phones: grouped "Admin section" menu, signed-in tag wraps, admin icon in the phone menu below 480 px (it pushed the header 23 px off a 360 px screen). New **`npm run check:admin`** (emulators): signs in as a test owner, opens all 21 screens at 1440 and 360 px; fails on label ≠ heading, sideways scroll, script errors, axe errors, or a lead status outside the list. First run found the 360 px overflow; now 0 errors. | `src/data/leads.js`, `src/components/admin/*`, `src/pages/Admin.*`, `src/components/layout/Header.*`, `src/components/layout/PageGate.jsx`, `src/context/SiteContext.jsx`, `scripts/check/admin-checks.mjs`, `package.json`, docs |

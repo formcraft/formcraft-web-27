@@ -18,6 +18,10 @@ donations and members.
 **Social planner.** Admin → Social planner (formerly "Studio"): the social media calendar, posts, channels and
 occasions. Not to be confused with **Studio**, Formcraft's design division and its page.
 
+**Pre-rendering / hydration.** *Pre-rendering*: the build saves each page's finished HTML, so it shows before the
+JavaScript arrives. *Hydration*: React then adopts that HTML instead of drawing the page again. See
+`docs/architecture.md`.
+
 **Build.** Turning the source code into the finished site in `dist/` (`npm run build`): files are combined,
 shrunk and given unique names so browsers can cache them safely.
 

@@ -94,7 +94,7 @@ export const CLICK_CHECKS = [
         async run(browser) {
             const ctx = await openContext(browser, { width: 1440, theme: "day" });
             const { page } = await open(ctx, "/about");
-            await page.getByRole("button", { name: /switch to the night edition/i }).first().click();
+            await page.getByRole("button", { name: /switch between the day and night editions/i }).first().click();
             await wait(300);
             const now = await page.evaluate(() => document.documentElement.dataset.theme);
             const saved = await page.evaluate(() => localStorage.getItem("fc-theme")); // what the next visit starts with

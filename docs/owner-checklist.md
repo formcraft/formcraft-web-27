@@ -80,6 +80,12 @@
 - Helpline numbers for sensitive awareness days, confirmed before each post (register care notes).
 - The holiday and awareness post images (PNG files from the template library, codes FMC-MKT-HOL / AWR / DAY) — upload them in Admin → Studio; files named with their template code are matched automatically.
 
+## Good to know: switching a page off
+
+Pages are pre-built into the site's HTML at each build. After switching a page **off** in Admin → Pages, ask Claude Code
+to rebuild and deploy, so the old pre-built copy of that page is replaced (the live site already shows "opens soon"
+once it has loaded, but the HTML would still hold the page until then).
+
 ## 5. Weekly routine (once live)
 
 - **Monday**: Admin → Leads — follow up new quotes and messages, set their status.

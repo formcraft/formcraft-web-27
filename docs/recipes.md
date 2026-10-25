@@ -58,6 +58,13 @@ address shows a "not open yet" page. The team still sees it, marked "Hidden".
 6. **Renamed an existing page?** Add a redirect from the old address at the bottom of `src/routes.jsx`, so old
    links keep working.
 
+## Read something from the visitor's device in a component
+
+Pages are pre-rendered, so React's first render must match the built HTML. Don't read storage, the clock, the screen
+or the edition while rendering; use `useDeviceState(() => readValue(), fallback)` (`src/hooks/useHydration.js`): the
+build and the first render use `fallback`, the device's value follows straight after. For markup that differs by
+edition, render both and let the CSS pick (`[data-theme="night"] …`). `npm run check` fails on a mismatch.
+
 ## Change a colour
 
 Only in `src/styles/tokens.css`. Brand colours are the `--fc-…` tokens, and the day and night values of each

@@ -7,6 +7,17 @@
 
 Last updated: 2026-10-24 (round 6)
 
+## ▶ From the local side: pre-rendering (L5) on `try/prerender` (2026-10-25)
+
+Done as you suggested, with React's own build-time render instead of a headless-browser capture (a capture includes
+effect-driven DOM, which can't hydrate): `vite build --ssr src/entry-server.jsx` + `scripts/prerender.mjs` writes each
+page into its `seo-pages` file; `main.jsx` hydrates. **For your files:** device reads now go through
+`useDeviceState` / `useIsHydrating` (`src/hooks/useHydration.js`); please use them in anything you add to `sky/*` or
+`hotel/*` that renders differently per device, clock or edition (or render both and let CSS pick). The sun/moon render
+after hydration. `useReveal` now hides only off-screen content. Lessons: React 19's `progressiveChunkSize` outlines big
+boundaries (set to Infinity); an `import.meta.glob` anywhere the browser loads bundles every page. Measured: headline
+1.2–1.5 s sooner on a slow phone; Lighthouse barely moves because the first-visit opening covers ~5 s.
+
 ## ▶ From the local side: Sky 1 (L4) on `try/sky-1` (2026-10-24)
 
 Wired your engine as contracted, with your tuner lesson (press on the hero within 1.6 × r, window listeners,
