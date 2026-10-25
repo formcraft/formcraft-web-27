@@ -223,7 +223,8 @@ export async function createHotelScene(canvas, env) {
   // ---------- model base: board + printed site plan ----------
   var GRASS = [[11.9, 16.6, -12.8, 8.6], [-16.6, -11.9, -6.4, 8.2], [-9.9, -7.4, -12.9, -7.9], [9.9, 11.7, -12.9, -7.9]];
   var base = box(BW, 0.8, BD, BOX, -0.4, BOZ, W2, { tile: 20 });
-  var top = new THREE.Mesh(new THREE.PlaneGeometry(BW, BD), new THREE.MeshStandardMaterial({ map: drawTex, bumpMap: bumpTex, bumpScale: 0.006, roughness: 0.95 }));
+  // polygonOffset: always drawn in front of the board it lies on (5 mm apart; phones' coarser depth made them flicker)
+  var top = new THREE.Mesh(new THREE.PlaneGeometry(BW, BD), new THREE.MeshStandardMaterial({ map: drawTex, bumpMap: bumpTex, bumpScale: 0.006, roughness: 0.95, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -4 }));
   top.rotation.x = -Math.PI / 2; top.position.set(BOX, 0.005, BOZ); top.receiveShadow = true; model.add(top);
   paintSheet(null);
   if (env.sheetUrl) { var sheetImg = new Image(); sheetImg.onload = function () { if (alive) { paintSheet(sheetImg); drawTex.needsUpdate = true; } }; sheetImg.src = env.sheetUrl; }
@@ -638,7 +639,8 @@ export async function createHotelScene(canvas, env) {
         y = topY + (fbm(x * 0.035 + seed, seed * 0.3) - 0.5) * amp * 2 + 0.45 + hash(i + 7, seed) * 0.55;
         s2.lineTo(x, y);
       }
-      var r = new THREE.Mesh(new THREE.ShapeGeometry(s2), rimMat || Wd); r.position.z = z - 0.04; r.receiveShadow = true; scene.add(r);
+      var rm = (rimMat || Wd).clone(); rm.polygonOffset = true; rm.polygonOffsetFactor = 2; rm.polygonOffsetUnits = 8; // always behind its sheet (4 cm apart: phones flickered)
+      var r = new THREE.Mesh(new THREE.ShapeGeometry(s2), rm); r.position.z = z - 0.04; r.receiveShadow = true; scene.add(r);
     }
     return m;
   }

@@ -7,6 +7,13 @@
 
 Last updated: 2026-10-25 (round 6)
 
+## ▶ From the local side: phone flicker fixed in your hotel scenes (2026-10-25, owner report)
+
+The owner saw heavy flicker on the Home 3D model on a phone, beside the model. Cause: depth fighting on phones (coarser
+depth buffers). The torn backdrop rims sit 4 cm behind their sheets and the site-plan sheet 5 mm above the board. Fixed
+in `hotelDay.js` and `hotelNight.js` with `polygonOffset` (rim materials cloned per sheet). Please keep stacked surfaces
+at least a few centimetres apart, or give them a polygon offset, in anything you add.
+
 ## ▶ From the local side: checks of `try/sky-art` (2026-10-25)
 
 Beautiful work: the cut-paper clouds, the storm rows and the paper moon read well on the NVIDIA GPU.
