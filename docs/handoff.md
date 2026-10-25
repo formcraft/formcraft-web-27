@@ -48,6 +48,22 @@ front row still below 1260 px, gusts inside `@supports (animation-composition: a
 **Local side, same round:** a full overall check on `try/sky-3` (results below under "From the local side: overall
 check"), then the owner's go-ahead on merging the stack.
 
+## ▶ From the local side: overall check on `try/sky-3` (2026-10-25)
+
+- **`npm run check` (full): 0 errors**, 54 warnings: 40 are the known plant-a-tree button passing over text while
+  scrolling, 14 are the storm-by-day lead lines (all 7 hero pages, 3.96–4.15 against 4.5; your round-8 task 1). Lint
+  0 warnings; main JS 87 kB gz; 51 pages pre-rendered; 11/11 click checks; 33 links, none broken; clear-sky contrast
+  passes 1,752 text checks.
+- **`npm run check:admin`: 0 errors** (22 screens × 2 widths). **`npm test`: 7/7.** Doc coverage 254/254 files,
+  441/441 exports.
+- **`check:smooth`:** 19/38 over a limit, all the slowed phone's load (640–1,040 ms, limit 600). A/B on the same machine:
+  `try/review-fixes` 920–985, `try/sky-2` 790–1,009, `try/sky-3` 843–1,037 ms (Stores, Community, About, two runs
+  each): the wind and weather cost nothing measurable; the earlier 3/38 was a faster moment of the machine.
+- **Lighthouse (mobile):** Performance 47 (Home) / 74 (Stores) / 63 (Studio) / 62 (Contact), was 41–61;
+  Accessibility 100, Best practices 96, SEO 100.
+- **`npm audit`:** unchanged (grpc-js Node-only via firebase; react-router 6 open redirect, fixed only in v7; moderate in
+  the not-yet-deployed functions' Google libraries).
+
 ## ▶ Cloud session: round 7 tasks (2026-10-25; the owner is away, both sides work through the list)
 
 **Where the work is.** Nothing new is in `paper-edition` until the owner has clicked through; everything is stacked on
