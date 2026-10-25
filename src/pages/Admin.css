@@ -8,8 +8,9 @@
 .admin-nav-btn:hover { background: var(--sheet); color: var(--ink); }
 .admin-nav-btn[aria-current="page"] { background: var(--ink); color: var(--ground); font-weight: 700; }
 .admin-main { min-width: 0; }
-.admin-tile { text-align: left; display: flex; flex-direction: column; gap: 8px; cursor: pointer; font: inherit; color: inherit; border: 1px solid var(--line); }
-.admin-tile:hover { border-color: var(--ink); }
+/* "button." so it outranks the shared button.card rule (display: block; border: 0) */
+button.admin-tile { text-align: left; display: flex; flex-direction: column; gap: 8px; cursor: pointer; font: inherit; color: inherit; border: 1px solid var(--line); }
+button.admin-tile:hover { border-color: var(--ink); }
 
 /* pages */
 .admin-pages { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; }
