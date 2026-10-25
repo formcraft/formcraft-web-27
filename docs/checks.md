@@ -39,12 +39,17 @@ Steps, in order (the code is in `scripts/check/`, one file per part):
    - empty forms show what's missing;
    - the home page's model or drawing loads and its view buttons work.
 7. **Links**: every link between pages is followed; none may land on the 404 page.
+   **Weather contrast** (`weather-contrast.mjs`): the hero words of Studio, Construction, Concrete, Stores, About,
+   Community and Invest (three of them with `--fast`) against every weather scene (`?sky=…`), day and night, 360 and
+   1440 px. It hides the words, photographs what's behind them and takes the WCAG ratio against the worst 10 % of those
+   pixels (4.5, or 3 for large text). Below that on a clear sky is an error; in another scene, a warning (the sky's
+   designer tunes it). About a minute.
 8. **Report**: `check-report/index.html` with every finding and screenshots of every page.
 
 **Errors** fail the check (exit code 1). **Warnings** are worth a look but don't fail it.
 
 Options: `--fast`, `--no-build` (reuse `dist/`), `--only /path` (repeat for more pages), `--no-axe`, `--no-shots`,
-`--headed` (watch the browser).
+`--headed` (watch the browser), `--no-weather` (skip the weather contrast).
 
 ## `npm run check:smooth`
 

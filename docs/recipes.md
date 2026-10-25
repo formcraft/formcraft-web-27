@@ -26,6 +26,13 @@ empty simply don't show.
 (the opening animation from their second visit). To add a switch for new code: an entry in `src/data/features.js`,
 then `useFeature("key")` where the feature is shown.
 
+## See the sky in another weather (no code)
+
+Signed in as a team member, press the **Sky** tab at the bottom left of any page: pick a scene, the rain and the wind, or
+"Gust now". It changes only your own tab; Reset goes back to the real weather. To show someone else, send a link such as
+`/studio?sky=storm` (also `&wind=1.5`, `&budget=phone`). What every visitor gets is set in Admin → Settings → Sky and
+weather, and scenes are switched off in Admin → Settings → Features.
+
 ## Turn a page off or on (no code)
 
 **Admin → Pages.** A page that's off disappears from the header, footer and home page for visitors, and its

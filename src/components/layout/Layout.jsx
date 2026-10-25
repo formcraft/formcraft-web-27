@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { Suspense, lazy, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
@@ -10,7 +10,10 @@ import { initAttribution } from "../../lib/attribution";
 import { installClickTracking } from "../../lib/track";
 import { loadCopy } from "../../lib/copyStore";
 import { useFeature } from "../../hooks/useSite";
+import { useAuth } from "../../hooks/useAuth";
 import { pageForPath } from "../../data/pages";
+
+const SkyTester = lazy(() => import("../scene/SkyTester").then((m) => ({ default: m.SkyTester })));
 
 // On a new page: go to the top (or to the #section in the link) and move focus to the main area
 // so keyboard and screen-reader users start at the new content. Not on the first load, so Tab
@@ -61,6 +64,9 @@ export const Layout = ({ children }) => {
     // Admin → Features
     const plantTree = useFeature("plantTree");
     const subscribePrompt = useFeature("subscribePrompt");
+    // the team's weather preview tab: signed-in team or `npm run dev` only, loaded on demand (visitors never get it)
+    const { isEditor } = useAuth();
+    const tester = import.meta.env.DEV || isEditor;
     return (
         <>
             <a className="skip-link" href="#main">
@@ -75,6 +81,11 @@ export const Layout = ({ children }) => {
             <CartDrawer />
             <ConsentBanner />
             {subscribePrompt && <SubscribePrompt />}
+            {tester && (
+                <Suspense fallback={null}>
+                    <SkyTester />
+                </Suspense>
+            )}
         </>
     );
 };

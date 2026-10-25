@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef } from "react";
 import { useFeature } from "../../hooks/useSite";
-import { useWeather } from "../../hooks/useWeather";
+import { GUST_EVENT, useWeather } from "../../hooks/useWeather";
 import { SkyBody } from "./Sky";
 import { W, random, ridgePath, rectPath, roofPath, framePath, cranePath, cloudCircles, cloudPath, landscape, motifShapes, plantTrees } from "./sceneGeometry";
 import "./PaperLayers.css";
@@ -90,22 +90,27 @@ const useGusts = (ref, wind, on) => {
         const el = ref.current;
         if (!el || !on || wind < 0.6 || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return undefined;
         let t = 0;
+        const gustNow = () => {
+            clearTimeout(t);
+            el.classList.remove("pl-gust");
+            void el.offsetWidth; // restart the gust animation
+            el.classList.add("pl-gust");
+            t = setTimeout(() => {
+                el.classList.remove("pl-gust");
+                next();
+            }, 3400);
+        };
         const next = () => {
             t = setTimeout(() => {
                 const paused = el.closest("[data-paused]") || document.hidden;
-                if (!paused) {
-                    el.classList.remove("pl-gust");
-                    void el.offsetWidth; // restart the gust animation
-                    el.classList.add("pl-gust");
-                    t = setTimeout(() => {
-                        el.classList.remove("pl-gust");
-                        next();
-                    }, 3400);
-                } else next();
+                if (!paused) gustNow();
+                else next();
             }, 8000 + Math.random() * 12000);
         };
         next();
+        window.addEventListener(GUST_EVENT, gustNow); // the team tester's "Gust now"
         return () => {
+            window.removeEventListener(GUST_EVENT, gustNow);
             clearTimeout(t);
             el.classList.remove("pl-gust");
         };

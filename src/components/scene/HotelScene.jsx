@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTheme } from "../../hooks/useTheme";
 import { useFeature, useSite } from "../../hooks/useSite";
 import { useDeviceState } from "../../hooks/useHydration";
+import { useWeather } from "../../hooks/useWeather";
 import { readJSON, writeJSON } from "../../lib/storage";
 import { Hotel2D } from "./Hotel2D";
 import "./HotelScene.css";
@@ -127,6 +128,14 @@ export const HotelScene = () => {
     // Admin → Features "3D hotel model" off: everyone gets the 2D drawing (the dev preview still wins)
     const model3d = useFeature("home3d") || Boolean(devPreview());
     const scraps = useFeature("scraps");
+    // Admin → Features "Weather on the 3D model" (and the weather scenes on): the model gets the same scene as the
+    // page heroes (hotel/weather3d.js); changes after the build go through setWeather, no rebuild
+    const weather3d = useFeature("home3dWeather");
+    const scenesOn = useFeature("weather");
+    const weatherOn = weather3d && scenesOn;
+    const { kind, wind, rain } = useWeather();
+    const weatherRef = useRef(null);
+    weatherRef.current = weatherOn ? { kind, wind, amount: rain } : null;
     // the device decides (graphics, memory, connection): after hydration (useHydration.js)
     const [guessed, setLevel] = useDeviceState(guessLevel, "standard");
     const level = model3d ? guessed : "2d";
@@ -180,6 +189,7 @@ export const HotelScene = () => {
                         textures,
                         quality: level,
                         scraps, // Admin → Features "Falling paper scraps"
+                        weather: weatherRef.current, // null = no weather on the model
                         buildScale: motion.build, // Admin → Motion
                         fixed: Boolean(devPreview()), // dev preview: shows exactly the chosen level
                         signal: controller.signal,
@@ -216,7 +226,11 @@ export const HotelScene = () => {
             handleRef.current?.dispose();
             handleRef.current = null;
         };
-    }, [live, level, edition, motion.build, scraps, setLevel]); // a new build time replays the build (handy while tuning it in Admin)
+    }, [live, level, edition, motion.build, scraps, weatherOn, setLevel]); // a new build time replays the build (handy while tuning it in Admin)
+
+    useEffect(() => {
+        if (weatherOn) handleRef.current?.setWeather?.({ kind, wind, amount: rain });
+    }, [weatherOn, kind, wind, rain, ready]);
 
     return (
         <>

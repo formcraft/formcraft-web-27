@@ -12,6 +12,8 @@
 //                  and looks for layout problems (see page-checks.mjs).
 //   6. Clicks    – uses the site like a visitor: menu, cart, pop-ups, forms, keyboard (click-checks.mjs).
 //   7. Links     – follows every link between pages and reports any that land on the 404 page.
+//                  Then the weather check: hero text against every weather scene (weather-contrast.mjs);
+//                  below AA on a clear sky is an error, in another scene a warning for the sky's designer.
 //   8. Report    – writes check-report/index.html with every finding and screenshots.
 // The internet is blocked during steps 5–7, so results never depend on Firebase or the network.
 //
@@ -22,6 +24,7 @@
 //   --no-axe      skip the accessibility checker
 //   --no-shots    skip screenshots
 //   --headed      show the browser windows while checking
+//   --no-weather  skip the weather contrast check
 // Exit code: 0 when there are no errors (warnings are fine), 1 otherwise.
 
 import { spawn } from "node:child_process";
@@ -32,6 +35,7 @@ import { CLICK_CHECKS, checkLinks } from "./click-checks.mjs";
 import { findCssCollisions } from "./css-collisions.mjs";
 import { BASE, ROOT, launchBrowser, openContext, runPool, startPreview } from "./lib.mjs";
 import { checkPage } from "./page-checks.mjs";
+import { checkWeatherContrast } from "./weather-contrast.mjs";
 import { writeReport } from "./report.mjs";
 
 const argv = process.argv.slice(2);
@@ -174,6 +178,17 @@ for (const c of CLICK_CHECKS) {
 log("7/8 Links…");
 const links = only.length ? { checked: 0, broken: [] } : await checkLinks(browser, pagesToCheck.filter((p) => !p.includes("does-not-exist")));
 for (const b of links.broken) log(`   ✗ ${b.link} (on ${b.from}) leads to the 404 page`);
+
+if (!only.length && !flag("--no-weather")) {
+    log("   Weather scenes: hero text contrast…");
+    const wx = await checkWeatherContrast(browser, { fast: FAST, log });
+    const clear = wx.failures.filter((f) => f.scene === "clear");
+    steps.push({ name: "Hero text readable on a clear sky (AA)", ok: !clear.length, detail: clear.length ? clear.map((f) => `${f.page} ${f.theme} ${f.width}px "${f.text}" ${f.ratio}`).join("; ") : `${wx.checked} text checks in all scenes` });
+    pages.push({
+        path: "weather scenes (?sky=…)",
+        results: [{ label: "contrast", url: "", screenshot: null, h1: [], issues: wx.failures.filter((f) => f.scene !== "clear").map((f) => ({ severity: "warning", kind: "weather contrast", label: `${f.scene} ${f.theme} ${f.width}px`, detail: `${f.page} "${f.text}": ${f.ratio} (needs ${f.need})` })) }],
+    });
+}
 
 await browser.close();
 stopPreview();

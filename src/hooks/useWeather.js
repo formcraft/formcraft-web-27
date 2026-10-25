@@ -20,6 +20,8 @@ import { sceneSwitches } from "../data/features";
 export const SKY_TEST_KEY = "fc-sky-test";
 /** Fired on window when the tester changes something; detail: the new choices (or null). */
 export const SKY_TEST_EVENT = "fc:sky-test";
+/** Fired on window by the tester's "Gust now" (the trees start a gust at once). */
+export const GUST_EVENT = "fc:gust";
 const EASTERLY = -1; // Kampala's usual wind; the real direction arrives with the live sync (Sky 4)
 const NONE = null;
 
@@ -31,7 +33,7 @@ const readPreview = () => {
         const fromLink = kind && SCENES[kind] ? { kind, wind: q.has("wind") ? Number(q.get("wind")) : undefined, budget: q.get("budget") || undefined, source: "link" } : null;
         if (fromLink) return fromLink;
         const saved = JSON.parse(sessionStorage.getItem(SKY_TEST_KEY) || "null");
-        return saved && (saved.kind || saved.wind != null) ? { ...saved, source: "tester" } : null;
+        return saved && Object.keys(saved).length ? { ...saved, source: "tester" } : null;
     } catch {
         return null;
     }
