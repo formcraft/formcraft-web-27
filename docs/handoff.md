@@ -40,6 +40,56 @@ Sky 3 (scenes in the heroes, Admin weather mode, scene switches, tester, `?sky=`
 switch (off until Blaze), wire `env.weather` into the Home 3D, then a full overall check, re-measuring smoothness on a
 quiet machine.
 
+## ▶ Cloud, round 7 task 1: review of Sky 2 (wind) on `try/sky-2` (2026-10-25)
+
+Built `try/sky-2` with esbuild and measured in headless Chromium on /studio at 1440 × 900 and 390 × 844, day and night.
+I froze the sway at both ends (`getAnimations()`, seek to 0 and to the end) and compared the frames. No script
+errors. The placement with container units is right: the groups sit on their hills, and the bases don't drift.
+
+**1. The sway is too small to see. Please raise it (`PaperLayers.css`):**
+- The trees are small in the heroes (near trees about 75 px tall at 1440, about 40 px on a 390 px phone), so the
+  current angles move the crowns about 1–2 px end to end at wind 1 on desktop, and under 1 px on phones.
+  End-to-end frames differ by 1,163 px at 1440 and **1 px** at 390. Visitors won't see it move, but it still costs
+  running animations.
+- I tried these values, and the double exposures read as a gentle sway with the trunks still planted:
+
+  | Row | `--amp` now | Proposed | Phones ≤ 600 px |
+  | --- | --- | --- | --- |
+  | mid (far trees) | .5deg | **1.4deg** | still (as now) |
+  | near | .8deg | **1.8deg** | **2.6deg** |
+  | front | 1.2deg | **1.6deg** | still (see 2) |
+
+  Keep the lean (.4deg), the periods (5.3 / 6.1 / 7.4 s) and the gust (.9 × amp, 2.5 s, from the right).
+- With these values, end-to-end frames differ by 3,112 px at 1440 and 35 px at 390.
+- **Worst case** (wind 2 plus a gust):
+  - the front crowns move about 15 px at 1440;
+  - the bases slide at most 2.7 drawing units on desktop and 3.7 on phones. That stays under the 4-unit
+    sink into the hill (`plantTrees`, `sink = 4`), so no tree lifts off its hill.
+  - Don't go higher on phones without raising `sink`.
+
+**2. The front row is off screen below about 1260 px but still animates.** Its trees are planted at drawing
+x −10…90. "xMidYMax slice" shows x ≈ 720 ± (width ÷ 2u), so the front row only shows on screens wider than about
+1260 px. At 390 its group sits at x −203…−105. Add
+`@media (max-width: 1259px) { .pl-windy .pl-trees-front .pl-tree-group { animation: none; will-change: auto; } }`.
+That saves a compositor layer on every phone and tablet.
+
+**3. Gusts: fine.** I forced one and sampled the skew every frame through the start and the end. There's no jump:
+the sway keeps its place when the `pl-gust` class comes and goes. One guard to add: a browser without
+`animation-composition` (Safari < 16, Firefox < 115) lets the gust replace the sway, so the tree snaps at the
+gust's start. Wrap the `.pl-gust` rule in `@supports (animation-composition: add) { … }`.
+
+**4. Small notes:**
+- The trees now draw above the quill rings (before, the rings were drawn over them). That's fine; mention it
+  if the owner asks why the rings look different around the trees.
+- `--vh` is a local variable on the tree SVG. It works, but a name like `--pl-vh` would avoid confusion with the
+  common "viewport height" variable.
+
+**Not checked from the cloud:** real GPU cost (please re-measure with `check:smooth` on a quiet machine after
+1–2), Safari, and the owner's feel. Wind strength stays in Admin → Sky and weather, so the owner can turn the whole
+thing down without new numbers.
+
+**Tasks 2–3 (Sky 3 review, Home 3D weather)** follow when `try/sky-3` lands.
+
 ## ▶ From the local side: Sky 2 (wind) on `try/sky-2` (2026-10-25)
 
 Built from your Q3 answer, on top of `try/review-fixes` (which has your `try/sky-admin` merged; check:fast and check:admin
