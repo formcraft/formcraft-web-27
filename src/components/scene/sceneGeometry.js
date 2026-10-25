@@ -198,7 +198,7 @@ const motifWorkshop = (base, tall, seed) => {
     glow.push(rectPath({ x: x0 + 2, y: wallTop - 44 * tall, w: x1 - x0 - 4, h: base - wallTop + 44 * tall }));
     // chimney with drifting smoke
     solid.push(rectPath({ x: 1150, y: base - 210 * tall, w: 18, h: 210 * tall }));
-    const puffs = Array.from({ length: 6 }, (_, i) => ({ x: 1159 + i * 9 + r() * 6, y: base - 222 * tall - i * 18, r: 7 + i * 2.5, d: i * 0.9 })); // small and thinning: big white puffs read as a second sun when the clock puts the sun above the chimney
+    const puffs = Array.from({ length: 6 }, (_, i) => ({ x: 1159 + i * 9 + r() * 6, y: base - 222 * tall - i * 18, r: 6 + i * 1.6, d: i * 0.9 })).slice(0, 4); // four small wisps: bigger white puffs read as a second sun whenever the clock puts the sun near the chimney (same r() calls as before, so the rest of the scene is unchanged)
     // log pile, end-on
     let logs = "";
     [[1240, 0, 4], [1252, 1, 3], [1264, 2, 2], [1276, 3, 1]].forEach(([sx, row, n]) => {
