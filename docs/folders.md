@@ -10,7 +10,7 @@ formcraft-web-27/
 ├─ package.json            the libraries the site uses, and the npm commands
 ├─ vite.config.js          settings for Vite, the tool that builds the site
 ├─ firebase.json           Firebase Hosting settings: security headers, caching, emulator ports
-├─ .firebaserc             which Firebase project this folder belongs to (formcraft2027)
+├─ .firebaserc             which Firebase project this folder belongs to (formcraftdesign2027)
 ├─ firestore.rules         who may read and write each part of the database
 ├─ storage.rules           who may read and upload files
 ├─ firestore.indexes.json  database indexes for the queries the site runs

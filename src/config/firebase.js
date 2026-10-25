@@ -32,7 +32,7 @@ const config = firebaseConfigured
 
 const firstLoad = getApps().length === 0; // guards against hot reload initialising twice
 
-/** The Firebase app (the connection to the formcraft2027 project, or the "demo-" project for the emulators). */
+/** The Firebase app (the connection to the formcraftdesign2027 project, or the "demo-" project for the emulators). */
 export const app = firstLoad ? initializeApp(config) : getApp();
 // Auth without the Google pop-up helper: getAuth() would load Google's sign-in script (gapi) on every
 // page at start-up. AuthContext passes the helper only when someone actually signs in. The same

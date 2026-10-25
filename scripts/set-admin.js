@@ -23,7 +23,7 @@ if (!email) {
     process.exit(1);
 }
 
-initializeApp(process.env.FIREBASE_AUTH_EMULATOR_HOST ? { projectId: process.env.GCLOUD_PROJECT || "formcraft2027" } : { credential: applicationDefault() });
+initializeApp(process.env.FIREBASE_AUTH_EMULATOR_HOST ? { projectId: process.env.GCLOUD_PROJECT || "formcraftdesign2027" } : { credential: applicationDefault() });
 const auth = getAuth();
 const user = await auth.getUserByEmail(email);
 const claims = { ...(user.customClaims ?? {}) };

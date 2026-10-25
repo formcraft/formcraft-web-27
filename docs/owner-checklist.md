@@ -11,7 +11,7 @@
 | --- | --- | --- | --- |
 | 1.1 | **Domain** — decided 2026-10-25: **formcraftdesignconstruction.com** (bought at Hostinger). The bare address is the main one; `www.` redirects to it. Update the social posters, business cards and bios to match. | Google, link previews, email delivery and the sitemap all use one address. Changing it later loses search ranking. | `src/data/seo.js` (`SITE_URL`) |
 | 1.2 | **Public email** — formcraftdesign@gmail.com or formcraft@gmail.com (both appear in your materials), or a domain email like hello@formcraftdesignconstruction.com (Hostinger sells email on the domain)? | Shown on every page, in the footer, in Google's business listing. One address everywhere. | Admin → Site details |
-| 1.3 | **Firebase project** — decided: **`formcraft2027`**. Create it in console.firebase.google.com (Add project → project ID `formcraft2027`), add a Web app, and give Claude Code its config to paste into `.env.local`. If that ID is taken, pick the closest free one and say which. | Project ids can never be renamed; the code already points at `formcraft2027`. | `.env.local`, `.firebaserc` |
+| 1.3 | **Firebase project** — decided: **`formcraftdesign2027`**. Create it in console.firebase.google.com (Add project → project ID `formcraftdesign2027`), add a Web app, and give Claude Code its config to paste into `.env.local`. If that ID is taken, pick the closest free one and say which. | Project ids can never be renamed; the code already points at `formcraftdesign2027`. | `.env.local`, `.firebaserc` |
 | 1.4 | **Region** — confirm the Firestore location of the project (ideally `africa-south1`, Johannesburg). Functions must use the same region. | Speed for Ugandan visitors; can't be changed after the database is created. | `functions/index.js`, `VITE_FUNCTIONS_REGION` |
 | 1.5 | **Team sign-in emails** — the Google accounts Peter Isingoma and Esther Ahumuza will use. | They become admins. | Admin → Team |
 | 1.6 | **Posting targets** — posts per week per platform (agree with Esther). | "Generate the year" fills the calendar to these targets. | Admin → Studio → Channels |
@@ -57,11 +57,11 @@
 9. **[CC] Buffer token**: `firebase functions:secrets:set BUFFER_TOKEN` (paste the token from 2.3), redeploy functions, then Admin → Studio → Channels → map each channel to its Buffer channel.
 10. **Firestore clean-up rule**: Google Cloud → Firestore → TTL → add a policy on collection `rateLimits`, field `expiresAt` (old spam-protection counters delete themselves).
 11. **Nightly backups**: Google Cloud → Firestore → Disaster recovery / Backups → create a daily backup schedule (keep 7–14 days).
-12. **Lock the web API key**: Google Cloud → APIs & Services → Credentials → the Browser key → Application restrictions → HTTP referrers → add `https://formcraftdesignconstruction.com/*`, `https://www.formcraftdesignconstruction.com/*`, `https://formcraft2027.web.app/*`, `https://formcraft2027.firebaseapp.com/*`, `http://localhost:5173/*`.
+12. **Lock the web API key**: Google Cloud → APIs & Services → Credentials → the Browser key → Application restrictions → HTTP referrers → add `https://formcraftdesignconstruction.com/*`, `https://www.formcraftdesignconstruction.com/*`, `https://formcraftdesign2027.web.app/*`, `https://formcraftdesign2027.firebaseapp.com/*`, `http://localhost:5173/*`.
 13. **Admin 2-step sign-in**: Emlyn, Peter and Esther turn on 2-Step Verification on their Google accounts (myaccount.google.com → Security).
 14. **[CC] First deploy of the site**: `npm run build:deploy && firebase deploy --only hosting` (only when you say go; `build:deploy` stops if it can't read which pages are switched off).
 15. **Connect formcraftdesignconstruction.com** (after the first deploy; about 15 minutes of clicks, then up to a day of waiting):
-    1. Firebase console → project `formcraft2027` → **Hosting** → **Add custom domain** → type
+    1. Firebase console → project `formcraftdesign2027` → **Hosting** → **Add custom domain** → type
        `formcraftdesignconstruction.com` → leave "redirect" off → Continue. Firebase shows the records to add: a **TXT**
        record (proves you own the domain) and one or two **A** records (point the domain at Firebase). Keep that page open.
     2. In another tab: **hpanel.hostinger.com** → **Domains** → formcraftdesignconstruction.com → **DNS / Nameservers** →

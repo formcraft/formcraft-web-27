@@ -31,9 +31,9 @@ const OUT = join(ROOT, "check-report", "admin");
 const projectId = async () => {
     try {
         const env = await readFile(join(ROOT, ".env.local"), "utf8");
-        return /^\s*VITE_FIREBASE_PROJECT_ID\s*=\s*(\S+)/m.exec(env)?.[1] ?? "formcraft2027";
+        return /^\s*VITE_FIREBASE_PROJECT_ID\s*=\s*(\S+)/m.exec(env)?.[1] ?? "formcraftdesign2027";
     } catch {
-        return "formcraft2027";
+        return "formcraftdesign2027";
     }
 };
 
