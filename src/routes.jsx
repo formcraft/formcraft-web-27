@@ -7,19 +7,26 @@
 //   so the page usually appears instantly when they click.
 // To add a page: create src/pages/MyPage.jsx exporting `MyPage`, add a line to TABLE below, and
 // (if the admin should be able to switch it off) add it to src/data/pages.js. See docs/recipes.md.
-import { lazy } from "react";
+import { createElement, lazy } from "react";
 import { Navigate } from "react-router-dom";
 import { PageGate } from "./components/layout/PageGate";
 import { pageForPath } from "./data/pages";
+import { loadedPage } from "./lib/pageRegistry";
 
 // One lazy chunk per page. Pages use named exports that match the file name.
-// At build time (the pre-rendering server build, import.meta.env.SSR) every page is loaded up front, so React
-// writes each page straight into its HTML instead of a skeleton plus a piece swapped in later; the browser still
-// loads each page only when it's visited, and adopts the pre-written HTML meanwhile.
+// At build time src/entry-server.jsx hands every page over up front (lib/pageRegistry.js), so React writes each page
+// straight into its HTML instead of a skeleton; the browser still loads each page only when it's visited, and
+// adopts the pre-written HTML meanwhile. (The pages are registered from there, not imported here: an import here
+// would put every page into the browser's main file.)
 const load = (name) => import(`./pages/${name}.jsx`);
-const eager = import.meta.env.SSR ? import.meta.glob("./pages/*.jsx", { eager: true }) : null;
 const cache = {};
-const page = (name) => (cache[name] ??= eager ? eager[`./pages/${name}.jsx`][name] : lazy(() => load(name).then((m) => ({ default: m[name] }))));
+const page = (name) =>
+    (cache[name] ??= (() => {
+        const onDemand = lazy(() => load(name).then((m) => ({ default: m[name] })));
+        const show = (props) => createElement(loadedPage(name) ?? onDemand, props);
+        show.displayName = name; // the page's name in React DevTools
+        return show;
+    })());
 
 // Route table: path → page component. `PageGate` hides pages the admin has turned off
 // (src/data/pages.js decides which page key a path belongs to).

@@ -5,7 +5,7 @@
 //
 // For every app page file in dist/ (index.html = Home, studio.html, stores/oak-armchair.html, …) it:
 // 1. renders the page with the server build of the app (dist-ssr/entry-server.js: same components, fixed address);
-// 2. writes that HTML into <div id="root">, and moves React's image hints (<link rel="preload">) into the head;
+// 2. writes that HTML into <div id="root"> (without React's image hints: they slowed the first paint);
 // 3. adds <meta name="fc-prerendered" content="/studio"> so the browser knows which address the HTML is for.
 // In the browser, main.jsx then "hydrates" (adopts the HTML without drawing it again). If a file is served for
 // another address (Hosting sends index.html for unknown addresses, and the service worker uses it offline), a
@@ -48,12 +48,11 @@ for (const file of files) {
     const path = pathFor(file);
     try {
         let body = await render(path);
-        // React lists image hints first; they belong in the head
-        const hints = [];
-        body = body.replace(/^(?:<link [^>]*rel="preload"[^>]*\/?>)+/, (m) => (hints.push(m), ""));
+        // React lists image hints first; dropped: on a slow connection they compete with the stylesheet, and the
+        // images are found in the HTML straight after anyway
+        body = body.replace(/^(?:<link [^>]*rel="preload"[^>]*\/?>)+/, "");
         const out = html
             .replace(/<meta charset="UTF-8" \/>/i, (m) => `${m}\n    <meta name="fc-prerendered" content="${path}" />`)
-            .replace("</head>", `${hints.join("")}\n  </head>`)
             .replace('<div id="root"></div>', `<div id="root">${body}</div>`);
         await writeFile(file, out);
         done++;

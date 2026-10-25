@@ -7,6 +7,10 @@ import { StrictMode } from "react";
 import { prerenderToNodeStream } from "react-dom/static";
 import { StaticRouter } from "react-router-dom/server";
 import { AppTree } from "./App.jsx";
+import { registerPages } from "./lib/pageRegistry.js";
+
+// every page's code up front, so the HTML holds the finished page (the browser keeps loading pages on demand)
+registerPages(import.meta.glob("./pages/*.jsx", { eager: true }));
 
 const streamToString = async (stream) => {
     let html = "";

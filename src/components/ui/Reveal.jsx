@@ -14,11 +14,11 @@ import { useReveal } from "../../hooks/useReveal";
  * Any other props (id, aria-*, …) are passed to the element.
  */
 export const Reveal = ({ as: Tag = "div", delay = 0, className = "", style, children, ...rest }) => {
-    const [ref, inView] = useReveal();
+    const [ref, waiting] = useReveal();
     return (
         <Tag
             ref={ref}
-            className={`reveal ${inView ? "is-in" : ""} ${className}`.trim()}
+            className={`reveal ${waiting ? "is-waiting" : ""} ${className}`.trim()}
             style={delay ? { ...style, "--delay": `${delay}s` } : style}
             {...rest}
         >
