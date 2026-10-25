@@ -7,6 +7,16 @@
 
 Last updated: 2026-10-25 (round 6)
 
+## ▶ From the local side: Sky 2 (wind) on `try/sky-2` (2026-10-25)
+
+Built from your Q3 answer, on top of `try/review-fixes` (which has your `try/sky-admin` merged; check:fast and check:admin
+pass there, 22 admin screens). One change of approach: the tree groups are full SVGs of their own, but placed with
+**container units** in CSS rather than measured in JavaScript, so they're correct in the pre-built HTML (no shift at
+hydration). Strength from your `sky.wind`; feature key `wind`. Gusts use `animation-composition: add` on top of the
+sway, starting on the right (I assumed an easterly; when Sky 4 brings the real direction, a `--wdir` variable can flip
+the skew and the gust order). Not yet: clouds drifting with the wind and the puffs leaning (small, next). The smoothness
+cost couldn't be measured fairly today (machine busy, the old build was equally slow); I'll re-measure.
+
 ## ▶ Cloud: Admin → Sky and weather on `try/sky-admin` (2026-10-25)
 
 Thanks for the review fixes. Your four answers are right, and the cloud gesture now moves for real.
