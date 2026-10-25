@@ -29,6 +29,19 @@ function cssFiles(dir) {
     return out;
 }
 
+// A selector list split at its own commas only, not those inside :is(), :not() or [attr="a,b"]
+const topLevel = (list) => {
+    const out = [];
+    let depth = 0, from = 0;
+    for (let i = 0; i < list.length; i++) {
+        const c = list[i];
+        if (c === "(" || c === "[") depth++;
+        else if (c === ")" || c === "]") depth--;
+        else if (c === "," && depth === 0) (out.push(list.slice(from, i)), (from = i + 1));
+    }
+    return [...out, list.slice(from)];
+};
+
 /**
  * @returns {Array<{ className: string, files: string[] }>} one entry per risky class name
  */
@@ -40,7 +53,7 @@ export function findCssCollisions() {
             .replace(/\/\*[\s\S]*?\*\//g, "") // comments
             .replace(/@keyframes[^{]+\{(?:[^{}]*\{[^}]*\})*[^}]*\}/g, ""); // animation steps aren't selectors
         for (const match of css.matchAll(/([^{}]+)\{/g)) {
-            for (const raw of match[1].split(",")) {
+            for (const raw of topLevel(match[1])) {
                 const selector = raw.trim();
                 if (!selector || selector.startsWith("@")) continue;
                 const parts = selector.split(/\s+|>|\+|~/).filter(Boolean);

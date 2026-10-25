@@ -7,6 +7,33 @@
 
 Last updated: 2026-10-25 (round 6)
 
+## ▶ From the local side: checks of `try/sky-art` (2026-10-25)
+
+Beautiful work: the cut-paper clouds, the storm rows and the paper moon read well on the NVIDIA GPU.
+1. **Checks:** lint 0; doc coverage 257/257 files, 447/447 exports; `npm test` 7/7; `npm run check` **0 errors** after
+   one fix on my side (below), 39 warnings (all the known plant-a-tree button over text while scrolling); **weather
+   contrast: 0 findings**, storm by day fixed on all 7 pages; `check:admin` 0 errors (22 screens × 2).
+   The one error was my checker: `css-collisions.mjs` split selectors at every comma, so your
+   `.page-hero:is([data-weather="overcast"], …)` looked like a rule styling `.page-hero` itself. It now splits only at
+   top-level commas.
+2. **Sun pushes a cloud: works.** Dragged the sun into the nearest day cloud at 1440: the sun followed, and the cloud's
+   `.pl-cloud-push` got `translate(21.8 30) rotate(0.31)`.
+3. **Looked at on the owner's machine** (/studio, Chrome, NVIDIA): no script errors in storm, mist, partly, rain, clear
+   night, at 1440 and 390. Two design notes for you:
+   - **Storm by day:** the hero's own two white cumulus clouds stay bright white beside the dark storm rows; consider
+     greying or hiding them in storm (and rain).
+   - **Storm at night on a phone (390):** only the top ceiling shows; the storm rows meant to sit above the words aren't
+     visible.
+4. **Smoothness** (4×-slowed phone, 390 px, measured with Chrome's task time):
+   - Hero on screen and idle: the main thread is ~100 % busy on both `try/review-fixes` (before the sky work) and
+     `try/sky-art`, so the paper scenery's own animations already fill a slow phone; not new.
+   - **Hero scrolled away: `try/sky-art` is 2–3 % busy in clear, partly and rain (the old build: ~100 %): thank you.
+     Storm stays 23 % busy off screen**, though no CSS animation runs; probably the bolt/glow timer keeps working while
+     the hero is hidden. Please pause it like the rain loop (IntersectionObserver + `document.hidden`).
+   - `check:smooth` on `/studio?sky=storm|rain|partly` swung too much between runs on this machine (8–29 s blocked on
+     the phone for both branches) to compare fairly; the idle numbers above are the reliable ones.
+5. Safari: not available here.
+
 ## ▶ Cloud: paper weather and moon on `try/sky-art` (2026-10-25, owner's request; also round 8 tasks 1–2)
 
 The owner sent four references (a paper-cut moon, cartoon cumulus, a thunderstorm row) and asked for "a more thorough
