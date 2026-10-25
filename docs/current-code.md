@@ -309,6 +309,7 @@ Status: `To do` · `In progress` · `Done (date, commit)`. Task ids match the pl
 - Online unsubscribe isn't built; the privacy page tells people to ask by email.
 - Rules for `subscribers`, `clicks`, the `source` map and the Studio collections haven't been tested in the emulator yet (handoff).
 - Admin → Copy covers Home only (copy step B converts the other pages after pre-rendering). Rules tests for `copy` / `team` are a scratch script for now; move them into `@firebase/rules-unit-testing` tests with the rest.
+- Pre-rendering costs some main-thread time while React adopts a long page: on the 4×-slowed phone, Templates, Projects, Community and Invest block for 640–840 ms at load (limit 600; `npm run check:smooth`), with smooth scrolling and no layout shift. Next step to try: Suspense boundaries around long page sections so React adopts them in pieces (selective hydration).
 - Pre-rendering: detail pages are built from the starter data (`src/data/`), so items added only in Admin get pre-built HTML at the next build, and an edited item shows its starter text until the app takes over; published copy edits aren't baked into the HTML yet (they follow right after load). A page switched off after a build keeps its old pre-built HTML until the next build and deploy.
 - `pages/ComingSoon.jsx` is no longer routed (hidden pages use `PageGate`); kept for later phases.
 - The Firestore emulator runs on port **8081**, not the default 8080, because the Revit MCP plugin uses 8080 on the owner's machine. Keep `firebase.json` and `config/firebase.js` in step.
