@@ -97,11 +97,6 @@ const matches = (pattern, path) => {
 };
 const prefetched = new Set();
 /**
- * Starts downloading a page's code before the visitor clicks (called on hover, focus or touch of a link).
- * Each page is fetched at most once; outside links and unknown addresses are ignored.
- * @param {string} href  the link's address, e.g. "/studio"
- */
-/**
  * Loads the code of the page at an address and hands it over, so React can render that page straight away (no
  * Suspense). main.jsx does this before adopting a pre-rendered page: while a page is still loading, React keeps the
  * pre-built HTML on hold, and any update above it (the cart, settings, sign-in) makes React throw it away and draw it
@@ -115,6 +110,11 @@ export const preloadPage = async (pathname) => {
     registerPages({ [`./pages/${name}.jsx`]: mod });
 };
 
+/**
+ * Starts downloading a page's code before the visitor clicks (called on hover, focus or touch of a link).
+ * Each page is fetched at most once; outside links and unknown addresses are ignored.
+ * @param {string} href  the link's address, e.g. "/studio"
+ */
 export const prefetchRoute = (href) => {
     if (!href?.startsWith("/")) return;
     const hit = TABLE.find(([pattern]) => matches(pattern, href));
