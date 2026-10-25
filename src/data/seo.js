@@ -7,9 +7,9 @@
 // Facts only (CLAUDE.md): anything not known is left out or marked TODO, never invented.
 
 // ── Site address ──────────────────────────────────────────────────────────────────────────────
-// TODO: domain not confirmed by the owner. The social posters use formcraftdesign.com.
-// Set SITE_URL (build, Node) and VITE_SITE_URL (browser, .env.local / CI) to the real domain.
-const DEFAULT_SITE_URL = "https://formcraftdesign.com";
+// The owner's domain (bought 2026-10-25 at Hostinger). The bare address is the main one; www redirects to it
+// (set in Firebase Hosting). SITE_URL (build, Node) or VITE_SITE_URL (browser) override it, e.g. for a test site.
+const DEFAULT_SITE_URL = "https://formcraftdesignconstruction.com";
 
 const fromNode = () => {
     try {

@@ -71,7 +71,7 @@ Google Lighthouse (mobile) for a few key pages: Performance, Accessibility, Best
 ## Before publishing
 
 Run `npm run check` (no errors), then look through `check-report/index.html` at phone and desktop in both
-editions. Then build with the real domain: `SITE_URL=https://… npm run build`.
+editions. Then build with `npm run build:deploy` (the domain is built in).
 
 ## The admin pass: `npm run check:admin`
 

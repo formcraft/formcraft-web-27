@@ -20,8 +20,8 @@ import { KAMPALA, toSeries, pickNow, recordFor } from "./weatherMap.js";
 // This module is evaluated before index.js runs setGlobalOptions(), so the region is set here too (as in studio.js).
 // TODO: keep in step with index.js (same region as the Firestore database; open question).
 const REGION = process.env.FUNCTIONS_REGION || "africa-south1";
-// TODO: same domain as src/data/seo.js SITE_URL (not confirmed by the owner). Set SITE_URL in functions/.env.
-const SITE_URL = String(process.env.SITE_URL || "https://formcraftdesign.com").replace(/\/+$/, "");
+// Same domain as src/data/seo.js SITE_URL; SITE_URL in functions/.env overrides it.
+const SITE_URL = String(process.env.SITE_URL || "https://formcraftdesignconstruction.com").replace(/\/+$/, "");
 const URL_ = `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${KAMPALA.lat}&lon=${KAMPALA.lon}`;
 const db = () => getFirestore(); // the app is initialised in index.js
 

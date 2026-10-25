@@ -88,7 +88,7 @@ try {
     const project = envVar("VITE_FIREBASE_PROJECT_ID"), key = envVar("VITE_FIREBASE_API_KEY");
     if (!project || !key) throw new Error("no Firebase project in the environment");
     // the Referer lets a key restricted to the site's domains (owner checklist) still answer the build
-    const site = (envVar("SITE_URL") || envVar("VITE_SITE_URL") || "https://formcraftdesign.com").replace(/\/+$/, "");
+    const site = (envVar("SITE_URL") || envVar("VITE_SITE_URL") || "https://formcraftdesignconstruction.com").replace(/\/+$/, "");
     const res = await fetch(`https://firestore.googleapis.com/v1/projects/${project}/databases/(default)/documents/settings/site?key=${key}`, { signal: AbortSignal.timeout(5000), headers: { Referer: `${site}/` } });
     if (res.status !== 404) {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);

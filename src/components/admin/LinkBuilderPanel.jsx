@@ -116,7 +116,7 @@ export const LinkBuilderPanel = () => {
                     <div className="field">
                         <label htmlFor={id("base")}>Website address</label>
                         <input id={id("base")} value={base} onChange={(e) => setBase(e.target.value)} aria-describedby={id("base-hint")} />
-                        <span className="hint" id={id("base-hint")}>From the site settings (SITE_URL). TODO: the domain isn't confirmed yet — check before posting.</span>
+                        <span className="hint" id={id("base-hint")}>The site's address (SITE_URL). Change it here only to make links for a test copy of the site.</span>
                     </div>
                 </div>
                 <div className="field">

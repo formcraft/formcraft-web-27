@@ -139,7 +139,7 @@ The person signs out and back in to pick it up. (Against the emulators, put
 
 ```bash
 npm run check                                              # must pass
-SITE_URL=https://<the domain> npm run build
+npm run build:deploy
 firebase deploy --only hosting                             # the site
 firebase deploy --only firestore:rules,firestore:indexes,storage   # when the rules changed
 ```

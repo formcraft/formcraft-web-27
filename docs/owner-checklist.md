@@ -3,14 +3,14 @@
 > For Emlyn, Peter and Esther. Everything the code can't do by itself: decisions, accounts, payments and
 > one-time setup. Work top to bottom; each item says why it matters and roughly how long it takes.
 > Claude Code on the office computer can do the command-line steps with you (they're marked **[CC]**).
-> Last updated: 2026-10-24.
+> Last updated: 2026-10-25.
 
 ## 1. Decisions to make first (no cost)
 
 | # | Decision | Why it matters | Where it's used |
 | --- | --- | --- | --- |
-| 1.1 | **Domain** — formcraftdesign.com (on the social posters) or another (e.g. formcraft.co.ug)? | Google, link previews, email delivery and the sitemap all use one address. Changing it later loses search ranking. | `SITE_URL` / `VITE_SITE_URL` |
-| 1.2 | **Public email** — formcraftdesign@gmail.com or formcraft@gmail.com (both appear in your materials), or a domain email like hello@formcraftdesign.com? | Shown on every page, in the footer, in Google's business listing. One address everywhere. | Admin → Site details |
+| 1.1 | **Domain** — decided 2026-10-25: **formcraftdesignconstruction.com** (bought at Hostinger). The bare address is the main one; `www.` redirects to it. Update the social posters, business cards and bios to match. | Google, link previews, email delivery and the sitemap all use one address. Changing it later loses search ranking. | `src/data/seo.js` (`SITE_URL`) |
+| 1.2 | **Public email** — formcraftdesign@gmail.com or formcraft@gmail.com (both appear in your materials), or a domain email like hello@formcraftdesignconstruction.com (Hostinger sells email on the domain)? | Shown on every page, in the footer, in Google's business listing. One address everywhere. | Admin → Site details |
 | 1.3 | **Firebase project** — decided: **`formcraft2027`**. Create it in console.firebase.google.com (Add project → project ID `formcraft2027`), add a Web app, and give Claude Code its config to paste into `.env.local`. If that ID is taken, pick the closest free one and say which. | Project ids can never be renamed; the code already points at `formcraft2027`. | `.env.local`, `.firebaserc` |
 | 1.4 | **Region** — confirm the Firestore location of the project (ideally `africa-south1`, Johannesburg). Functions must use the same region. | Speed for Ugandan visitors; can't be changed after the database is created. | `functions/index.js`, `VITE_FUNCTIONS_REGION` |
 | 1.5 | **Team sign-in emails** — the Google accounts Peter Isingoma and Esther Ahumuza will use. | They become admins. | Admin → Team |
@@ -24,7 +24,7 @@
 
 | # | Account | What to do | Cost (check current pricing) |
 | --- | --- | --- | --- |
-| 2.1 | **Domain registrar** | Register the domain from 1.1 and keep the DNS login. | Yearly fee (.com is usually cheaper than .co.ug). |
+| 2.1 | **Domain registrar** | Done: Hostinger. Keep the Hostinger login safe and turn on **auto-renew** (an expired domain takes the site and any domain email down). | Yearly fee |
 | 2.2 | **Google Cloud billing → Firebase Blaze plan** | console.firebase.google.com → project → Upgrade → Blaze. Add a card. **Set a budget alert** (e.g. US$10/month) in Google Cloud → Billing → Budgets. Needed for Cloud Functions (spam protection, team roles, scheduled posting, payments later). | Pay-as-you-go with a free monthly allowance; a site this size usually costs little. The budget alert emails you before anything surprising. |
 | 2.3 | **Buffer** (social publishing) | buffer.com → sign up → connect Instagram, Facebook, LinkedIn, X, TikTok, Pinterest. Choose a plan that allows a full year's queue (the free plan has small limits). Then create an API token (developers.buffer.com) for step 3.9. | Free plan, or paid per channel per month. |
 | 2.4 | **Meta Business Suite** | Make sure Instagram @formcraft.ug is a Business/Creator account linked to the Formcraft Facebook Page (Buffer needs this to post to Instagram). | Free |
@@ -41,14 +41,12 @@
 1. **[CC] Pull the latest code** on the office computer: `git pull` on branch `paper-edition`, then `npm install` and `npm --prefix functions install`.
 2. **[CC] Fill `.env.local`** (never commit it) — add the new lines to the existing Firebase values:
    ```bash
-   VITE_SITE_URL=https://<your-domain>          # from 1.1
    VITE_FUNCTIONS_REGION=africa-south1          # from 1.4
    VITE_FIREBASE_MEASUREMENT_ID=G-...           # from 2.7
    VITE_RECAPTCHA_SITE_KEY=...                  # from 2.8 (App Check)
    VITE_FUNCTIONS_ENABLED=true                  # after step 3.6 (team roles on sign-in)
    VITE_FORMS_VIA_FUNCTIONS=true                # after step 3.6 (forms through the protected function)
    ```
-   For the production build, also set `SITE_URL=https://<your-domain>` when running `npm run build`.
 3. **[CC] Check everything locally**: `npm run lint`, `npm run build`, `npm run preview`, and the emulators (see `docs/handoff.md`).
 4. **Blaze plan** (2.2) — required before step 6.
 5. **[CC] Deploy the security rules and indexes**: `firebase deploy --only firestore:rules,firestore:indexes,storage`.
@@ -59,10 +57,28 @@
 9. **[CC] Buffer token**: `firebase functions:secrets:set BUFFER_TOKEN` (paste the token from 2.3), redeploy functions, then Admin → Studio → Channels → map each channel to its Buffer channel.
 10. **Firestore clean-up rule**: Google Cloud → Firestore → TTL → add a policy on collection `rateLimits`, field `expiresAt` (old spam-protection counters delete themselves).
 11. **Nightly backups**: Google Cloud → Firestore → Disaster recovery / Backups → create a daily backup schedule (keep 7–14 days).
-12. **Lock the web API key**: Google Cloud → APIs & Services → Credentials → the Browser key → Application restrictions → HTTP referrers → add `https://<domain>/*`, `https://<project>.web.app/*`, `https://<project>.firebaseapp.com/*`, `http://localhost:5173/*`.
+12. **Lock the web API key**: Google Cloud → APIs & Services → Credentials → the Browser key → Application restrictions → HTTP referrers → add `https://formcraftdesignconstruction.com/*`, `https://www.formcraftdesignconstruction.com/*`, `https://formcraft2027.web.app/*`, `https://formcraft2027.firebaseapp.com/*`, `http://localhost:5173/*`.
 13. **Admin 2-step sign-in**: Emlyn, Peter and Esther turn on 2-Step Verification on their Google accounts (myaccount.google.com → Security).
-14. **[CC] First deploy of the site**: `SITE_URL=https://<domain> npm run build:deploy && firebase deploy --only hosting` (only when you say go; `build:deploy` stops if it can't read which pages are switched off).
-15. **Custom domain**: Firebase console → Hosting → Add custom domain → add the DNS records at the registrar. HTTPS is automatic.
+14. **[CC] First deploy of the site**: `npm run build:deploy && firebase deploy --only hosting` (only when you say go; `build:deploy` stops if it can't read which pages are switched off).
+15. **Connect formcraftdesignconstruction.com** (after the first deploy; about 15 minutes of clicks, then up to a day of waiting):
+    1. Firebase console → project `formcraft2027` → **Hosting** → **Add custom domain** → type
+       `formcraftdesignconstruction.com` → leave "redirect" off → Continue. Firebase shows the records to add: a **TXT**
+       record (proves you own the domain) and one or two **A** records (point the domain at Firebase). Keep that page open.
+    2. In another tab: **hpanel.hostinger.com** → **Domains** → formcraftdesignconstruction.com → **DNS / Nameservers** →
+       **DNS records**. (If Hostinger says the domain uses other nameservers, switch to Hostinger's own first.)
+    3. **Delete** Hostinger's existing **A** record for `@` (it points at Hostinger's parking page) and any **AAAA** record
+       for `@`. Two A records pointing to different places would make the site appear and vanish at random.
+       **Don't touch MX or email records** if you use (or will use) Hostinger email.
+    4. **Add** each record Firebase showed: Type, Name `@` (Hostinger's word for the bare domain), the value exactly as
+       Firebase gives it, TTL left as it is.
+    5. Back in Firebase, press **Verify**. It can take minutes to a few hours (up to 24). Firebase then makes the HTTPS
+       certificate by itself; the site may show a certificate warning for that hour or so, which is normal.
+    6. Add the second domain: **Add custom domain** → `www.formcraftdesignconstruction.com` → tick **Redirect** to
+       `formcraftdesignconstruction.com`. In Hostinger, delete any existing `www` CNAME record and add what Firebase shows.
+    7. **Authentication** → **Settings** → **Authorized domains** → add `formcraftdesignconstruction.com` and
+       `www.formcraftdesignconstruction.com` (without them, "Sign in with Google" fails on the new address).
+    8. Check: open https://formcraftdesignconstruction.com and https://www.formcraftdesignconstruction.com (the second
+       should land on the first), and sign in once.
 16. **Search Console + sitemap** (2.5) and **Business Profile** (2.6) once the domain is live.
 17. **After a week live**:
     - Check the browser console for "Content-Security-Policy" reports; if clean, switch `Content-Security-Policy-Report-Only` to `Content-Security-Policy` in `firebase.json`. **[CC]**

@@ -476,7 +476,8 @@ Caching: no Redis — Firebase Hosting CDN + pre-built pages + service worker + 
 
 ## Open questions and brand-guide fixes
 
-- [ ] **Domain and email:** the social posters use formcraftdesign.com and formcraft@gmail.com; the site and business cards use formcraftdesign@gmail.com. Confirm the domain (sets `SITE_URL`) and the public email.
+- [x] **Domain:** decided 2026-10-25: **formcraftdesignconstruction.com** (Hostinger), bare address main, `www` redirects. `SITE_URL` set. Posters and cards still show formcraftdesign.com: update them.
+- [ ] **Public email:** formcraftdesign@gmail.com, formcraft@gmail.com or a domain email (e.g. hello@formcraftdesignconstruction.com).
 - [ ] **Team details:** sign-in emails for Peter Isingoma and Esther Ahumuza (head of sales & marketing).
 - [ ] **Occasion palette:** colours for seasonal themes need brand approval before they go live.
 - [ ] **Posting targets:** posts per week per channel (set in Admin → Studio).
@@ -487,7 +488,7 @@ Caching: no Redis — Firebase Hosting CDN + pre-built pages + service worker + 
 - [ ] **Division names:** confirm Studio, Construction, Concrete and Stores, and whether Craft Studio furniture sits under Stores.
 - [ ] **Tree price and partner:** which planting partner, how many UGX per tree.
 - [ ] **Delivery:** areas served and how delivery is priced.
-- [ ] **Domain:** which domain (e.g. formcraft.co.ug) and who controls DNS.
+- [x] **Domain:** formcraftdesignconstruction.com; DNS at Hostinger (the owner's account).
 - [ ] **Contact email:** formcraftdesign@gmail.com or a domain email at launch.
 - [x] **Firebase project:** decided 2026-10-24: a new project `formcraft2027` (the old `fromcraft-2026` was misspelled; ids can't be renamed). The code points at it; the owner creates it and pastes its web-app keys into `.env.local`.
 - [ ] **Region:** confirm the Firestore location of the existing project and use the same region for Functions (`VITE_FUNCTIONS_REGION`).

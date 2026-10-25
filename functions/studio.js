@@ -32,8 +32,8 @@ const BUFFER_TOKEN = defineSecret("BUFFER_TOKEN");
 // TODO: keep in step with index.js (same region as the Firestore database; open question).
 const REGION = process.env.FUNCTIONS_REGION || "africa-south1";
 const API = "https://api.buffer.com";
-// TODO: same domain as src/data/seo.js SITE_URL (not confirmed by the owner). Set SITE_URL in functions/.env.
-const SITE_URL = String(process.env.SITE_URL || "https://formcraftdesign.com").replace(/\/+$/, "");
+// Same domain as src/data/seo.js SITE_URL; SITE_URL in functions/.env overrides it.
+const SITE_URL = String(process.env.SITE_URL || "https://formcraftdesignconstruction.com").replace(/\/+$/, "");
 
 // The app is initialised in index.js; Firestore is fetched lazily so import order doesn't matter.
 const db = () => getFirestore();
