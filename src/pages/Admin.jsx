@@ -18,6 +18,7 @@ import { StudioPanel } from "../components/admin/studio/StudioPanel";
 import { TeamPanel } from "../components/admin/TeamPanel";
 import { CopyPanel } from "../components/admin/CopyPanel";
 import { FeaturesPanel } from "../components/admin/FeaturesPanel";
+import { SkyPanel } from "../components/admin/SkyPanel";
 import { firebaseConfigured } from "../config/firebase";
 import "./Admin.css";
 
@@ -32,6 +33,12 @@ const TEAM = ["admin", "marketing"];
 const SiteDetails = () => {
     const { loading } = useSite();
     return <DetailsPanel key={loading ? "loading" : "ready"} />;
+};
+
+// waits for the saved settings, so the sliders start from them (like SiteMotion)
+const SiteSky = () => {
+    const { loading } = useSite();
+    return <SkyPanel key={loading ? "loading" : "ready"} />;
 };
 
 const SiteMotion = () => {
@@ -69,6 +76,7 @@ const SECTIONS = [
             { key: "features", label: "Features", roles: ["admin"], render: () => <FeaturesPanel /> },
             { key: "details", label: "Site details", roles: ["admin"], render: () => <SiteDetails /> },
             { key: "motion", label: "Animation timing", roles: ["admin"], render: () => <SiteMotion /> },
+            { key: "sky", label: "Sky and weather", roles: ["admin"], render: () => <SiteSky /> },
             { key: "team", label: "Team", roles: ["admin"], owner: true, render: () => <TeamPanel /> },
         ],
     },

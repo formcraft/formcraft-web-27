@@ -9,6 +9,7 @@ import { CONTACT_DEFAULTS } from "../data/contact";
 import { readJSON, writeJSON } from "../lib/storage";
 import { MOTION_CACHE, MOTION_DEFAULTS, applyMotion, clampMotion, mergeMotion } from "../data/motion";
 import { FEATURES, FEATURES_CACHE, mergeFeatures } from "../data/features";
+import { SKY_CACHE, mergeSky } from "../data/sky";
 
 // Site settings from Firestore `settings/site`, read over REST (no SDK on public pages) and cached in
 // localStorage so the next visit knows straight away:
@@ -17,6 +18,7 @@ import { FEATURES, FEATURES_CACHE, mergeFeatures } from "../data/features";
 //   pinterest } — public contact details (Admin → Site details), merged over src/data/contact.js
 // - `motion`: { intro, tear, build, reveal } — animation time scales (Admin → Motion), see src/data/motion.js
 // - `features`: { key: bool } — features switched on or off (Admin → Features), see src/data/features.js
+// - `sky`: { params, weather, rain, wind } — how the hero sky behaves (Admin → Sky and weather), see src/data/sky.js
 // firestore.rules let only the team write it.
 const CACHE = "fc-site-pages";
 const DETAILS_CACHE = "fc-site-details";
@@ -49,6 +51,7 @@ export const SiteProvider = ({ children }) => {
     const [savedDetails, setSavedDetails] = useDeviceState(() => readJSON(DETAILS_CACHE, null), null);
     const [savedMotion, setSavedMotion] = useDeviceState(() => readJSON(MOTION_CACHE, null), null);
     const [savedFeatures, setSavedFeatures] = useDeviceState(() => readJSON(FEATURES_CACHE, null), null);
+    const [savedSky, setSavedSky] = useDeviceState(() => readJSON(SKY_CACHE, null), null);
     const [loading, setLoading] = useState(restReady());
 
     useEffect(() => {
@@ -68,13 +71,16 @@ export const SiteProvider = ({ children }) => {
                 const features = doc?.features ?? {};
                 setSavedFeatures(features);
                 writeJSON(FEATURES_CACHE, features);
+                const sky = doc?.sky ?? {};
+                setSavedSky(sky);
+                writeJSON(SKY_CACHE, sky);
             })
             .catch((error) => {
                 if (error.name !== "AbortError") console.warn("Couldn't read site settings; using the defaults.", error);
             })
             .finally(() => setLoading(false));
         return () => controller.abort();
-    }, [setStored, setSavedFeatures, setSavedDetails, setSavedMotion]);
+    }, [setStored, setSavedFeatures, setSavedDetails, setSavedMotion, setSavedSky]);
 
     const visibility = useMemo(() => {
         const merged = { ...defaultVisibility(), ...(stored ?? {}) };
@@ -87,6 +93,7 @@ export const SiteProvider = ({ children }) => {
     const details = useMemo(() => mergeDetails(savedDetails), [savedDetails]);
     const motion = useMemo(() => mergeMotion(savedMotion), [savedMotion]);
     const features = useMemo(() => mergeFeatures(savedFeatures), [savedFeatures]);
+    const sky = useMemo(() => mergeSky(savedSky), [savedSky]);
     useEffect(() => applyMotion(motion), [motion]);
 
     const setPage = useCallback(
@@ -172,6 +179,25 @@ export const SiteProvider = ({ children }) => {
         [isAdmin, savedFeatures, setSavedFeatures]
     );
 
+    // Sky and weather (admin only): the whole tuned set, checked against its ranges, into settings/site.sky
+    const setSky = useCallback(
+        async (next) => {
+            if (!isAdmin) throw new Error("Only the team can change the sky and weather.");
+            const clean = mergeSky(next);
+            const previous = savedSky;
+            setSavedSky(clean);
+            writeJSON(SKY_CACHE, clean);
+            try {
+                await writeSettings({ sky: clean });
+            } catch (error) {
+                setSavedSky(previous);
+                writeJSON(SKY_CACHE, previous);
+                throw error;
+            }
+        },
+        [isAdmin, savedSky, setSavedSky]
+    );
+
     const value = useMemo(
         () => ({
             visibility,
@@ -186,8 +212,10 @@ export const SiteProvider = ({ children }) => {
             setMotion,
             features,
             setFeature,
+            sky,
+            setSky,
         }),
-        [visibility, loading, isAdmin, setPage, details, setDetails, motion, setMotion, features, setFeature]
+        [visibility, loading, isAdmin, setPage, details, setDetails, motion, setMotion, features, setFeature, sky, setSky]
     );
 
     return <SiteContext.Provider value={value}>{children}</SiteContext.Provider>;

@@ -25,8 +25,9 @@ const GRAB = 1.6; // a press within 1.6 × the disc radius of its centre picks i
  * @param {boolean} o.drag  "Move the sun and moon" is on (Admin → Features)
  * @param {boolean} o.fluid  "Stars and clouds make way" is on
  * @param {string} o.edition  "day" | "night" (redraws when it changes)
+ * @param {object} [o.params]  the engine's numbers from Admin → Sky and weather (settings/site.sky.params)
  */
-export const useSkyDrag = ({ skyRef, canvasRef, grabRef, field, drag, fluid, edition }) => {
+export const useSkyDrag = ({ skyRef, canvasRef, grabRef, field, drag, fluid, edition, params }) => {
     useEffect(() => {
         const sky = skyRef.current;
         const hero = sky?.parentElement;
@@ -106,7 +107,7 @@ export const useSkyDrag = ({ skyRef, canvasRef, grabRef, field, drag, fluid, edi
             // each cloud layer is a full-width drawing: measure the cloud shape itself
             const cl = fluid && !field ? clouds().map((c) => { const r = (c.querySelector("path") ?? c).getBoundingClientRect(); return { x: r.left + r.width / 2 - heroBox.left, y: r.top + r.height / 2 - heroBox.top, w: r.width, h: r.height }; }) : [];
             home = b;
-            engine = b ? createSkyField({ stars: fluid ? stars : [], clouds: cl, discR, home: b, bounds: { w: hero.clientWidth, h: hero.clientHeight }, reduced }) : null;
+            engine = b ? createSkyField({ stars: fluid ? stars : [], clouds: cl, discR, home: b, bounds: { w: hero.clientWidth, h: hero.clientHeight }, params, reduced }) : null;
             // start from the calm the field returns to (stars just around the resting moon sit a little apart),
             // so nothing jumps at the first touch: up to 6 s of motion, worked out at once, before the first draw
             if (engine && fluid) for (let i = 0; i < 360 && engine.step(1 / 60); i++);
@@ -259,5 +260,5 @@ export const useSkyDrag = ({ skyRef, canvasRef, grabRef, field, drag, fluid, edi
             if (el) el.style.transform = "";
             hero.querySelectorAll(".pl-cloud-push").forEach((g) => g.removeAttribute("transform"));
         };
-    }, [skyRef, canvasRef, grabRef, field, drag, fluid, edition]);
+    }, [skyRef, canvasRef, grabRef, field, drag, fluid, edition, params]);
 };

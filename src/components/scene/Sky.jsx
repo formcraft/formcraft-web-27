@@ -1,7 +1,7 @@
 import { useMemo, useRef } from "react";
 import { useSky } from "../../hooks/useSky";
 import { useTheme } from "../../hooks/useTheme";
-import { useFeature } from "../../hooks/useSite";
+import { useFeature, useSite } from "../../hooks/useSite";
 import { W, SKY_H, starField } from "./sceneGeometry";
 import { moonLitPath, moonPhase } from "./sky/moonPhase";
 import { useSkyDrag } from "./useSkyDrag";
@@ -28,7 +28,8 @@ export const Sky = ({ seed = 7, horizon = 180, className = "" }) => {
     const skyRef = useRef(null);
     const canvasRef = useRef(null);
     const grabRef = useRef(null);
-    useSkyDrag({ skyRef, canvasRef, grabRef, field: night ? field : null, drag, fluid, edition: theme });
+    const params = useSite()?.sky?.params; // Admin → Sky and weather
+    useSkyDrag({ skyRef, canvasRef, grabRef, field: night ? field : null, drag, fluid, edition: theme, params });
     return (
         <>
             <div ref={skyRef} className={`sky ${className}`.trim()} style={{ "--sky-horizon": `${Math.round(horizon)}px` }} aria-hidden="true">

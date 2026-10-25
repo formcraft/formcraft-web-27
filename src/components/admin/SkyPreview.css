@@ -1,0 +1,49 @@
+/* SkyPreview: the small page hero in Admin → Sky and weather (classes start with .sky-preview-). Every colour is a
+   token from tokens.css; data-theme on the frame picks the day or night values, whatever the admin page shows. */
+.sky-preview {
+  position: relative; overflow: hidden; isolation: isolate; border-radius: var(--r-1, 4px);
+  height: clamp(300px, 46vw, 520px); background: var(--tex-ground); color: var(--ink);
+  touch-action: pan-y; -webkit-user-select: none; user-select: none;
+}
+.sky-preview.is-held { touch-action: none; cursor: grabbing; }
+.sky-preview > * { position: absolute; pointer-events: none; }
+.sky-preview-sky {
+  inset: 0; opacity: calc(.35 + .65 * var(--sky-preview-glowk, 1)); transition: opacity .6s ease;
+  background: linear-gradient(to top, var(--sky-glow) 0, var(--sky-glow) 24%, var(--sky-glow-2) 38%, var(--sky-mid) 70%, var(--sky-top) 100%);
+}
+.sky-preview-wash { inset: 0; background: var(--sky-preview-wash); transition: background-color .6s ease; }
+.sky-preview-stars, .sky-preview-rain { inset: 0; width: 100%; height: 100%; }
+.sky-preview-body { left: 0; top: 0; opacity: var(--sky-preview-body, 1); transition: opacity .6s ease; }
+.sky-preview-body svg { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 2px 3px var(--sh-2)); transition: scale .18s var(--fc-ease-out); }
+.sky-preview.is-held .sky-preview-body svg { scale: 1.08; filter: drop-shadow(0 8px 12px var(--body-lift)); }
+.sky-preview-disc { fill: var(--sc-sun); }
+.sky-preview-dark { opacity: .2; }
+.sky-preview-ring { fill: var(--sc-ring); }
+.sky-preview-ring-2 { opacity: .7; }
+.sky-preview-ring-3 { opacity: .45; }
+.sky-preview-weather { inset: 0; width: 100%; height: 100%; }
+.sky-preview-sheet { filter: drop-shadow(0 5px 6px var(--cloud-shadow)); }
+.sky-preview-front { fill: var(--sc-cloud); }
+.sky-preview-back { fill: var(--cloud-back); }
+.sky-preview-deck { filter: drop-shadow(0 6px 8px var(--cloud-shadow)); }
+.sky-preview-deck.sky-preview-back { fill: var(--cloud-deck-back); }
+.sky-preview-deck.sky-preview-front { fill: var(--cloud-deck-front); }
+.sky-preview-storm-back { fill: var(--cloud-storm-back); }
+.sky-preview-storm-front { fill: var(--cloud-storm-front); }
+.sky-preview-hills { left: 0; right: 0; bottom: 0; width: 100%; height: 64%; }
+.sky-preview-hills .sky-preview-far { fill: var(--sc-far); }
+.sky-preview-hills .sky-preview-mid { fill: var(--sc-mid); }
+.sky-preview-hills .sky-preview-near { fill: var(--sc-near); }
+.sky-preview-hills .sky-preview-front { fill: var(--sc-front); }
+.sky-preview-tree { fill: var(--sc-tree-near); }
+.sky-preview-wet { transition: opacity .6s ease; }
+.sky-preview-wet path { fill: var(--wet); }
+.sky-preview-copy {
+  left: clamp(16px, 4vw, 40px); top: clamp(20px, 5vw, 48px); margin: 0; max-width: 62%;
+  display: flex; flex-direction: column; font: 600 clamp(24px, 4vw, 48px)/.98 var(--fc-font-display); letter-spacing: -.02em;
+}
+.sky-preview-copy span + span { color: var(--fc-rust-text); }
+[data-theme="night"] .sky-preview-copy span + span { color: var(--fc-orange); }
+@media (prefers-reduced-motion: reduce) {
+  .sky-preview-sky, .sky-preview-wash, .sky-preview-body, .sky-preview-wet, .sky-preview-body svg { transition: none; }
+}
