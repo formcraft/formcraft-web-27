@@ -78,19 +78,21 @@
 .paper-layers { container-type: size; }
 .pl-trees { pointer-events: none; }
 .pl-tree-group {
-  --u: max(100cqw / 1440, 100cqh / var(--vh)); /* one unit of the 1440-wide drawing, in px */
+  --u: max(100cqw / 1440, 100cqh / var(--pl-vh)); /* one unit of the 1440-wide drawing, in px */
   position: absolute; overflow: visible;
   left: calc(50% + (var(--x0) - 720) * var(--u));
   width: calc((var(--x1) - var(--x0)) * var(--u));
-  bottom: calc((var(--vh) - var(--y1)) * var(--u));
+  bottom: calc((var(--pl-vh) - var(--y1)) * var(--u));
   height: calc((var(--y1) - var(--y0)) * var(--u));
   transform-origin: 50% calc((var(--base) - var(--y0)) * var(--u)); /* the trees' base line: bases stay put */
   filter: drop-shadow(0 -2px 3px var(--sh-2)) drop-shadow(0 -9px 16px var(--sh-2));
 }
-/* sway: a steady lean plus an oscillation; near rows more, far rows less; each third on its own period */
-.pl-trees-mid { --amp: .5deg; }
-.pl-trees-near { --amp: .8deg; }
-.pl-trees-front { --amp: 1.2deg; }
+/* sway: a steady lean plus an oscillation; near rows more, far rows less; each third on its own period.
+   Angles from the cloud's review (the trees are small, so smaller angles didn't show); wind 2 + a gust slides a base at
+   most 3.7 units, under the 4-unit sink into the hill (plantTrees), so raise sink before going higher on phones */
+.pl-trees-mid { --amp: 1.4deg; }
+.pl-trees-near { --amp: 1.8deg; }
+.pl-trees-front { --amp: 1.6deg; }
 .pl-tg-0 { --sway-t: 5.3s; --gust-d: .7s; }
 .pl-tg-1 { --sway-t: 6.1s; --gust-d: .35s; }
 .pl-tg-2 { --sway-t: 7.4s; --gust-d: 0s; } /* the wind comes from the east: gusts start on the right */
@@ -100,10 +102,18 @@
 }
 @keyframes pl-gust { 0%, 100% { transform: skewX(0deg); } 40% { transform: skewX(calc(var(--amp) * .9 * var(--wind))); } }
 .pl-windy .pl-tree-group { will-change: transform; animation: pl-sway calc(var(--sway-t) / 2) ease-in-out infinite alternate; }
-.pl-windy.pl-gust .pl-tree-group {
-  animation: pl-sway calc(var(--sway-t) / 2) ease-in-out infinite alternate, pl-gust 2.5s ease-in-out var(--gust-d) 1;
-  animation-composition: replace, add;
+/* a browser without animation-composition would let the gust replace the sway (a snap), so it gets no gusts */
+@supports (animation-composition: add) {
+  .pl-windy.pl-gust .pl-tree-group {
+    animation: pl-sway calc(var(--sway-t) / 2) ease-in-out infinite alternate, pl-gust 2.5s ease-in-out var(--gust-d) 1;
+    animation-composition: replace, add;
+  }
 }
-/* phones: the far row stands still (fewer moving layers) */
-@media (max-width: 600px) { .pl-windy .pl-trees-mid .pl-tree-group { animation: none; will-change: auto; } }
+/* phones: the far row stands still (fewer moving layers); the near row sways a little more to be seen */
+@media (max-width: 600px) {
+  .pl-windy .pl-trees-mid .pl-tree-group { animation: none; will-change: auto; }
+  .pl-trees-near { --amp: 2.6deg; }
+}
+/* the front row is planted off screen below ~1260 px ("xMidYMax slice" crops it): don't animate what isn't seen */
+@media (max-width: 1259px) { .pl-windy .pl-trees-front .pl-tree-group { animation: none; will-change: auto; } }
 @media (prefers-reduced-motion: reduce) { .pl-tree-group { animation: none !important; will-change: auto !important; } }

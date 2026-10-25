@@ -1,3 +1,6 @@
+// The frame around every page: skip link, header, the page itself, footer, and the floating pieces (plant-a-tree
+// button, cart drawer, cookie notice, email prompt, and the team's Sky tab). It also starts the funnel tracking, loads
+// the page's published text early, and scrolls to the top and moves focus on navigation (not on the first load).
 import { Suspense, lazy, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { Header } from "./Header";

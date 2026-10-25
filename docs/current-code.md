@@ -188,11 +188,11 @@ so a sway is a compositor transform instead of a repaint of the whole hill; the 
 index across the row exactly as before, so the drawing is unchanged (compared pixel by pixel with motion frozen; only
 the trees' own soft shadow differs). The groups are placed with container units (`.paper-layers { container-type:
 size }`, `--u: max(100cqw / 1440, 100cqh / h)`, the way "xMidYMax slice" scales the layers), so they're right in the
-pre-built HTML before any JavaScript. They `skewX` around their base line: a lean of 0.4° × wind plus ±1.2° (front),
-±0.8° (near), ±0.5° (mid) × wind, on 5.3 / 6.1 / 7.4 s periods. Gusts (wind ≥ 0.6) every 8–20 s add a 2.5 s bend that
+pre-built HTML before any JavaScript. They `skewX` around their base line: a lean of 0.4° × wind plus ±1.6° (front),
+±1.8° (near; 2.6° on phones), ±1.4° (mid) × wind (the cloud's review numbers), on 5.3 / 6.1 / 7.4 s periods. Gusts (wind ≥ 0.6) every 8–20 s add a 2.5 s bend that
 starts on the right (easterly wind) and reaches the other thirds 0.35 s apart (`animation-composition: add`). Wind comes
 from Admin → Sky and weather (`sky.wind`, 0–2) and Admin → Features "Wind in the trees"; calm, switched off or reduced
-motion means no animation. Phones (≤ 600 px) keep the far row still. Motif trees (forest, workshop…) stay static.
+motion means no animation. Phones (≤ 600 px) keep the far row still; below 1260 px the front row (cropped off screen) doesn't animate; browsers without `animation-composition` get no gusts. Motif trees (forest, workshop…) stay static.
 Clouds drift with the wind (`pl-wind-drift`: leftwards at 4 units/s × wind across the drawing, wrapping with a 1 % fade, starting from where they're drawn) and construction puffs lean downwind; calm, they rest.
 
 ### Weather in the heroes (Sky 3)
@@ -371,6 +371,7 @@ Newest first. One row per commit or task.
 
 | Date | Task | What changed | Files |
 | --- | --- | --- | --- |
+| 2026-10-25 | Sky 2 review applied | The cloud's numbers: sway ±1.4° / 1.8° (2.6° on phones) / 1.6°; front row still below 1260 px; gusts only with `animation-composition`; `--vh` → `--pl-vh`. Layout.jsx header note (the last file without one). | `src/components/scene/PaperLayers.*`, `src/components/layout/Layout.jsx`, docs |
 | 2026-10-25 | Sky 3: weather scenes | The cloud's six scenes live in every page hero ("Weather in the heroes"): `useWeather`, `Weather.jsx`, `useWeatherMotion.js`; trees follow the scene's wind; switches `liveWeather` (off) and `home3dWeather`. Team Sky tester (lazy, team or dev only; "Gust now" via `fc:gust`). Home 3D gets `env.weather` + `setWeather`. New weather contrast check in `npm run check` (hero text over every scene, both editions, 360 and 1440): clear sky passes everywhere; storm by day leaves the lead line at 3.96–4.15 (needs 4.5), a warning for the cloud. | `src/hooks/useWeather.js`, `src/components/scene/Weather.*`, `useWeatherMotion.js`, `SkyTester.*`, `Sky.*`, `PaperLayers.jsx`, `HotelScene.jsx`, `src/components/layout/Layout.jsx`, `src/hooks/usePublicDoc.js`, `src/data/features.js`, `scripts/check/weather-contrast.mjs`, `index.mjs`, docs |
 | 2026-10-25 | Sky 2: wind | Trees sway in the page heroes (see "Wind in the trees"). Placement compared pixel by pixel with the old drawing (same positions); sway and gusts checked in Chrome. `check:smooth` couldn't measure the cost fairly: the machine was busy (the old build without wind measured just as slow in the same session), so re-measure on a quiet machine. | `src/components/scene/PaperLayers.*`, `sceneGeometry.js`, `src/data/features.js`, docs |
 | 2026-10-25 | Pre-rendered pages styled from the first paint | `check:smooth` showed CLS up to 1.0 and more loading work: the page's own CSS arrived with its code, after the HTML had painted. `vite.config.js` writes a manifest; `prerender.mjs` links each page's stylesheets in its head (`pageNameFor` from routes.jsx). CLS 0 on Home and detail pages; check:smooth 19 → 3 measurements over a limit. Merged the cloud's `try/sky-admin` (Admin → Sky and weather). | `vite.config.js`, `scripts/prerender.mjs`, `src/routes.jsx`, `src/entry-server.jsx`, docs |

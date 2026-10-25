@@ -63,7 +63,7 @@ const TreeRow = ({ groups, kind, row, depth, h }) => (
                 className={`pl-tree-group pl-tg-${g.k}`}
                 viewBox={`${g.x0} ${g.y0} ${r1(g.x1 - g.x0)} ${r1(g.y1 - g.y0)}`}
                 preserveAspectRatio="none"
-                style={{ "--x0": g.x0, "--x1": g.x1, "--y0": g.y0, "--y1": g.y1, "--base": g.base, "--vh": h }}
+                style={{ "--x0": g.x0, "--x1": g.x1, "--y0": g.y0, "--y1": g.y1, "--base": g.base, "--pl-vh": h }}
                 aria-hidden="true"
                 focusable="false"
             >
