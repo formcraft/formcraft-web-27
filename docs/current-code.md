@@ -89,15 +89,16 @@ formcraft-web-27/
    ├─ components/
    │  ├─ layout/   Layout  Header  ThemeSwitch  Footer  DonateFab  PageGate  PageSkeleton  ConsentBanner
    │  ├─ page/     PageHero  Section  Photo
-   │  ├─ scene/    useSkyDrag.js (drag the sun and moon)  sky/ (cloud: skyPhysics, moonPhase, weatherShapes)
-   │  │            Weather (+ useWeatherMotion.js: storm glow, rain)  SkyTester (team-only weather preview tab)
+   │  ├─ scene/    useSkyDrag.js (drag the sun and moon)  sky/ (cloud: skyPhysics, moonPhase, moonArt, weatherShapes)
+   │  │            PaperArt (paper sheets + grain for the weather and the moon)
+   │  │            Weather (+ useWeatherMotion.js: hero size and words, storm glow, bolts, rain)  SkyTester (team-only weather preview tab)
    │  │            HotelScene (+ HotelControls rail, dev preview switch; hotel/hotelDay|hotelNight|build|compat.js)  Hotel2D (+ hotel2dGeometry.js)
    │  ├─ scene/    HotelScene (+ HotelControls rail, dev preview switch; hotel/hotelDay|hotelNight|build|compat|weather3d.js)  Hotel2D (+ hotel2dGeometry.js)
    │  │            sky/skyPhysics.js  sky/moonPhase.js  sky/weatherShapes.js  (living sky engine and weather; not wired in yet, see docs/work-split.md)
    │  │            PaperLayers  Sky (shared hero sky, sun/moon, stars)
    │  │            sceneGeometry.js (hills, motifs, trees, star field)
    │  ├─ admin/    CopyPanel  FeaturesPanel  PagesPanel  ContentPanel  AdminField  RecordsPanel (+ records.js, was InboxPanel/inboxes.js)  LeadsPanel  LeadCharts  LinkBuilderPanel
-   │  │            DetailsPanel  MotionPanel  TeamPanel  studio/ (StudioPanel and its tabs, Composer)
+   │  │            DetailsPanel  MotionPanel  SkyPanel (+ SkyPreview)  TeamPanel  studio/ (StudioPanel and its tabs, Composer)
    │  ├─ shop/     ProductCard  CartButton  CartDrawer
    │  ├─ forms/    QuoteForm  Honeypot  SubscribeForm  SubscribePrompt
    │  ├─ auth/     SignInDialog
@@ -201,10 +202,27 @@ link or the team's Sky tester (this tab only, sessionStorage `fc-sky-test`) → 
 Kampala's live record `stats/weather` (only with the `liveWeather` switch, off until functions are deployed) → clear.
 Admin → Features' scene switches then swap a switched-off scene for a calmer one (`fallbackScene`); with "Weather scenes"
 off it's always clear. It also returns the wind (Admin slider, or the live wind via `windFromMs`, at least the scene's
-minimum: a storm is windy) and the rain amount. `Sky.jsx` draws it with `Weather.jsx` in the cloud's layer order: the
-scene's wash under the stars; storm cloud with its soft inner glow, torn-paper cloud decks, paper clouds drifting with
-the wind and the mist band over them; rain on a canvas in front of the hills but behind the words (a mask thins it where
-the hero text is: from the left on wide screens, the top on phones). It also sets on the hero: `data-weather`, how many
+minimum: a storm is windy) and the rain amount. `Sky.jsx` draws it with `Weather.jsx`: the scene's wash under the
+stars (full over the open sky, under a fifth of it behind the words); then the mist laid over the far hills, the cloud
+ceilings, the storm's two rows and the fair-weather clouds; in front of the hills, strips of tracing-paper mist and the
+rain canvas (its gap round each line of words, and a mask thinning it on the text side).
+**Paper look (owner's references, 2026-10-25):** every cloud is cut paper (`PaperArt.jsx`, shapes in
+`sky/weatherShapes.js`): a cool shade sheet, a lit sheet laid on it with a thin shadow under its edge, curled highlights,
+and the site's paper grain (`public/textures/paper.webp` as an SVG pattern, multiplied). Cumulus clouds have round bumps,
+small lobes underneath and sometimes a wisp; overcast, rain and storm have cloud ceilings with round lobes; the storm
+adds two rows of heavy cumuli (lighter behind, darker in front), a soft glow inside the front row, and paper lightning
+bolts that fade in and out one at a time (≥ 9 s apart, never a flash); mist is three strips of tracing paper with soft
+torn tops sliding slowly across the hills. Tokens: the `--cloud-*` lit/shade pairs, `--paper-grain-*`, `--bolt`,
+`--mist-sheet` / `--mist-edge` in `tokens.css`.
+**Around the words:** `useHeroSize` also measures the hero's words (crumbs, logo, title, lead, buttons; the sheet number
+as decoration) and the shapes are placed around them: clouds take the first free spots, the storm rows sit to the right
+of the words (or along the top edge above them on phones, or not at all when there's no room), bolts only where they
+touch no words, ceilings stop above the first words, mist strips lie below them. The weather contrast check passes on
+every page, scene, edition and size.
+**Smooth:** everything that moves is its own small layer that's only moved or faded (each cloud and mist strip is its own
+`<svg>`; the glow and each bolt fade on their own layers; the rain canvas has its own layer), so the paper, its shadows
+and grain are painted once. The hero's own two day clouds (`PaperLayers`) are paper cumulus too and drift on their own
+wrapper (`.pl-cloud-drift`). Behind cloud the sun's ring pulse is stopped (it can't be seen and would repaint the sun). It also sets on the hero: `data-weather`, how many
 of the hero's own two clouds stay (`data-puffs`), wet hills in rain (`data-wet`), fewer stars and a dimmer sun or moon
 (`--sky-stars-k`, `--sky-body-k`). The trees sway with the scene's wind. Pre-rendered pages show the clear sky; the scene
 fades in after hydration. The glow and rain (`useWeatherMotion.js`) run only while the hero is on screen and the tab is
@@ -259,7 +277,10 @@ only while something moves. At night the stars are drawn on a canvas (same seede
 horizon fade as the old SVG; the 12 twinklers stay SVG and move along) and part around the moon; by day the paper
 clouds (`.pl-cloud`) drift aside from the sun. On release the body rests 1.5 s, then glides home. The field is settled
 before the first draw, so nothing jumps at the first touch. The moon shows its real phase (`sky/moonPhase.js`): the lit
-part over a faint full disc, turned toward the sun as on the equator. Reduced motion: drag only, stars and clouds
+part over a faint copy, turned toward the sun as on the equator. It's a paper-cut moon (`sky/moonArt.js`, `PaperMoon` in
+`PaperArt.jsx`, after the owner's reference): a cream top sheet with the seas cut out where they really are, a taupe
+sheet under it with their deepest parts cut out, a grey-brown bottom sheet, a few punched craters, each sheet shadowing
+the holes below, and the paper grain. The sun is a paper disc with a lifted lit sheet and the grain. Reduced motion: drag only, stars and clouds
 still. Admin → Features: "Move the sun and moon" and "Stars and clouds make way".
 
 ### Opening animation (`index.html`)
@@ -371,6 +392,7 @@ Newest first. One row per commit or task.
 
 | Date | Task | What changed | Files |
 | --- | --- | --- | --- |
+| 2026-10-25 | Paper weather and moon (cloud) | Owner: "the clouds are a bit shitty… implement textures… good clouds, mist, thunderstorms and the detailed moon… paper theme and rich textures… as smooth as possible" (four reference pictures). New `sky/moonArt.js` and `PaperArt.jsx` (+ `.css`); `weatherShapes.js`: `cumulus`, `crescent`, `ceiling`, storm rows, `bolt`, `mistStrips`, placement around the hero's words, bolts in `createStormGlow`, a gap in the rain round the words; `Weather.jsx` rebuilt (each moving piece its own layer), `MistFront`; `useWeatherMotion.js`: words measured, bolts faded; `Sky.jsx`: paper moon and sun, front mist; `PaperLayers.jsx`: paper cumulus, drift on `.pl-cloud-drift`; `sceneGeometry.js`: unused `cloudCircles` / `cloudPath` removed; Admin preview on the same pieces; tokens for the paper weather and the moon; day washes thinned behind the words. Also round 8 task 1 (storm by day) and 2 (the storm cloud was hidden behind the decks). Checked here (esbuild, headless Chrome): every scene at 1440 and 390 in both editions; contrast check 0 real failures on all 7 hero pages (a few harness artefacts where the page was mid-change); paint work while animating: 0 repaints in overcast, mist, rain and storm (baseline storm repainted the sun and both hill layers 22 times in 3 s). | `src/components/scene/sky/weatherShapes.js`, `sky/moonArt.js`, `PaperArt.*`, `Weather.*`, `useWeatherMotion.js`, `Sky.*`, `PaperLayers.*`, `sceneGeometry.js`, `src/components/admin/SkyPreview.*`, `src/styles/tokens.css`, docs |
 | 2026-10-25 | Sky 2 review applied | The cloud's numbers: sway ±1.4° / 1.8° (2.6° on phones) / 1.6°; front row still below 1260 px; gusts only with `animation-composition`; `--vh` → `--pl-vh`. Layout.jsx header note (the last file without one). | `src/components/scene/PaperLayers.*`, `src/components/layout/Layout.jsx`, docs |
 | 2026-10-25 | Sky 3: weather scenes | The cloud's six scenes live in every page hero ("Weather in the heroes"): `useWeather`, `Weather.jsx`, `useWeatherMotion.js`; trees follow the scene's wind; switches `liveWeather` (off) and `home3dWeather`. Team Sky tester (lazy, team or dev only; "Gust now" via `fc:gust`). Home 3D gets `env.weather` + `setWeather`. New weather contrast check in `npm run check` (hero text over every scene, both editions, 360 and 1440): clear sky passes everywhere; storm by day leaves the lead line at 3.96–4.15 (needs 4.5), a warning for the cloud. | `src/hooks/useWeather.js`, `src/components/scene/Weather.*`, `useWeatherMotion.js`, `SkyTester.*`, `Sky.*`, `PaperLayers.jsx`, `HotelScene.jsx`, `src/components/layout/Layout.jsx`, `src/hooks/usePublicDoc.js`, `src/data/features.js`, `scripts/check/weather-contrast.mjs`, `index.mjs`, docs |
 | 2026-10-25 | Sky 2: wind | Trees sway in the page heroes (see "Wind in the trees"). Placement compared pixel by pixel with the old drawing (same positions); sway and gusts checked in Chrome. `check:smooth` couldn't measure the cost fairly: the machine was busy (the old build without wind measured just as slow in the same session), so re-measure on a quiet machine. | `src/components/scene/PaperLayers.*`, `sceneGeometry.js`, `src/data/features.js`, docs |

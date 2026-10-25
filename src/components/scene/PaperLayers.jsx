@@ -2,7 +2,9 @@ import { useEffect, useId, useMemo, useRef } from "react";
 import { useFeature } from "../../hooks/useSite";
 import { GUST_EVENT, useWeather } from "../../hooks/useWeather";
 import { SkyBody } from "./Sky";
-import { W, random, ridgePath, rectPath, roofPath, framePath, cranePath, cloudCircles, cloudPath, landscape, motifShapes, plantTrees } from "./sceneGeometry";
+import { W, random, ridgePath, rectPath, roofPath, framePath, cranePath, landscape, motifShapes, plantTrees } from "./sceneGeometry";
+import { cumulus } from "./sky/weatherShapes";
+import { PaperCloud, PaperGrain } from "./PaperArt";
 import "./PaperLayers.css";
 
 // The paper-cut landscape as stacked SVG sheets: each layer casts a soft shadow on the one
@@ -186,8 +188,9 @@ export const PaperLayers = ({ seed = 7, height = 560, city = true, motif = "city
         const near = ridgePath(L.near, h);
         const front = ridgePath(L.front, h);
         // two paper clouds at most, on the right, away from the hero copy (day edition only)
-        const c1 = cloudPath(cloudCircles(W * 0.7, h * 0.14, 1, seed + 2));
-        const c2 = cloudPath(cloudCircles(W * 0.92, h * 0.3, 0.75, seed + 3));
+        // cut-paper cumulus (the owner's reference, 2026-10-25): shade sheet, lifted lit sheet, curls, paper grain
+        const c1 = cumulus({ cx: W * 0.7, cy: h * 0.14, w: 236, seed: seed + 2, wisp: 1 });
+        const c2 = cumulus({ cx: W * 0.92, cy: h * 0.3, w: 177, seed: seed + 3, wisp: -1 });
         let cityD = "";
         let glowD = "";
         let craneD = "";
@@ -221,9 +224,16 @@ export const PaperLayers = ({ seed = 7, height = 560, city = true, motif = "city
                 <Quill id={`${uid}q0`} d={paths.band} seed={seed + 11} h={h} n={9} className="pl-q-band" />
             </>)}
             <SkyBody id={`${uid}moon`} r={Math.round(sun.r * (h < 420 ? 0.9 : 1))} />
-            {/* .pl-cloud-push: moved aside by the sun (useSkyDrag); the layer and the path have their own animations */}
-            {layer("cloud pl-cloud-a", 0.12, <g className="pl-cloud-push"><path className="pl-f-cloud" d={paths.c1} style={drift(W * 0.7, 1)} /></g>)}
-            {layer("cloud pl-cloud-b", 0.1, <g className="pl-cloud-push"><path className="pl-f-cloud" d={paths.c2} style={drift(W * 0.92, 0.75)} /></g>)}
+            {/* .pl-cloud-push: moved aside by the sun (useSkyDrag); .pl-cloud-drift carries the wind drift on its own
+                layer, so the paper is painted once and only moved (the layer svg keeps its scroll parallax) */}
+            {[["a", paths.c1, 0.7, 1, 0.12], ["b", paths.c2, 0.92, 0.75, 0.1]].map(([k, c, x, sz, depth]) => (
+                <div key={k} className="pl-cloud-drift" style={{ ...drift(W * x, sz), "--pl-vh": h }}>
+                    {layer(`cloud pl-cloud-${k}`, depth, <>
+                        <defs><PaperGrain id={`${uid}cg${k}`} /></defs>
+                        <g className="pl-cloud-push"><PaperCloud c={c} grain={`${uid}cg${k}`} /></g>
+                    </>)}
+                </div>
+            ))}
             {layer("far", 0.16, <path className="pl-f-far" d={paths.far} />)}
             {layer("mid", 0.22, <>
                 <path className="pl-f-mid" d={paths.mid} />

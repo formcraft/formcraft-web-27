@@ -1,0 +1,20 @@
+/* PaperArt: layered paper sheets for the weather and the moon (PaperArt.jsx). Colours are weather tokens from
+   tokens.css (day and night); each tone class sets the lit and shade sheets for one kind of cloud. */
+.pa-cloud { --pa-lit: var(--cloud-lit); --pa-shade: var(--cloud-shade); }
+.pa-deck-back { --pa-lit: var(--cloud-deck-back); --pa-shade: var(--cloud-deck-back-shade); }
+.pa-deck-front { --pa-lit: var(--cloud-deck-front); --pa-shade: var(--cloud-deck-front-shade); }
+.pa-storm-back { --pa-lit: var(--cloud-storm-back); --pa-shade: var(--cloud-storm-back-shade); }
+.pa-storm-front { --pa-lit: var(--cloud-storm-front); --pa-shade: var(--cloud-storm-front-shade); }
+.pa-shade { fill: var(--pa-shade); }
+/* the lit sheet sits on the shade sheet: its edge throws a thin shadow, the paper's thickness */
+.pa-lit { fill: var(--pa-lit); filter: drop-shadow(0 1.6px 1.2px var(--cloud-edge-shadow)); }
+.pa-curl { fill: var(--pa-lit); filter: drop-shadow(0 1px .8px var(--cloud-edge-shadow)); }
+/* the site's paper grain over every sheet: multiplied by day, softly lightened on the dark night paper */
+.pa-grain { mix-blend-mode: var(--paper-grain-blend); opacity: var(--paper-grain-k); pointer-events: none; }
+
+/* the moon: cream top sheet, taupe middle, grey-brown at the bottom; each sheet shadows the holes below it */
+.pa-moon-top { fill: var(--moon-top); }
+.pa-moon-mid { fill: var(--moon-mid); }
+.pa-moon-deep { fill: var(--moon-deep); }
+.pa-moon-sheet { filter: drop-shadow(.5px 1.1px .9px var(--moon-shadow)); }
+.pa-moon .pa-grain { opacity: var(--moon-grain-k); }

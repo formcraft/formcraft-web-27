@@ -42,8 +42,9 @@
 .sky-body-ring-3 { opacity: .45; }
 .sky-body-ring-2 { opacity: .7; }
 .sky-body-rings { transform-box: fill-box; transform-origin: center; animation: sky-pulse 9s ease-in-out infinite; }
-.sky-body-crater { fill: var(--sc-ring); opacity: .9; }
-[data-theme="night"] .sky-body-crater { fill: color-mix(in srgb, var(--fc-navy) 12%, transparent); }
+/* the sun is cut paper too: a lighter sheet laid on the disc, its edge shadowed, then the paper grain (PaperArt.css) */
+.sky-body-lit { fill: color-mix(in srgb, var(--sc-sun) 78%, var(--fc-white)); filter: drop-shadow(.6px 1.4px 1.2px var(--cloud-edge-shadow)); }
+.sky-body.is-low[data-body="sun"] .sky-body-lit { fill: color-mix(in srgb, var(--fc-rust) 82%, var(--fc-white)); }
 .sky-body.is-low[data-body="sun"] .sky-body-disc { fill: var(--fc-rust); }
 .sky-body.is-low[data-body="moon"] { opacity: .75; }
 .sky-body.is-low .sky-body-rings { opacity: .5; }

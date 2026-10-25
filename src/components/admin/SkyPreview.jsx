@@ -1,12 +1,16 @@
 // SkyPreview: a small page hero inside Admin → Sky and weather, where the team can try every weather scene, the wind
-// and the sun-and-moon drag before saving. It uses the real engines (sky/skyPhysics.js for the drag, sky/weatherShapes.js
-// for clouds, mist, rain and the storm glow, sky/moonPhase.js for tonight's moon), so what you feel here is what visitors
-// get. It only previews: nothing here is saved, and it shows the chosen edition whatever the admin page itself shows
-// (data-theme on the frame picks the day or night tokens).
-import { useEffect, useMemo, useRef } from "react";
+// and the sun-and-moon drag before saving. It uses the real engines and the same paper pieces as the page heroes
+// (sky/skyPhysics.js for the drag, sky/weatherShapes.js and PaperArt.jsx for the paper clouds, storm, bolts, mist and
+// rain, sky/moonArt.js and sky/moonPhase.js for tonight's paper moon), so what you see and feel here is what visitors
+// get. Like the heroes, every moving piece is its own small layer that's only moved or faded. It only previews:
+// nothing here is saved, and it shows the chosen edition whatever the admin page itself shows (data-theme on the frame).
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createSkyField } from "../scene/sky/skyPhysics";
-import { SCENES, deckFor, puffsFor, stormCloud, mistBand, createStormGlow, createRain, seeded } from "../scene/sky/weatherShapes";
+import { SCENES, deckFor, puffsFor, stormCloud, mistBand, mistStrips, createStormGlow, createRain, seeded } from "../scene/sky/weatherShapes";
 import { moonLitPath, moonPhase } from "../scene/sky/moonPhase";
+import { moonArt } from "../scene/sky/moonArt";
+import { PaperCloud, PaperGrain, PaperMoon } from "../scene/PaperArt";
+import "../scene/Weather.css";
 import "./SkyPreview.css";
 
 // paper hills in a 1440 × 360 drawing, anchored to the bottom like the page heroes' landscape
@@ -32,11 +36,44 @@ const STAR_COUNT = { desktop: 300, phone: 160, lite: 120 };
  * @param {boolean} [p.reduced]  preview reduced motion: the drag works, nothing else moves
  */
 export const SkyPreview = ({ edition, scene, wind, dir = -1, rain, params, budget = "desktop", reduced = false }) => {
-    const frame = useRef(null), starsRef = useRef(null), rainRef = useRef(null), weatherRef = useRef(null), bodyRef = useRef(null);
+    const frame = useRef(null), starsRef = useRef(null), rainRef = useRef(null), bodyRef = useRef(null), glowRef = useRef(null);
+    const puffRefs = useRef([]), boltRefs = useRef([]);
     const live = useRef({ params, wind: wind * dir });
     const fieldRef = useRef(null), rainSimRef = useRef(null);
     const sc = SCENES[scene] ?? SCENES.clear;
     const moon = useMemo(() => moonLitPath(moonPhase(new Date())), []);
+    const art = useMemo(() => moonArt(), []);
+    const uid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
+    // the frame's size; the paper shapes follow it (and the scene)
+    const [size, setSize] = useState(null);
+    useEffect(() => {
+        const el = frame.current;
+        if (!el) return undefined;
+        const measure = () => {
+            const b = el.getBoundingClientRect();
+            // the sample headline, so the weather is placed around it as it is around a real hero's words
+            const copy = el.querySelector(".sky-preview-copy"), rg = document.createRange();
+            rg.selectNodeContents(copy);
+            const c = rg.getBoundingClientRect();
+            const avoid = c.width ? [{ x0: c.left - b.left, y0: c.top - b.top, x1: c.right - b.left, y1: c.bottom - b.top }] : [];
+            setSize((s) => (s && s.W === Math.round(b.width) && s.H === Math.round(b.height) ? s : { W: Math.round(b.width), H: Math.round(b.height), avoid }));
+        };
+        measure();
+        const ro = new ResizeObserver(measure);
+        ro.observe(el);
+        return () => ro.disconnect();
+    }, []);
+    const geo = useMemo(() => {
+        if (!size) return null;
+        const { W, H, avoid } = size, horizon = H * 0.63;
+        return {
+            decks: deckFor(scene, W, H, 7, avoid),
+            puffs: puffsFor(scene, W, H, 7, avoid),
+            storm: sc.storm ? stormCloud(W, H, 7, avoid) : null,
+            mist: sc.mist ? mistBand({ w: W, h: H, horizon }) : null,
+            strips: sc.mist ? mistStrips({ w: W, h: H, horizon, avoid }) : null,
+        };
+    }, [size, scene, sc]);
 
     // live changes without a redraw
     useEffect(() => {
@@ -52,7 +89,10 @@ export const SkyPreview = ({ edition, scene, wind, dir = -1, rain, params, budge
         const el = frame.current;
         if (!el) return undefined;
         const sctx = starsRef.current.getContext("2d"), rctx = rainRef.current.getContext("2d");
-        let W = 0, H = 0, raf = 0, last = 0, field = null, rainSim = null, glow = null, puffs = [], discR = 30, drag = null, busy = false;
+        if (!size || !geo) return undefined;
+        const { W, H } = size;
+        let raf = 0, last = 0, field = null, rainSim = null, glow = null, discR = 30, drag = null, busy = false, shown = -1;
+        const puffs = geo.puffs.map((p) => ({ ...p, off: 0 }));
         const css = (name) => getComputedStyle(el).getPropertyValue(name).trim();
 
         const drawStars = () => {
@@ -78,21 +118,9 @@ export const SkyPreview = ({ edition, scene, wind, dir = -1, rain, params, budge
         };
 
         const build = () => {
-            const box = el.getBoundingClientRect();
-            W = box.width; H = box.height;
             const dpr = Math.min(2, window.devicePixelRatio || 1), rdpr = Math.min(1.5, window.devicePixelRatio || 1);
             starsRef.current.width = Math.round(W * dpr); starsRef.current.height = Math.round(H * dpr);
             rainRef.current.width = Math.round(W * rdpr); rainRef.current.height = Math.round(H * rdpr);
-            // weather shapes
-            const decks = deckFor(scene, W, H), st = sc.storm ? stormCloud(W, H) : null;
-            puffs = puffsFor(scene, W, H).map((p) => ({ ...p, off: 0 }));
-            const svg = weatherRef.current;
-            svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-            svg.innerHTML =
-                (st ? `<defs><clipPath id="skyp-storm"><path d="${st.d}"/></clipPath><radialGradient id="skyp-glow"><stop offset="0" stop-color="var(--storm-glow)"/><stop offset="1" stop-color="var(--storm-glow)" stop-opacity="0"/></radialGradient></defs>` : "") +
-                decks.map((k) => `<path class="sky-preview-deck sky-preview-${k.tone}" d="${k.d}"/>`).join("") +
-                (st ? st.sheets.map((x) => `<path class="sky-preview-sheet sky-preview-${x.tone}" d="${x.d}"/>`).join("") + `<circle class="sky-preview-glow" clip-path="url(#skyp-storm)" cx="${st.glow.cx}" cy="${st.glow.cy}" r="${st.glow.r}" fill="url(#skyp-glow)" opacity="0"/>` : "") +
-                puffs.map((p, i) => `<g data-puff="${i}">${p.sheets.map((x) => `<path class="sky-preview-sheet sky-preview-${x.tone}" d="${x.d}"/>`).join("")}</g>`).join("");
             // the sun or moon at a calm spot on the right, as at mid-morning or late evening
             discR = W < 600 ? 22 : W < 900 ? 27 : 32;
             const home = { x: W * 0.74, y: H * 0.2 + discR };
@@ -115,9 +143,9 @@ export const SkyPreview = ({ edition, scene, wind, dir = -1, rain, params, budge
             // rain and the storm glow
             const amount = sc.rain ? (sc.storm ? 1.5 : rain) : 0;
             const front = (x) => H - (360 - FRONT(((x - W / 2) / Math.max(W / 1440, (H * 0.64) / 360)) + 720)) * Math.max(W / 1440, (H * 0.64) / 360);
-            rainSim = amount ? createRain({ w: W, h: H, amount, wind: live.current.wind, budget, ridge: front }) : null;
+            rainSim = amount ? createRain({ w: W, h: H, amount, wind: live.current.wind, budget, ridge: front, clear: size.avoid ?? [] }) : null;
             rainSimRef.current = rainSim;
-            glow = sc.storm && !reduced ? createStormGlow(9) : null;
+            glow = sc.storm && !reduced ? createStormGlow(9, geo.storm?.bolts.length ?? 0) : null;
             rctx.setTransform(rdpr, 0, 0, rdpr, 0, 0);
             rctx.clearRect(0, 0, W, H);
             if (rainSim && reduced) rainSim.draw(rctx, { near: css("--rain"), far: css("--rain-far") }); // one still frame
@@ -138,14 +166,21 @@ export const SkyPreview = ({ edition, scene, wind, dir = -1, rain, params, budge
                 rctx.clearRect(0, 0, W, H);
                 rainSim.draw(rctx, { near: css("--rain"), far: css("--rain-far") });
             }
-            if (glow) weatherRef.current.querySelector(".sky-preview-glow")?.setAttribute("opacity", glow.step(dt).toFixed(3));
+            if (glow) {
+                const g = glow.step(dt), bolts = boltRefs.current;
+                if (glowRef.current) glowRef.current.style.opacity = g.toFixed(3);
+                if (shown >= 0 && shown !== glow.bolt && bolts[shown]) { bolts[shown].style.opacity = "0"; shown = -1; }
+                if (glow.bolt >= 0 && bolts[glow.bolt]) { shown = glow.bolt; bolts[shown].style.opacity = glow.boltK.toFixed(3); }
+            }
             const w = reduced ? 0 : live.current.wind;
             puffs.forEach((p, i) => {
                 p.off += 4 * w * dt * (W / 1440 + 0.3); // drift with the wind, wrapping round
                 const span = W + p.w, x = ((((p.cx + p.off + p.w / 2) % span) + span) % span) - p.w / 2 - p.cx;
                 const push = field.clouds[i];
                 if (push) push.x = p.cx + x; // the sun pushes the cloud where it has drifted to
-                weatherRef.current.querySelector(`[data-puff="${i}"]`)?.setAttribute("transform", `translate(${(x + (push?.dx ?? 0)).toFixed(1)} ${(push?.dy ?? 0).toFixed(1)}) rotate(${(push?.tilt ?? 0).toFixed(2)} ${p.cx + x} ${p.cy})`);
+                // each cloud is its own small layer: moving it never repaints the paper
+                const node = puffRefs.current[i];
+                if (node) node.style.transform = `translate(${(x + (push?.dx ?? 0)).toFixed(1)}px, ${(push?.dy ?? 0).toFixed(1)}px) rotate(${(push?.tilt ?? 0).toFixed(2)}deg)`;
             });
             raf = needs() && !document.hidden ? requestAnimationFrame(loop) : 0;
             if (!raf) last = 0;
@@ -170,12 +205,10 @@ export const SkyPreview = ({ edition, scene, wind, dir = -1, rain, params, budge
         window.addEventListener("pointermove", onMove);
         window.addEventListener("pointerup", onUp);
         window.addEventListener("pointercancel", onUp);
-        const ro = new ResizeObserver(() => { if (!drag) build(); });
-        ro.observe(el);
+        build();
         document.addEventListener("visibilitychange", run);
         return () => {
             cancelAnimationFrame(raf);
-            ro.disconnect();
             el.removeEventListener("pointerdown", onDown);
             window.removeEventListener("pointermove", onMove);
             window.removeEventListener("pointerup", onUp);
@@ -184,7 +217,7 @@ export const SkyPreview = ({ edition, scene, wind, dir = -1, rain, params, budge
             fieldRef.current = null;
             rainSimRef.current = null;
         };
-    }, [edition, scene, rain, budget, reduced, sc]);
+    }, [edition, scene, rain, budget, reduced, sc, size, geo]);
 
     return (
         <div
@@ -202,36 +235,70 @@ export const SkyPreview = ({ edition, scene, wind, dir = -1, rain, params, budge
                 <svg viewBox="-100 -100 200 200" aria-hidden="true">
                     {edition === "day" ? (
                         <>
+                            <defs><PaperGrain id={`${uid}sg`} size={70} /></defs>
                             <circle r="92" className="sky-preview-ring sky-preview-ring-3" />
                             <circle r="76" className="sky-preview-ring sky-preview-ring-2" />
                             <circle r="60" className="sky-preview-ring" />
                             <circle r="44" className="sky-preview-disc" />
+                            <circle className="sky-preview-sunlit" cx="-3" cy="-4" r="38" />
+                            <circle className="pa-grain" r="44" fill={`url(#${uid}sg)`} />
                         </>
                     ) : (
                         <>
                             <defs>
-                                <clipPath id="sky-preview-lit"><path d={moon.d} transform={`rotate(${moon.rotate})`} /></clipPath>
+                                <clipPath id={`${uid}lit`}><path d={moon.d} transform={`rotate(${moon.rotate})`} /></clipPath>
                             </defs>
-                            <circle r="44" className="sky-preview-disc sky-preview-dark" />
-                            <circle r="44" className="sky-preview-disc" clipPath="url(#sky-preview-lit)" />
+                            <g className="sky-preview-dark"><PaperMoon id={`${uid}e`} art={art} /></g>
+                            <g clipPath={`url(#${uid}lit)`}><PaperMoon id={`${uid}m`} art={art} /></g>
                         </>
                     )}
                 </svg>
             </div>
-            <svg ref={weatherRef} className="sky-preview-weather" preserveAspectRatio="none" aria-hidden="true" />
+            {geo && size && (
+                <div className="sky-preview-weather" aria-hidden="true">
+                    {geo.storm?.bolts.map((b, i) => (
+                        <svg key={i} ref={(n) => (boltRefs.current[i] = n)} className="wx-bolt" viewBox={`${b.box.x} ${b.box.y} ${b.box.w} ${b.box.h}`} width={b.box.w} height={b.box.h} style={{ left: b.box.x, top: b.box.y }}>
+                            <path d={b.d} />
+                        </svg>
+                    ))}
+                    <svg className="wx-svg" viewBox={`0 0 ${size.W} ${size.H}`} width={size.W} height={size.H}>
+                        <defs>
+                            <PaperGrain id={`${uid}g`} />
+                            <linearGradient id={`${uid}mg`} x1="0" y1="1" x2="0" y2="0">
+                                <stop offset="0" style={{ stopColor: "var(--mist)" }} />
+                                <stop offset="1" style={{ stopColor: "var(--mist)", stopOpacity: 0 }} />
+                            </linearGradient>
+                        </defs>
+                        {geo.mist && <path className="wx-mist" d={geo.mist.d} fill={`url(#${uid}mg)`} />}
+                        {geo.decks.map((d, i) => <g key={i} className="wx-deck"><PaperCloud c={d} tone={d.tone} grain={`${uid}g`} /></g>)}
+                        {geo.storm?.rows.map((row, k) => <g key={k} className="wx-storm-row">{row.clouds.map((c, i) => <PaperCloud key={i} c={c} tone={row.tone} grain={`${uid}g`} />)}</g>)}
+                    </svg>
+                    {geo.storm?.glow && (() => {
+                        const g = geo.storm.glow;
+                        return (
+                            <svg ref={glowRef} className="wx-glow" viewBox={`${g.cx - g.r} ${g.cy - g.r} ${2 * g.r} ${2 * g.r}`} width={2 * g.r} height={2 * g.r} style={{ left: g.cx - g.r, top: g.cy - g.r }}>
+                                <defs>
+                                    <radialGradient id={`${uid}gl`}>
+                                        <stop offset="0" style={{ stopColor: "var(--storm-glow)" }} />
+                                        <stop offset="1" style={{ stopColor: "var(--storm-glow)", stopOpacity: 0 }} />
+                                    </radialGradient>
+                                    <clipPath id={`${uid}gc`}><path d={geo.storm.d} /></clipPath>
+                                </defs>
+                                <circle cx={g.cx} cy={g.cy} r={g.r} fill={`url(#${uid}gl)`} clipPath={`url(#${uid}gc)`} />
+                            </svg>
+                        );
+                    })()}
+                    {geo.puffs.map((p, i) => (
+                        <svg key={i} ref={(n) => (puffRefs.current[i] = n)} className="wx-puff" viewBox={`${p.box.x} ${p.box.y} ${p.box.w} ${p.box.h}`} width={p.box.w} height={p.box.h} style={{ left: p.box.x, top: p.box.y }}>
+                            <defs><PaperGrain id={`${uid}p${i}`} /></defs>
+                            <PaperCloud c={p} grain={`${uid}p${i}`} />
+                        </svg>
+                    ))}
+                </div>
+            )}
             <svg className="sky-preview-hills" viewBox="0 0 1440 360" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
-                {sc.mist ? (
-                    <defs>
-                        <linearGradient id="sky-preview-mist" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0" stopColor="var(--mist)" stopOpacity="0" />
-                            <stop offset=".45" stopColor="var(--mist)" />
-                            <stop offset="1" stopColor="var(--mist)" />
-                        </linearGradient>
-                    </defs>
-                ) : null}
                 <path className="sky-preview-far" d={hillPath(FAR)} />
                 <path className="sky-preview-mid" d={hillPath(MID)} />
-                {sc.mist && <path d={mistBand({ w: 1440, h: 360, horizon: 200 }).d} fill="url(#sky-preview-mist)" />}
                 <path className="sky-preview-near" d={hillPath(NEAR)} />
                 <path className="sky-preview-tree" d={TREES} />
                 <path className="sky-preview-front" d={hillPath(FRONT)} />
@@ -240,6 +307,18 @@ export const SkyPreview = ({ edition, scene, wind, dir = -1, rain, params, budge
                     <path d={hillPath(FRONT)} />
                 </g>
             </svg>
+            {geo?.strips && (
+                <div className="wx-mist-front sky-preview-mist" aria-hidden="true">
+                    {geo.strips.map((s, i) => (
+                        <svg key={i} className={`wx-mist-strip wx-mist-${s.depth}`} viewBox={`0 0 ${s.period * 2} ${size.H}`} width={s.period * 2} height={size.H} style={{ "--period": s.period, "--speed": s.speed * Math.max(0.4, wind) }}>
+                            <defs><PaperGrain id={`${uid}ms${i}`} /></defs>
+                            <path className="wx-mist-sheet" d={s.d} />
+                            <path className="pa-grain" d={s.d} fill={`url(#${uid}ms${i})`} />
+                            <path className="wx-mist-edge" d={s.edge} />
+                        </svg>
+                    ))}
+                </div>
+            )}
             <canvas ref={rainRef} className="sky-preview-rain" />
             <p className="sky-preview-copy" aria-hidden="true">
                 <span>Designing spaces.</span>

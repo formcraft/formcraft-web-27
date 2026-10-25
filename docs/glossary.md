@@ -59,11 +59,18 @@ it scrolls near).
 **Lighthouse.** Google's free page-quality test (performance, accessibility, best practices, SEO).
 `npm run check:speed` runs it locally.
 
+**Layer (compositor layer).** A piece of the page the browser paints once and then moves or fades on the graphics
+card without painting it again. The moving weather (each cloud, mist strip, bolt, the glow, the rain) is on its own
+layer so the paper and its shadows aren't redrawn every frame.
+
 **Lint.** An automatic read-through of the code that catches mistakes (`npm run lint`, using oxlint).
 
 **Normal map.** A picture whose colours describe which way each tiny bit of a surface faces, so the 3D
 lighting can show bumps (the paper's tooth) without extra shapes. The Home model's paper has one
 (`hotel-normal-512.webp`, drawn by `scripts/make-hotel-textures.py`).
+
+**Paper grain.** The site's paper texture (`public/textures/paper.webp`) laid over the paper clouds, mist and moon as an
+SVG pattern, so the sky has the same tooth as the page (`PaperGrain` in `PaperArt.jsx`).
 
 **Placeholder / TODO.** A clear marker where a fact is still missing (never a made-up value). Visitors see a true
 fallback; signed-in team members see "To fill in: …". See `src/lib/pending.js`.

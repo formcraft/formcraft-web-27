@@ -7,7 +7,9 @@ import { moonLitPath, moonPhase } from "./sky/moonPhase";
 import { useSkyDrag } from "./useSkyDrag";
 import { useIsHydrating } from "../../hooks/useHydration";
 import { useWeather } from "../../hooks/useWeather";
-import { RainLayer, WeatherBack, WeatherWash } from "./Weather";
+import { MistFront, RainLayer, WeatherBack, WeatherWash } from "./Weather";
+import { PaperGrain, PaperMoon } from "./PaperArt";
+import { moonArt } from "./sky/moonArt";
 import { useHeroSize, useWeatherMotion } from "./useWeatherMotion";
 import "./Sky.css";
 
@@ -74,6 +76,7 @@ export const Sky = ({ seed = 7, horizon = 180, className = "" }) => {
                 </svg>
                 <WeatherBack weather={weather} size={size} night={night} horizon={horizon} glowRef={glowRef} />
             </div>
+            <MistFront weather={weather} size={size} horizon={horizon} />
             <RainLayer weather={weather} canvasRef={rainRef} />
             {/* invisible: lets a finger on the sun or moon move it instead of scrolling (above the hero text) */}
             {drag && <span ref={grabRef} className="sky-grab" aria-hidden="true" />}
@@ -84,8 +87,9 @@ export const Sky = ({ seed = 7, horizon = 180, className = "" }) => {
 // The sun (day edition) or moon (night edition) follows Kampala's clock across the sky:
 // up on the left after rising, overhead at noon/midnight, down on the right before setting.
 // Placed in screen space (not inside the cropped landscape drawing), so it's always in view.
-// The moon shows its real phase (sky/moonPhase.js): the lit part over a faint full disc, the lit edge turned
-// toward the sun as it is on the equator. .sky-body-move and .sky-body-shift are moved by useSkyDrag.
+// The moon shows its real phase (sky/moonPhase.js): the lit part over a faint copy, the lit edge turned toward the sun
+// as it is on the equator. It's a paper-cut moon (sky/moonArt.js, PaperArt.jsx): layered sheets with the seas cut out.
+// The sun is a paper disc with a lifted lit sheet and the paper grain. .sky-body-move and .sky-body-shift are moved by useSkyDrag.
 /**
  * @param {{ r: number, id: string }} props  r: disc radius in px; id: a unique id for the clip path
  */
@@ -96,6 +100,7 @@ export const SkyBody = ({ r, id }) => {
     const night = theme === "night";
     // the phase changes slowly: once per visit is enough
     const lit = useMemo(() => moonLitPath(moonPhase(new Date())), []);
+    const art = useMemo(() => moonArt(), []);
     // the body that belongs to this edition; if it's below the horizon, rest it low on the side
     const raw = night ? sky.moon : sky.sun;
     const t = Math.min(0.94, Math.max(0.06, raw));
@@ -127,15 +132,21 @@ export const SkyBody = ({ r, id }) => {
                     </g>
                     {night ? (
                         <>
-                            <circle className="sky-body-disc sky-body-dark" r="44" />
+                            {/* the unlit part: the same paper moon, faint (earthshine); the lit part on top */}
+                            <g className="sky-body-dark">
+                                <PaperMoon id={`${id}e`} art={art} />
+                            </g>
                             <g clipPath={`url(#${id})`}>
-                                <circle className="sky-body-disc" r="44" />
-                                <circle className="sky-body-crater" cx="-16" cy="12" r="7" />
-                                <circle className="sky-body-crater" cx="-4" cy="-20" r="4.5" />
+                                <PaperMoon id={`${id}m`} art={art} />
                             </g>
                         </>
                     ) : (
-                        <circle className="sky-body-disc" r="44" />
+                        <>
+                            <defs><PaperGrain id={`${id}g`} size={70} /></defs>
+                            <circle className="sky-body-disc" r="44" />
+                            <circle className="sky-body-lit" cx="-3" cy="-4" r="38" />
+                            <circle className="pa-grain" r="44" fill={`url(#${id}g)`} />
+                        </>
                     )}
                 </svg>
             </div>

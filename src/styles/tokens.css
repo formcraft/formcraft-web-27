@@ -114,15 +114,15 @@
   /* weather (cloud) — living-sky scenes, docs/brief-living-sky.md Q4–Q5. Washes go over the sky gradient;
      all are tints of the navy, the concrete grey and the paper white. */
   --sky-wash-partly: rgba(127, 199, 190, .10);
-  --sky-wash-overcast: rgba(148, 152, 155, .22);
-  --sky-wash-rain: rgba(28, 37, 45, .18);
-  --sky-wash-storm: rgba(28, 37, 45, .30);
+  --sky-wash-overcast: rgba(148, 152, 155, .2);
+  --sky-wash-rain: rgba(28, 37, 45, .16);
+  --sky-wash-storm: rgba(28, 37, 45, .24); /* full over the open sky; Weather.css fades it to under a fifth behind the words */
   --cloud-back: #E3E7E7;
   --cloud-shadow: rgba(28, 37, 45, .22);
   --cloud-deck-back: #E4E6E6;
   --cloud-deck-front: #D2D6D7;
   --cloud-storm-back: #B9C0C4;
-  --cloud-storm-front: #9EA7AD;
+  --cloud-storm-front: #8A96A0;
   --rain: rgba(28, 37, 45, .30);
   --rain-far: rgba(28, 37, 45, .16);
   --storm-glow: rgba(255, 246, 236, .55);
@@ -130,6 +130,21 @@
   --wet: rgba(23, 29, 26, .07);
   --body-glow: rgba(255, 174, 97, .35);
   --body-lift: rgba(23, 29, 26, .18);
+  /* paper weather (cloud, 2026-10-25): every cloud is a cool shade sheet with a lit sheet laid on it, then the paper
+     grain; the shades are the lit tones with a little navy in them */
+  --cloud-lit: var(--sc-cloud);
+  --cloud-shade: color-mix(in srgb, var(--fc-studio) 16%, color-mix(in srgb, var(--fc-navy) 15%, var(--sc-cloud)));
+  --cloud-edge-shadow: rgba(28, 37, 45, .2);
+  --cloud-deck-back-shade: color-mix(in srgb, var(--fc-navy) 14%, var(--cloud-deck-back));
+  --cloud-deck-front-shade: color-mix(in srgb, var(--fc-navy) 17%, var(--cloud-deck-front));
+  --cloud-storm-back-shade: color-mix(in srgb, var(--fc-navy) 24%, var(--cloud-storm-back));
+  --cloud-storm-front-shade: color-mix(in srgb, var(--fc-navy) 34%, var(--cloud-storm-front));
+  --paper-grain-blend: multiply;
+  --paper-grain-k: .55;
+  --bolt: color-mix(in srgb, var(--fc-orange) 55%, var(--fc-white));
+  --bolt-shadow: rgba(28, 37, 45, .3);
+  --mist-sheet: rgba(241, 241, 241, .5);
+  --mist-edge: rgba(250, 250, 248, .85);
 
   /* home hotel: the 3D scene's background and the 2D paper-cut drawing (components/scene/Hotel2D).
      Values follow the 3D model's paper and lighting, so the drawing and the model match. */
@@ -255,7 +270,7 @@
   --cloud-deck-back: #26313B;
   --cloud-deck-front: #303C47;
   --cloud-storm-back: #1E272F;
-  --cloud-storm-front: #2A3540;
+  --cloud-storm-front: #34414D;
   --rain: rgba(241, 241, 241, .20);
   --rain-far: rgba(241, 241, 241, .10);
   --storm-glow: rgba(157, 180, 214, .40);
@@ -263,6 +278,25 @@
   --wet: rgba(0, 0, 0, .12);
   --body-glow: rgba(244, 241, 232, .18);
   --body-lift: rgba(0, 0, 0, .45);
+  --cloud-lit: color-mix(in srgb, var(--sc-cloud) 93%, var(--fc-white));
+  --cloud-shade: color-mix(in srgb, var(--sc-cloud) 66%, var(--fc-black));
+  --cloud-edge-shadow: rgba(0, 0, 0, .42);
+  --cloud-deck-back-shade: color-mix(in srgb, var(--cloud-deck-back) 78%, var(--fc-black));
+  --cloud-deck-front-shade: color-mix(in srgb, var(--cloud-deck-front) 78%, var(--fc-black));
+  --cloud-storm-back-shade: color-mix(in srgb, var(--cloud-storm-back) 75%, var(--fc-black));
+  --cloud-storm-front-shade: color-mix(in srgb, var(--cloud-storm-front) 62%, var(--fc-black));
+  --paper-grain-blend: multiply;
+  --paper-grain-k: .9;
+  --bolt: color-mix(in srgb, var(--fc-orange) 40%, var(--fc-white));
+  --bolt-shadow: rgba(0, 0, 0, .45);
+  --mist-sheet: rgba(52, 65, 77, .32);
+  --mist-edge: rgba(120, 136, 150, .5);
+  /* the paper-cut moon: cream top sheet, taupe middle sheet, grey-brown bottom sheet */
+  --moon-top: var(--sc-sun);
+  --moon-mid: color-mix(in srgb, var(--sc-sun) 62%, var(--fc-concrete));
+  --moon-deep: color-mix(in srgb, var(--fc-concrete) 82%, var(--fc-black));
+  --moon-shadow: rgba(10, 13, 16, .55);
+  --moon-grain-k: .5;
 
   --hotel-bg: #121A20;
   --hotel-floor: #1E2932;

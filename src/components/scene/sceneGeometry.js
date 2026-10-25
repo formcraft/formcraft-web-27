@@ -127,22 +127,6 @@ export const cranePath = (cr) => {
     return d;
 };
 
-/** The shapes that make one paper cloud (a base and overlapping circles) around (cx, cy), scaled by s. */
-export const cloudCircles = (cx, cy, s, seed) => {
-    const r = random(seed);
-    const baseW = 160 * s;
-    const circles = [];
-    for (let i = 0; i < 4; i++) {
-        circles.push({ x: cx - baseW / 2 + (i + 0.5) * (baseW / 4), y: cy + 18 * s, r: (22 + r() * 20) * s });
-    }
-    return { base: { x: cx - baseW / 2, y: cy, w: baseW, h: 18 * s }, circles };
-};
-
-/** A cloud from cloudCircles() as one SVG path. */
-export const cloudPath = (c) =>
-    rectPath(c.base) +
-    c.circles.map((k) => ` M${f(k.x - k.r)},${f(k.y)}a${f(k.r)},${f(k.r)} 0 1,1 ${f(2 * k.r)},0Z`).join("");
-
 // The standard landscape used by every scene (seeded per page)
 export const landscape = ({ seed = 7, h = 560, city = true, tall = 1, overscan = 80 }) => {
     const span = { from: -overscan, to: W + overscan };

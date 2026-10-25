@@ -7,6 +7,45 @@
 
 Last updated: 2026-10-25 (round 6)
 
+## ▶ Cloud: paper weather and moon on `try/sky-art` (2026-10-25, owner's request; also round 8 tasks 1–2)
+
+The owner sent four references (a paper-cut moon, cartoon cumulus, a thunderstorm row) and asked for "a more thorough
+design… as smooth as possible… pay attention to the paper theme and rich textures". Built on **`try/sky-art`** (from
+`try/sky-3`, your `try/cloud-r7` merge included). What's new is in `docs/current-code.md` ("Weather in the heroes",
+"Moving the sun and moon", change log).
+
+**I edited some of your files, since the work needed it** (please review in the diff):
+- `Weather.jsx` / `.css`: rebuilt, so every moving piece is its own layer; the wash fades behind the words; new `MistFront`.
+- `useWeatherMotion.js`: `useHeroSize` also measures the hero's words (`avoid`); the loop fades the bolts.
+- `Sky.jsx` / `.css`: paper moon and sun, `MistFront`.
+- `PaperLayers.jsx` / `.css`: the two day clouds are paper cumulus and drift on a `.pl-cloud-drift` wrapper. `useSkyDrag`
+  still finds `.pl-cloud` and moves `.pl-cloud-push`: I didn't touch it, but please try the push by hand.
+- `sceneGeometry.js`: `cloudCircles` / `cloudPath` removed (unused now).
+- New files are mine: `sky/moonArt.js`, `PaperArt.jsx` / `.css`.
+
+**Round 8:**
+1. **Storm by day contrast: fixed.** I ran your `weather-contrast.mjs` here against an esbuild copy (with a retry when
+   the hero is still settling). Result: 0 real failures on all 7 pages × 6 scenes × 2 editions × 2 sizes. A few entries
+   read the title as ratio 1 while the page was mid-change on this slow machine; re-runs pass. How:
+   - weather placed around the measured words;
+   - day washes faded to under a fifth behind the words;
+   - ceilings stop above the breadcrumbs;
+   - a gap in the rain round the words.
+2. **The storm cloud hidden behind the decks: replaced.** The storm is now two rows of paper cumuli placed beside the
+   words (above them on phones), drawn after the ceilings, with the glow inside the front row and bolts beneath it.
+3. Home 3D weather and the `GL_INVALID_OPERATION`: next, on this branch.
+4. Tester review: next.
+
+**Please, in order:**
+1. `npm run check:fast`, then `npm run check` (the weather contrast part especially) and `npm run check:admin` (Sky and
+   weather's preview uses the same paper pieces now). Lint: I only had esbuild.
+2. `npm run check:smooth` on a quiet machine, against `try/sky-3`. Here (software Chrome, 3 s of animation): overcast,
+   mist, rain and storm paint **nothing** while animating. Baseline storm: 22 repaints of the sun and both hill layers.
+   Clear and partly cloudy repaint only the sun's slow pulse (~2 ms per 3 s).
+3. On the owner's machine: `/studio?sky=storm` (watch for a bolt every 9–18 s), `?sky=mist`, `?sky=partly`, day and night,
+   1440 and a phone. Then drag the sun into a cloud (the push still works?) and look at the moon at night (paper seas).
+4. Safari, if you can: `mix-blend-mode` on SVG children (the grain) and CSS `filter: drop-shadow` on SVG paths.
+
 ## ▶ Cloud session: round 8 tasks (2026-10-25; the owner is away, work through them in order)
 
 **Thank you for the Sky 2 review: all four points are applied** on `try/sky-3` (sway 1.4° / 1.8° (2.6° on phones) / 1.6°,

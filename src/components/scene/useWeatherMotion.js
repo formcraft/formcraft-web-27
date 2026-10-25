@@ -1,29 +1,51 @@
 // The moving parts of the weather in a page hero (Sky 3): the hero's size (for the shapes), and one
-// requestAnimationFrame loop for the storm's soft inner glow and the rain, running only while the hero is on screen
-// and the tab is visible. Reduced motion: one still frame of rain, no glow. Drawn by Weather.jsx; used by Sky.jsx.
+// requestAnimationFrame loop for the storm's soft inner glow, its paper bolts and the rain, running only while the hero
+// is on screen and the tab is visible. Only opacities change and the rain canvas is redrawn, so nothing else repaints.
+// Reduced motion: one still frame of rain, no glow, no bolts. Drawn by Weather.jsx; used by Sky.jsx.
 import { useEffect, useState } from "react";
 import { createRain, createStormGlow } from "./sky/weatherShapes";
 
+// The hero's words (crumbs, brand, title, lead, buttons, the sheet number) as boxes in the hero's px, a little
+// inflated: the cloud session's shapes are placed around them, so the weather never sits on the text.
+const measureWords = (hero) => {
+    const hb = hero.getBoundingClientRect(), out = [];
+    const add = (r, deco) => { if (r && r.width > 0 && r.height > 0) out.push({ x0: r.left - hb.left, y0: r.top - hb.top, x1: r.right - hb.left, y1: r.bottom - hb.top, ...(deco ? { deco: true } : {}) }); };
+    hero.querySelectorAll(".page-hero-copy > *").forEach((el) => {
+        // decorative words (the sheet number, aria-hidden) are kept clear of clouds and bolts, but a ceiling may pass behind
+        const deco = el.getAttribute("aria-hidden") === "true";
+        if (el.classList.contains("row")) [...el.children].forEach((c) => add(c.getBoundingClientRect(), deco));
+        else { const rg = document.createRange(); rg.selectNodeContents(el); add(rg.getBoundingClientRect(), deco); }
+    });
+    // one box for the main block of words (it keeps the space between the lines clear too), plus the small extras
+    const main = out.filter((b) => b.x1 - b.x0 > 120 && !b.deco);
+    if (!main.length) return out;
+    const block = { x0: Math.min(...main.map((b) => b.x0)), y0: Math.min(...main.map((b) => b.y0)), x1: Math.max(...main.map((b) => b.x1)), y1: Math.max(...main.map((b) => b.y1)) };
+    return [block, ...out.filter((b) => b.x1 - b.x0 <= 120 || b.deco)];
+};
+
 /**
- * The hero's size in CSS px, kept up to date (an address bar showing or hiding on a phone isn't a new size).
+ * The hero's size in CSS px and where its words are, kept up to date (an address bar showing or hiding on a phone
+ * isn't a new size; the words are measured again once the fonts have loaded).
  * @param {import("react").RefObject<HTMLElement>} ref  an element inside the hero
- * @returns {{ w: number, h: number } | null}
+ * @returns {{ w: number, h: number, avoid: { x0: number, y0: number, x1: number, y1: number, deco?: boolean }[] } | null}
  */
 export const useHeroSize = (ref) => {
     const [size, setSize] = useState(null);
     useEffect(() => {
         const hero = ref.current?.parentElement;
         if (!hero) return undefined;
-        const measure = () =>
+        const measure = (force) =>
             setSize((s) => {
                 const w = Math.round(hero.clientWidth), h = Math.round(hero.clientHeight);
-                if (s && s.w === w && Math.abs(s.h - h) < (w <= 980 ? 160 : 4)) return s;
-                return { w, h };
+                if (!force && s && s.w === w && Math.abs(s.h - h) < (w <= 980 ? 160 : 4)) return s;
+                return { w, h: s && s.w === w && w <= 980 && Math.abs(s.h - h) < 160 ? s.h : h, avoid: measureWords(hero) };
             });
-        measure();
-        const ro = new ResizeObserver(measure);
+        measure(true);
+        const ro = new ResizeObserver(() => measure(false));
         ro.observe(hero);
-        return () => ro.disconnect();
+        let alive = true;
+        document.fonts?.ready.then(() => alive && measure(true));
+        return () => { alive = false; ro.disconnect(); };
     }, [ref]);
     return size;
 };
@@ -50,8 +72,11 @@ export const useWeatherMotion = ({ skyRef, canvasRef, glowRef, weather, size }) 
         }
         const css = getComputedStyle(hero);
         const colours = { near: css.getPropertyValue("--rain").trim(), far: css.getPropertyValue("--rain-far").trim() };
-        const rain = amount && ctx ? createRain({ w: size.w, h: size.h, amount, wind, budget }) : null;
-        const glow = scene.storm && !reduced ? createStormGlow() : null;
+        const rain = amount && ctx ? createRain({ w: size.w, h: size.h, amount, wind, budget, clear: size.avoid ?? [] }) : null;
+        // the storm's paper bolts (Weather.jsx): one at a time, faded in and out with a glow pulse
+        const bolts = scene.storm ? [...hero.querySelectorAll(".wx-bolt")] : [];
+        const glow = scene.storm && !reduced ? createStormGlow(9, bolts.length) : null;
+        let shown = -1;
         if (reduced) {
             // one still frame: the rain without movement, no glow
             if (rain) {
@@ -70,7 +95,12 @@ export const useWeatherMotion = ({ skyRef, canvasRef, glowRef, weather, size }) 
                 ctx.clearRect(0, 0, size.w, size.h);
                 rain.draw(ctx, colours);
             }
-            if (glow && glowRef.current) glowRef.current.style.opacity = glow.step(dt).toFixed(3);
+            if (glow) {
+                const g = glow.step(dt);
+                if (glowRef.current) glowRef.current.style.opacity = g.toFixed(3);
+                if (shown >= 0 && shown !== glow.bolt) { bolts[shown].style.opacity = "0"; shown = -1; }
+                if (glow.bolt >= 0 && bolts[glow.bolt]) { shown = glow.bolt; bolts[shown].style.opacity = glow.boltK.toFixed(3); }
+            }
             raf = requestAnimationFrame(frame);
         };
         const start = () => {

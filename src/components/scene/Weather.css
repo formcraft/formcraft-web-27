@@ -1,14 +1,31 @@
-/* Weather in the page heroes (Weather.jsx). Colours come from the weather tokens in tokens.css (day and night). */
+/* Weather in the page heroes (Weather.jsx). Colours come from the weather tokens in tokens.css (day and night); the
+   paper sheets themselves are styled in PaperArt.css. */
 .wx { position: absolute; inset: 0; pointer-events: none; animation: wx-in .9s var(--fc-ease) both; }
 @keyframes wx-in { from { opacity: 0; } to { opacity: 1; } }
 .wx-wash { position: absolute; inset: 0; }
+/* the scene's tint is lightest behind the words (left on wide screens, the top on phones), so they always read; the
+   open sky on the right takes the full tint */
+.wx-wash {
+  -webkit-mask-image: linear-gradient(90deg, color-mix(in srgb, var(--fc-black) 18%, transparent) 0, color-mix(in srgb, var(--fc-black) 18%, transparent) 38%, var(--fc-black) 72%);
+  mask-image: linear-gradient(90deg, color-mix(in srgb, var(--fc-black) 18%, transparent) 0, color-mix(in srgb, var(--fc-black) 18%, transparent) 38%, var(--fc-black) 72%);
+}
+@media (max-width: 760px) {
+  .wx-wash {
+    -webkit-mask-image: linear-gradient(180deg, color-mix(in srgb, var(--fc-black) 10%, transparent) 0, color-mix(in srgb, var(--fc-black) 10%, transparent) 62%, var(--fc-black) 92%);
+    mask-image: linear-gradient(180deg, color-mix(in srgb, var(--fc-black) 10%, transparent) 0, color-mix(in srgb, var(--fc-black) 10%, transparent) 62%, var(--fc-black) 92%);
+  }
+}
 .wx-svg { position: absolute; left: 0; top: 0; overflow: visible; }
-/* layered paper sheets cast a soft shadow on what's behind them (the owner's paper-cut reference) */
-.wx-sheet { filter: drop-shadow(0 5px 6px var(--cloud-shadow)); }
-.wx-deck { filter: drop-shadow(0 6px 8px var(--cloud-shadow)); }
-.wx-cloud-front { fill: var(--sc-cloud); }
-.wx-cloud-back { fill: var(--cloud-back); }
-.wx-glow { opacity: 0; }
+/* base.css caps every svg at 100 % of its box; these are sized and placed exactly (a mist strip is twice as wide) */
+.wx svg, .wx-mist-front svg { max-width: none; }
+/* the ceilings and the storm rows lift off the sky like sheets of card */
+.wx-deck, .wx-storm-row { filter: drop-shadow(0 6px 9px var(--cloud-shadow)); }
+/* each moving piece is its own small layer, painted once: drifting clouds, the glow and the bolts */
+.wx-puff, .wx-glow, .wx-bolt { position: absolute; overflow: visible; }
+.wx-puff { filter: drop-shadow(0 6px 8px var(--cloud-shadow)); will-change: transform; }
+.wx-glow, .wx-bolt { opacity: 0; will-change: opacity; }
+.wx-bolt path { fill: var(--bolt); }
+.wx-bolt { filter: drop-shadow(0 2px 2px var(--bolt-shadow)); }
 /* paper clouds drift with the wind: 4 px a second × wind, wrapping round, starting from where they're drawn */
 @keyframes wx-drift {
   0% { transform: translateX(calc(var(--from) * 1px)); opacity: 0; }
@@ -19,8 +36,19 @@
   animation: wx-drift calc((var(--from) - var(--to)) * 1s / (4 * var(--wind))) linear infinite;
   animation-delay: calc(var(--from) * -1s / (4 * var(--wind)));
 }
+/* mist in front of the hills: strips of tracing paper, each sliding left by one period and starting again (seamless) */
+.wx-mist-front { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; animation: wx-in 1.4s var(--fc-ease) both; }
+.wx-mist-strip { position: absolute; left: 0; top: 0; overflow: visible; will-change: transform;
+  animation: wx-mist calc(var(--period) * 1s / var(--speed)) linear infinite; }
+@keyframes wx-mist { from { transform: translateX(0); } to { transform: translateX(calc(var(--period) * -1px)); } }
+.wx-mist-sheet { fill: var(--mist-sheet); }
+.wx-mist-edge { fill: none; stroke: var(--mist-edge); stroke-width: 1.2; }
+.wx-mist-0 { opacity: .45; animation-duration: calc(var(--period) * 1.6s / var(--speed)); }
+.wx-mist-1 { opacity: .6; }
+.wx-mist-2 { opacity: .75; animation-duration: calc(var(--period) * .8s / var(--speed)); }
 /* rain falls in front of the hills, behind the hero text (z-index 2) */
-.wx-rain { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; animation: wx-in .9s var(--fc-ease) both; }
+/* its own layer: redrawing the rain every frame never repaints the paper weather or the hills under it */
+.wx-rain { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; animation: wx-in .9s var(--fc-ease) both; will-change: transform; }
 /* the rain thins out where the hero's words are, so they always read (the design: weather never covers the text):
    from the left on wide screens, from the top on phones (where the words sit above the scene) */
 .wx-rain {
@@ -36,10 +64,12 @@
 
 /* the scene's effect on what's already there (data-weather and the --sky-*-k values are set by Sky.jsx) */
 .page-hero .sky-body-move { opacity: var(--sky-body-k, 1); transition: opacity 1.2s var(--fc-ease); }
+/* behind cloud the sun or moon is dimmed, so its slow ring pulse can't be seen; it would only repaint it every frame */
+.page-hero:is([data-weather="overcast"], [data-weather="rain"], [data-weather="storm"], [data-weather="mist"]) .sky-body-rings { animation: none; }
 /* by day the hero's own two paper clouds count as the scene's first two */
 .page-hero[data-puffs="0"] .pl-cloud, .page-hero[data-puffs="1"] .pl-cloud-b { opacity: 0; transition: opacity 1.2s var(--fc-ease); }
 /* wet paper: the near and front hills a shade darker in rain */
 .page-hero[data-wet] .pl-near, .page-hero[data-wet] .pl-front {
   filter: drop-shadow(0 -2px 3px var(--sh-2)) drop-shadow(0 -9px 16px var(--sh-2)) brightness(.9);
 }
-@media (prefers-reduced-motion: reduce) { .wx, .wx-rain { animation: none; } .wx-puff.is-drifting { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .wx, .wx-rain, .wx-mist-front, .wx-mist-strip { animation: none; } .wx-puff.is-drifting { animation: none; } }

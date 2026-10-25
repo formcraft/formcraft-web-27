@@ -1,11 +1,13 @@
 /* PaperLayers: styles for PaperLayers.jsx (classes start with .paper-). Colours come from tokens.css. */
 .paper-layers { position: relative; height: var(--pl-h); pointer-events: none; }
 .pl-layer { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.pl-band, .pl-cloud, .pl-far, .pl-mid, .pl-city, .pl-near, .pl-front {
+.pl-band, .pl-far, .pl-mid, .pl-city, .pl-near, .pl-front {
   filter: drop-shadow(0 -2px 3px var(--sh-2)) drop-shadow(0 -9px 16px var(--sh-2));
 }
+/* a paper cloud floats above the sky: its shadow falls below it */
+.pl-cloud { filter: drop-shadow(0 5px 7px var(--cloud-shadow)); }
+.pl-cloud-drift { position: absolute; inset: 0; pointer-events: none; --u: max(100cqw / 1440, 100cqh / var(--pl-vh)); }
 .pl-f-band { fill: var(--sky-band); }
-.pl-f-cloud { fill: var(--sc-cloud); }
 .pl-f-far { fill: var(--sc-far); }
 .pl-f-mid { fill: var(--sc-mid); }
 .pl-f-glow { fill: var(--sc-window); }
@@ -35,7 +37,7 @@
 [data-theme="night"] .pl-q-near { stroke: color-mix(in srgb, var(--fc-studio) 30%, transparent); }
 [data-theme="day"] .pl-f-off, [data-theme="day"] .pl-f-beam { display: none; }
 /* clouds are a day thing: the night sky keeps to stars, moon and the city glow */
-[data-theme="night"] .pl-cloud { display: none; }
+[data-theme="night"] .pl-cloud-drift { display: none; }
 
 
 /* motion */
@@ -47,11 +49,13 @@
 /* clouds drift with the wind (Sky 2): at 4 units/s × wind across the drawing, wrapping round, starting from where
    they're drawn (the negative delay); a 1 % fade at each end hides the jump back. Calm: they rest. */
 @keyframes pl-wind-drift {
-  0% { transform: translateX(calc(var(--from) * 1px)); opacity: 0; }
+  0% { transform: translateX(calc(var(--from) * var(--u))); opacity: 0; }
   1%, 99% { opacity: 1; }
-  100% { transform: translateX(calc(var(--to) * 1px)); opacity: 0; }
+  100% { transform: translateX(calc(var(--to) * var(--u))); opacity: 0; }
 }
-.pl-windy .pl-cloud path {
+/* the drift moves each cloud's own wrapper (its own layer), so the paper isn't repainted every frame */
+.pl-windy .pl-cloud-drift {
+  will-change: transform;
   animation: pl-wind-drift calc((var(--from) - var(--to)) * 1s / (4 * var(--wind))) linear infinite;
   animation-delay: calc(var(--from) * -1s / (4 * var(--wind)));
 }
@@ -116,4 +120,4 @@
 }
 /* the front row is planted off screen below ~1260 px ("xMidYMax slice" crops it): don't animate what isn't seen */
 @media (max-width: 1259px) { .pl-windy .pl-trees-front .pl-tree-group { animation: none; will-change: auto; } }
-@media (prefers-reduced-motion: reduce) { .pl-tree-group { animation: none !important; will-change: auto !important; } }
+@media (prefers-reduced-motion: reduce) { .pl-tree-group, .pl-cloud-drift { animation: none !important; will-change: auto !important; } }
