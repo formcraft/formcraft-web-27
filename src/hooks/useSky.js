@@ -1,3 +1,4 @@
+// useSky: where the sun and moon are in Kampala's sky right now, for the page heroes (details below).
 import { useEffect } from "react";
 import { useDeviceState } from "./useHydration";
 import { skyPosition } from "../lib/skyClock";
