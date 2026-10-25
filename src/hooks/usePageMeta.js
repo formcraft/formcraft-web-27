@@ -4,7 +4,7 @@ import { useLocation } from "react-router-dom";
 import { DEFAULT_OG_IMAGE, ROUTES, SITE_URL, absUrl, imagePath, metaForPath, metaText, pageTitle } from "../data/seo";
 import { COPY, copyItem } from "../data/copy";
 import { pageForPath } from "../data/pages";
-import { publishedItems, subscribeCopy } from "../lib/copyStore";
+import { noItems, publishedItems, subscribeCopy } from "../lib/copyStore";
 import { plainCopy } from "../lib/copyText";
 
 const NONE = Object.freeze({});
@@ -61,7 +61,7 @@ export const usePageMeta = (title, description, options = {}) => {
     const { noindex = false, canonical } = options ?? {};
     const image = options?.image ? imagePath(options.image) : null;
     const page = pageForPath(pathname)?.key;
-    const edits = useSyncExternalStore(subscribeCopy, () => (page && COPY[page] ? publishedItems(page) : NONE));
+    const edits = useSyncExternalStore(subscribeCopy, () => (page && COPY[page] ? publishedItems(page) : NONE), noItems);
 
     useEffect(() => {
         const route = noindex ? null : metaForPath(pathname);

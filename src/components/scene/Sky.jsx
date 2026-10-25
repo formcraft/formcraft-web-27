@@ -5,6 +5,7 @@ import { useFeature } from "../../hooks/useSite";
 import { W, SKY_H, starField } from "./sceneGeometry";
 import { moonLitPath, moonPhase } from "./sky/moonPhase";
 import { useSkyDrag } from "./useSkyDrag";
+import { useIsHydrating } from "../../hooks/useHydration";
 import "./Sky.css";
 
 // The one sky shared by every page hero (Home has its own 3D sky). Drawn in the page, no images:
@@ -20,26 +21,25 @@ import "./Sky.css";
 export const Sky = ({ seed = 7, horizon = 180, className = "" }) => {
     const { theme } = useTheme();
     const night = theme === "night";
-    const field = useMemo(() => (night ? starField({ seed: seed + 5 }) : null), [night, seed]);
+    // the stars are drawn in both editions and Sky.css hides them by day, so pre-rendered pages match
+    const field = useMemo(() => starField({ seed: seed + 5 }), [seed]);
     const drag = useFeature("skyBodies");
     const fluid = useFeature("skyFluid");
     const skyRef = useRef(null);
     const canvasRef = useRef(null);
     const grabRef = useRef(null);
-    useSkyDrag({ skyRef, canvasRef, grabRef, field, drag, fluid, edition: theme });
+    useSkyDrag({ skyRef, canvasRef, grabRef, field: night ? field : null, drag, fluid, edition: theme });
     return (
         <>
             <div ref={skyRef} className={`sky ${className}`.trim()} style={{ "--sky-horizon": `${Math.round(horizon)}px` }} aria-hidden="true">
-                {field && <canvas ref={canvasRef} className="sky-stars" />}
-                {field && (
-                    <svg className="sky-stars sky-twinkles" viewBox={`0 0 ${W} ${SKY_H}`} preserveAspectRatio="xMidYMin slice" focusable="false">
+                <canvas ref={canvasRef} className="sky-stars" />
+                <svg className="sky-stars sky-twinkles" viewBox={`0 0 ${W} ${SKY_H}`} preserveAspectRatio="xMidYMin slice" focusable="false">
                         <g className="sky-twinkle">
                             {field.twinkle.map((s, i) => (
                                 <circle key={i} cx={s.x} cy={s.y} r={s.r} style={{ "--tw": `${s.d}s`, "--td": `${s.o}s` }} />
                             ))}
                         </g>
-                    </svg>
-                )}
+                </svg>
             </div>
             {/* invisible: lets a finger on the sun or moon move it instead of scrolling (above the hero text) */}
             {drag && <span ref={grabRef} className="sky-grab" aria-hidden="true" />}
@@ -56,6 +56,7 @@ export const Sky = ({ seed = 7, horizon = 180, className = "" }) => {
  * @param {{ r: number, id: string }} props  r: disc radius in px; id: a unique id for the clip path
  */
 export const SkyBody = ({ r, id }) => {
+    const hydrating = useIsHydrating();
     const { theme } = useTheme();
     const sky = useSky();
     const night = theme === "night";
@@ -69,6 +70,9 @@ export const SkyBody = ({ r, id }) => {
     // --sky-t slides the box from left-anchored (rising) to right-anchored (setting), so it stays in view
     const style = { "--sky-x": `${6 + t * 88}%`, "--sky-t": t.toFixed(3), "--sky-y": `${(1 - lift) * 17 + 4}%`, "--sky-r": `${r}px` };
     const label = night ? "moon" : "sun";
+    // its place depends on the clock and the edition (the visitor's, not the build's): it appears, rising as
+    // always, once the page has been adopted (useHydration.js)
+    if (hydrating) return null;
     return (
         <div className={`sky-body ${below ? "is-low" : ""}`} style={style} data-body={label}>
             <div className="sky-body-move">

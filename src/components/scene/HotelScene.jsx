@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "../../hooks/useTheme";
 import { useFeature, useSite } from "../../hooks/useSite";
+import { useDeviceState } from "../../hooks/useHydration";
 import { readJSON, writeJSON } from "../../lib/storage";
 import { Hotel2D } from "./Hotel2D";
 import "./HotelScene.css";
@@ -126,7 +127,8 @@ export const HotelScene = () => {
     // Admin → Features "3D hotel model" off: everyone gets the 2D drawing (the dev preview still wins)
     const model3d = useFeature("home3d") || Boolean(devPreview());
     const scraps = useFeature("scraps");
-    const [guessed, setLevel] = useState(guessLevel);
+    // the device decides (graphics, memory, connection): after hydration (useHydration.js)
+    const [guessed, setLevel] = useDeviceState(guessLevel, "standard");
     const level = model3d ? guessed : "2d";
     const [ready, setReady] = useState(false);
     const [switched, setSwitched] = useState(false); // 3D handed over to 2D mid-visit: no second build
@@ -214,7 +216,7 @@ export const HotelScene = () => {
             handleRef.current?.dispose();
             handleRef.current = null;
         };
-    }, [live, level, edition, motion.build, scraps]); // a new build time replays the build (handy while tuning it in Admin)
+    }, [live, level, edition, motion.build, scraps, setLevel]); // a new build time replays the build (handy while tuning it in Admin)
 
     return (
         <>

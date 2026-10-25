@@ -5,7 +5,7 @@ import { createElement, useEffect, useMemo, useSyncExternalStore } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "./useAuth";
 import { copyItem, SIZED_KINDS } from "../data/copy";
-import { draftItems, loadCopy, loadDraft, publishedItems, subscribeCopy } from "../lib/copyStore";
+import { draftItems, loadCopy, loadDraft, noItems, publishedItems, subscribeCopy } from "../lib/copyStore";
 import { plainCopy, renderCopy } from "../lib/copyText";
 
 // The text to show for one entry: an edit wins unless it's empty (empty = back to the built-in wording).
@@ -30,8 +30,10 @@ export const useCopy = (page) => {
     const { isAdmin } = useAuth();
     const { search } = useLocation();
     const preview = isAdmin && new URLSearchParams(search).get("preview") === "draft";
-    const items = useSyncExternalStore(subscribeCopy, () => publishedItems(page));
-    const draft = useSyncExternalStore(subscribeCopy, () => (preview ? draftItems(page) : null));
+    // the third function is for pre-rendered pages: the build (and React adopting its HTML) shows the built-in
+    // wording, then the device's saved edits follow straight after (useHydration.js)
+    const items = useSyncExternalStore(subscribeCopy, () => publishedItems(page), noItems);
+    const draft = useSyncExternalStore(subscribeCopy, () => (preview ? draftItems(page) : null), () => null);
 
     useEffect(() => loadCopy(page), [page]);
     useEffect(() => {

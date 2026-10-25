@@ -4,7 +4,6 @@
 // header), contact details from Admin → Site details, social links, the email sign-up, the privacy
 // link and the cookie settings button. Links to pages the admin has switched off are hidden.
 import { Link, useLocation } from "react-router-dom";
-import { useTheme } from "../../hooks/useTheme";
 import { sheetFor } from "../../data/sheets";
 import { useShowLink, useSite } from "../../hooks/useSite";
 import { socialLinks, telHref, waHref } from "../../data/contact";
@@ -24,7 +23,6 @@ const L = ({ to, children }) => {
 /** The site footer. Rendered once by Layout.jsx under every page. */
 export const Footer = () => {
     const { pathname } = useLocation();
-    const { theme } = useTheme();
     const [sheet, name] = sheetFor(pathname);
     const show = useShowLink();
     const { details } = useSite();
@@ -117,7 +115,7 @@ export const Footer = () => {
                     </div>
                     <div>
                         <small>Project</small>
-                        <strong>Formcraft website · {theme} edition</strong>
+                        <strong>Formcraft website · <span className="footer-ed-day">day</span><span className="footer-ed-night">night</span> edition</strong>
                     </div>
                     <div>
                         <small>Sheet</small>
@@ -137,7 +135,7 @@ export const Footer = () => {
                     </div>
                 </div>
                 <div className="footer-legal">
-                    <span>© {new Date().getFullYear()} Formcraft Design and Construction Co. Ltd</span>
+                    <span suppressHydrationWarning>© {new Date().getFullYear()} Formcraft Design and Construction Co. Ltd</span>
                     <span className="footer-legal-links">
                         <Link to="/privacy">Privacy</Link>
                         <button type="button" className="footer-cookie" onClick={openConsent}>Cookie settings</button>

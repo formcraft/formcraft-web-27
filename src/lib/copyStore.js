@@ -32,6 +32,9 @@ export const publishedItems = (page) => {
     return published.get(page);
 };
 
+/** What the build renders, and React's first render when it adopts a pre-rendered page: no edits yet. */
+export const noItems = () => EMPTY;
+
 /** The unpublished edits for a page, once loadDraft() has read them (team preview only). */
 export const draftItems = (page) => drafts.get(page) ?? EMPTY;
 

@@ -73,3 +73,6 @@
 @media (prefers-reduced-motion: reduce) {
   .sky-body-svg { transition: none; }
 }
+
+/* the stars are in the markup in both editions (pre-rendered pages); only the night sky shows them */
+[data-theme="day"] .sky-stars { display: none; }

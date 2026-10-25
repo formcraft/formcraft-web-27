@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { SiteContext } from "./contexts";
+import { useDeviceState } from "../hooks/useHydration";
 import { useAuth } from "../hooks/useAuth";
 import { getDb } from "../config/firebase";
 import { getDocRest, restReady } from "../lib/firestoreRest";
@@ -43,10 +44,11 @@ const writeSettings = async (data) => {
  */
 export const SiteProvider = ({ children }) => {
     const { isAdmin } = useAuth();
-    const [stored, setStored] = useState(() => readJSON(CACHE, null));
-    const [savedDetails, setSavedDetails] = useState(() => readJSON(DETAILS_CACHE, null));
-    const [savedMotion, setSavedMotion] = useState(() => readJSON(MOTION_CACHE, null));
-    const [savedFeatures, setSavedFeatures] = useState(() => readJSON(FEATURES_CACHE, null));
+    // cached on the device: read after the first render, so pre-rendered pages hydrate cleanly (useHydration.js)
+    const [stored, setStored] = useDeviceState(() => readJSON(CACHE, null), null);
+    const [savedDetails, setSavedDetails] = useDeviceState(() => readJSON(DETAILS_CACHE, null), null);
+    const [savedMotion, setSavedMotion] = useDeviceState(() => readJSON(MOTION_CACHE, null), null);
+    const [savedFeatures, setSavedFeatures] = useDeviceState(() => readJSON(FEATURES_CACHE, null), null);
     const [loading, setLoading] = useState(restReady());
 
     useEffect(() => {
@@ -72,7 +74,7 @@ export const SiteProvider = ({ children }) => {
             })
             .finally(() => setLoading(false));
         return () => controller.abort();
-    }, []);
+    }, [setStored, setSavedFeatures, setSavedDetails, setSavedMotion]);
 
     const visibility = useMemo(() => {
         const merged = { ...defaultVisibility(), ...(stored ?? {}) };
@@ -103,7 +105,7 @@ export const SiteProvider = ({ children }) => {
                 throw error;
             }
         },
-        [isAdmin, stored]
+        [isAdmin, stored, setStored]
     );
 
     // Merge-write some of the contact details (admin only; the rules check the claim too)
@@ -127,7 +129,7 @@ export const SiteProvider = ({ children }) => {
                 throw error;
             }
         },
-        [isAdmin, savedDetails]
+        [isAdmin, savedDetails, setSavedDetails]
     );
 
     // Animation timing (admin only): { key: scale } merged into settings/site.motion
@@ -147,7 +149,7 @@ export const SiteProvider = ({ children }) => {
                 throw error;
             }
         },
-        [isAdmin, savedMotion]
+        [isAdmin, savedMotion, setSavedMotion]
     );
 
     // Switch one feature on or off (admin only): merged into settings/site.features
@@ -167,7 +169,7 @@ export const SiteProvider = ({ children }) => {
                 throw error;
             }
         },
-        [isAdmin, savedFeatures]
+        [isAdmin, savedFeatures, setSavedFeatures]
     );
 
     const value = useMemo(

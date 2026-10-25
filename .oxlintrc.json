@@ -22,6 +22,7 @@
     "dist",
     "dist-debug",
     "check-report",
-    "functions/node_modules"
+    "functions/node_modules",
+    "dist-ssr"
   ]
 }

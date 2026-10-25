@@ -16,17 +16,24 @@ import { routes } from "./routes";
 //   AuthProvider   – who is signed in, and their role          (useAuth())
 //   SiteProvider   – admin settings: which pages are on, contact details, animation speed (useSite())
 //   CartProvider   – the shopping cart, saved on this device   (useCart())
-// BrowserRouter turns the address bar into pages; the list of pages is in routes.jsx.
+// The router turns the address into a page (the list is in routes.jsx). In the browser that's BrowserRouter;
+// at build time scripts/prerender.mjs uses a fixed address instead (src/entry-server.jsx), with the same tree,
+// so the pre-built HTML and the browser's first render match.
 // Suspense shows a skeleton while a page's code is downloading (each page is loaded only when needed).
 //
 // Pages render straight away; only the parts that need the signed-in user wait for Firebase.
-function App() {
+
+/**
+ * The app inside a router of the caller's choice.
+ * @param {{ Router: import("react").ComponentType<{ children: import("react").ReactNode }> }} props
+ */
+export function AppTree({ Router }) {
     return (
         <ThemeProvider>
             <AuthProvider>
                 <SiteProvider>
                 <CartProvider>
-                    <BrowserRouter>
+                    <Router>
                         <Layout>
                             <Suspense fallback={<PageSkeleton />}>
                                 <Routes>
@@ -36,12 +43,17 @@ function App() {
                                 </Routes>
                             </Suspense>
                         </Layout>
-                    </BrowserRouter>
+                    </Router>
                 </CartProvider>
                 </SiteProvider>
             </AuthProvider>
         </ThemeProvider>
     );
+}
+
+/** The app in the browser. */
+function App() {
+    return <AppTree Router={BrowserRouter} />;
 }
 
 export default App;

@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { getConsent, initAnalytics, onConsentOpen, setConsent } from "../../lib/analytics";
+import { useDeviceState } from "../../hooks/useHydration";
 import "./ConsentBanner.css";
 
 // Cookie consent: a small paper banner bottom-left on the first visit. Analytics (lib/analytics.js)
 // loads only after "Accept". The answer is remembered; "Cookie settings" in the footer reopens it.
 export const ConsentBanner = () => {
-    const [open, setOpen] = useState(() => getConsent() === null);
+    const [open, setOpen] = useDeviceState(() => getConsent() === null, false); // after hydration (useHydration.js)
     const [reopened, setReopened] = useState(false);
     const acceptRef = useRef(null);
 
@@ -16,7 +17,7 @@ export const ConsentBanner = () => {
             setReopened(true);
             setOpen(true);
         });
-    }, []);
+    }, [setOpen]);
 
     // when reopened from the footer, move focus into the banner so keyboard users land on it
     useEffect(() => {

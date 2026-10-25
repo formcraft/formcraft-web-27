@@ -44,3 +44,6 @@
   .footer-grid-ref { grid-template-columns: repeat(4, 1fr); }
   .footer-grid-ref span:nth-child(n + 5) { display: none; }
 }
+
+/* "day edition" / "night edition": both words are in the markup (pre-rendered pages), one shows */
+[data-theme="night"] .footer-ed-day, :root:not([data-theme="night"]) .footer-ed-night { display: none; }

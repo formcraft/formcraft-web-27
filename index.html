@@ -21,6 +21,10 @@
       // visits, none again in the same session, a plain fade with reduced motion, never for bots.
       (function () {
         var d = document.documentElement, t = null, ls = null, ss = null;
+        // Pre-rendered pages (scripts/prerender.mjs): HTML built for another address (Hosting serves index.html
+        // for unknown addresses, the service worker offline) stays hidden until the app has started fresh.
+        var built = document.querySelector('meta[name="fc-prerendered"]');
+        if (built && built.content !== (location.pathname.replace(/\/+$/, "") || "/")) d.classList.add("fc-stale");
         try { ls = window.localStorage; ss = window.sessionStorage; t = ls.getItem("fc-theme"); } catch (e) {}
         if (t !== "day" && t !== "night") {
           var n = new Date(), m = (n.getUTCHours() * 60 + n.getUTCMinutes() + 180) % 1440;
@@ -61,6 +65,7 @@
     <style>
       /* Opening animation. It paints before the app's CSS loads, so its few colours mirror
          src/styles/tokens.css (navy #1C252D, orange #FFAE61, white #F1F1F1). */
+      .fc-stale #root { visibility: hidden; }
       #fci { display: none; }
       .fci-run #fci { display: block; position: fixed; inset: 0; z-index: 9999; cursor: pointer; -webkit-tap-highlight-color: transparent; }
       .fci-hold .header-brand { opacity: 0; }

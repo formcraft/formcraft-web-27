@@ -3,7 +3,7 @@
 // whole app into <div id="root"> in index.html, and, on the live site only, switches on the
 // service worker (public/sw.js) that keeps a copy of the site for fast repeat visits and offline use.
 import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
 // The shared styles come first, so every component stylesheet (loaded with the app below) can build on them.
 import "./styles/fonts.css";
 import "./styles/tokens.css";
@@ -11,11 +11,27 @@ import "./styles/base.css";
 import "./styles/components.css";
 import App from "./App.jsx";
 
-createRoot(document.getElementById("root")).render(
+// Pre-rendered pages (scripts/prerender.mjs) arrive with their HTML already in #root: React adopts it
+// ("hydrates") instead of drawing it again, so the page doesn't flicker. That needs the HTML to be for this
+// address; if not (Hosting serves index.html for unknown addresses), it's cleared and the app starts fresh.
+// A mismatch between the HTML and React's first render is logged as "[hydration] …" (npm run check fails on it).
+const root = document.getElementById("root");
+const app = (
     <StrictMode>
         <App />
     </StrictMode>
 );
+const builtFor = document.querySelector('meta[name="fc-prerendered"]')?.content;
+const here = location.pathname.replace(/\/+$/, "") || "/";
+if (root.firstElementChild && builtFor === here) {
+    hydrateRoot(root, app, {
+        onRecoverableError: (error) => console.error(`[hydration] ${error?.message ?? error}`),
+    });
+} else {
+    root.textContent = "";
+    document.documentElement.classList.remove("fc-stale");
+    createRoot(root).render(app);
+}
 
 // Offline cache and fast repeat visits (public/sw.js). Production only, so development
 // always shows fresh files.

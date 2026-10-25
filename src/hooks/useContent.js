@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CONTENT } from "../data/content";
 import { listRest, restReady } from "../lib/firestoreRest";
 import { readJSON, writeJSON } from "../lib/storage";
+import { useDeviceState } from "./useHydration";
 import { useAuth } from "./useAuth";
 
 // Site content (products, templates, projects, posts, courses, events, developments).
@@ -55,7 +56,8 @@ const fetchContent = (name) => {
  */
 export const useContent = (name) => {
     const { isAdmin } = useAuth();
-    const [items, setItems] = useState(() => memory.get(name) ?? readJSON(`fc-content-${name}`, null));
+    // the device's saved copy after hydration (useHydration.js); the build and the first render use the starter data
+    const [items, setItems] = useDeviceState(() => memory.get(name) ?? readJSON(`fc-content-${name}`, null), null);
     const [loading, setLoading] = useState(!memory.has(name));
 
     useEffect(() => {
@@ -68,7 +70,7 @@ export const useContent = (name) => {
         return () => {
             alive = false;
         };
-    }, [name]);
+    }, [name, setItems]);
 
     const visible = useMemo(
         () =>

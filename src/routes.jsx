@@ -13,9 +13,13 @@ import { PageGate } from "./components/layout/PageGate";
 import { pageForPath } from "./data/pages";
 
 // One lazy chunk per page. Pages use named exports that match the file name.
+// At build time (the pre-rendering server build, import.meta.env.SSR) every page is loaded up front, so React
+// writes each page straight into its HTML instead of a skeleton plus a piece swapped in later; the browser still
+// loads each page only when it's visited, and adopts the pre-written HTML meanwhile.
 const load = (name) => import(`./pages/${name}.jsx`);
+const eager = import.meta.env.SSR ? import.meta.glob("./pages/*.jsx", { eager: true }) : null;
 const cache = {};
-const page = (name) => (cache[name] ??= lazy(() => load(name).then((m) => ({ default: m[name] }))));
+const page = (name) => (cache[name] ??= eager ? eager[`./pages/${name}.jsx`][name] : lazy(() => load(name).then((m) => ({ default: m[name] }))));
 
 // Route table: path → page component. `PageGate` hides pages the admin has turned off
 // (src/data/pages.js decides which page key a path belongs to).

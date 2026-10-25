@@ -7,17 +7,13 @@ import { Icon } from "../ui/Icon";
 
 /** @param {{ className?: string }} props */
 export const ThemeSwitch = ({ className = "" }) => {
-    const { theme, toggle } = useTheme();
-    const next = theme === "night" ? "day" : "night";
+    const { toggle } = useTheme();
+    // The same markup in both editions (pre-rendered pages must match): both icons are drawn and Header.css
+    // shows the one for the other edition; the label names both.
     return (
-        <button
-            type="button"
-            className={`icon-btn header-mode ${className}`}
-            onClick={toggle}
-            aria-label={`Switch to the ${next} edition`}
-            title={`${next === "night" ? "Night" : "Day"} edition`}
-        >
-            <Icon name={theme === "night" ? "sun" : "moon"} size={19} />
+        <button type="button" className={`icon-btn header-mode ${className}`} onClick={toggle} aria-label="Switch between the day and night editions" title="Day or night edition">
+            <Icon name="moon" size={19} className="header-mode-to-night" />
+            <Icon name="sun" size={19} className="header-mode-to-day" />
         </button>
     );
 };

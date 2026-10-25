@@ -73,3 +73,6 @@
 @media (hover: none), (max-width: 820px) {
   .header { -webkit-backdrop-filter: none; backdrop-filter: none; background: color-mix(in srgb, var(--ground) 96%, transparent); }
 }
+
+/* the day/night switch carries both icons (pre-rendered pages): show the way to the other edition */
+[data-theme="night"] .header-mode-to-night, :root:not([data-theme="night"]) .header-mode-to-day { display: none; }
