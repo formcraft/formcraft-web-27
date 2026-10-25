@@ -1,6 +1,10 @@
 /* PageHero: styles for PageHero.jsx (classes start with .page-). Colours come from tokens.css. */
 .page-hero { position: relative; overflow: hidden; }
 .page-hero-copy { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 22px; padding-top: clamp(48px, 7vw, 104px); }
+/* empty parts of the hero text let presses through to the sky's grab handle below (useSkyDrag); the text,
+   links and buttons themselves take them as usual */
+.page-hero-copy, .page-hero-copy > .row { pointer-events: none; }
+.page-hero-copy > *:not(.row), .page-hero-copy > .row > * { pointer-events: auto; }
 .page-hero-title { max-width: 16ch; }
 .page-hero-brand img { height: 30px; width: auto; }
 .page-hero-sheet {

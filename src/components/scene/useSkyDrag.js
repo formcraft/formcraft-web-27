@@ -41,6 +41,11 @@ export const useSkyDrag = ({ skyRef, canvasRef, grabRef, field, drag, fluid, edi
         const bodyEl = () => hero.querySelector(".sky-body-move");
         const ringsEl = () => hero.querySelector(".sky-body-shift");
         const clouds = () => [...hero.querySelectorAll(".pl-cloud")].filter((c) => c.getBoundingClientRect().width > 0);
+        // a cloud layer's px → its SVG units ("xMidYMax slice": the larger of the two scales)
+        const svgScale = (svg) => {
+            const vb = svg.viewBox?.baseVal, r = svg.getBoundingClientRect();
+            return vb?.width ? Math.max(r.width / vb.width, r.height / vb.height) : 1;
+        };
 
         // where the body rests (its Kampala-clock place), measured with any drag offset taken out
         const measureBody = () => {
@@ -130,9 +135,13 @@ export const useSkyDrag = ({ skyRef, canvasRef, grabRef, field, drag, fluid, edi
             }
             const g = grabRef.current;
             if (g) g.style.transform = dx || dy ? `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)` : "";
+            // the clouds move through their own <g> (the layer's scroll parallax animates the layer's transform)
             if (fluid && !field) clouds().forEach((c, i) => {
-                const m = engine.clouds[i];
-                if (m) c.style.transform = m.dx || m.dy ? `translate(${m.dx.toFixed(1)}px, ${m.dy.toFixed(1)}px) rotate(${m.tilt.toFixed(2)}deg)` : "";
+                const m = engine.clouds[i], g = c.querySelector(".pl-cloud-push");
+                if (!m || !g) return;
+                if (!m.dx && !m.dy) return g.removeAttribute("transform");
+                const k = svgScale(c), box = g.getBBox();
+                g.setAttribute("transform", `translate(${(m.dx / k).toFixed(2)} ${(m.dy / k).toFixed(2)}) rotate(${m.tilt.toFixed(2)} ${(box.x + box.width / 2).toFixed(1)} ${(box.y + box.height / 2).toFixed(1)})`);
             });
             if (fluid && field) draw(engine.stars);
         };
@@ -155,23 +164,27 @@ export const useSkyDrag = ({ skyRef, canvasRef, grabRef, field, drag, fluid, edi
         };
 
         const local = (e) => ({ x: e.clientX - heroBox.left, y: e.clientY - heroBox.top });
+        // while the sky is still, measure the resting place again (the clock and the entrance animation move it)
+        const remeasure = () => {
+            if (dragging || raf) return;
+            const b = measureBody();
+            if (!b) return;
+            home = b;
+            engine.setHome(b.x, b.y);
+            placeGrab();
+        };
         const near = (e) => {
             if (!engine || !home) return false;
             heroBox = hero.getBoundingClientRect();
-            // while the sky is still, re-measure the resting place (the clock and the entrance animation move it)
-            if (!dragging && !raf) {
-                const b = measureBody();
-                if (b) {
-                    home = b;
-                    engine.setHome(b.x, b.y);
-                    placeGrab();
-                }
-            }
             const p = local(e);
             return Math.hypot(p.x - engine.body.x, p.y - engine.body.y) <= GRAB * discR;
         };
+        // a press on something the visitor means to use (a link, a button, a field) is never a grab
+        const interactive = (e) => e.target?.closest?.("a, button, input, select, textarea, label, summary, [role='button']");
         const onDown = (e) => {
-            if (!drag || dragging || e.button > 0 || !near(e)) return;
+            if (!drag || dragging || e.button > 0 || !engine || interactive(e)) return;
+            remeasure();
+            if (!near(e)) return;
             e.preventDefault();
             dragging = true;
             pointerId = e.pointerId;
@@ -192,7 +205,12 @@ export const useSkyDrag = ({ skyRef, canvasRef, grabRef, field, drag, fluid, edi
                 engine.drag(p.x, p.y, e.timeStamp);
                 run();
             } else if (drag && e.pointerType === "mouse") {
-                hero.classList.toggle("is-sky-hover", near(e)); // a subtle glow; never any words
+                // the soft glow (never any words or a hand cursor): only while the pointer is over the hero
+                if (hero.hasAttribute("data-paused")) return;
+                const r = hero.getBoundingClientRect();
+                const inside = e.clientY >= r.top && e.clientY <= r.bottom && e.clientX >= r.left && e.clientX <= r.right;
+                const on = inside && !interactive(e) && near(e);
+                if (on !== hero.classList.contains("is-sky-hover")) hero.classList.toggle("is-sky-hover", on);
             }
         };
         const onUp = (e) => {
@@ -210,9 +228,16 @@ export const useSkyDrag = ({ skyRef, canvasRef, grabRef, field, drag, fluid, edi
             if (e.target.classList?.contains("sky-body") && !dragging && !raf) setup();
         };
         hero.addEventListener("animationend", onRisen);
+        let size = { w: hero.clientWidth, h: hero.clientHeight };
         const ro = new ResizeObserver(() => {
             if (dragging || raf) return; // re-measure once things settle
-            setup();
+            const w = hero.clientWidth, h = hero.clientHeight;
+            const small = w === size.w && Math.abs(h - size.h) < 160; // a phone's address bar, not a new layout
+            size = { w, h };
+            if (small && engine) {
+                engine.setBounds(w, h);
+                remeasure();
+            } else setup();
         });
         ro.observe(hero);
         hero.addEventListener("pointerdown", onDown);
@@ -232,7 +257,7 @@ export const useSkyDrag = ({ skyRef, canvasRef, grabRef, field, drag, fluid, edi
             hero.classList.remove("is-sky-dragging", "is-sky-moving", "is-sky-hover");
             const el = bodyEl();
             if (el) el.style.transform = "";
-            clouds().forEach((c) => (c.style.transform = ""));
+            hero.querySelectorAll(".pl-cloud-push").forEach((g) => g.removeAttribute("transform"));
         };
     }, [skyRef, canvasRef, grabRef, field, drag, fluid, edition]);
 };

@@ -125,8 +125,9 @@ export const PaperLayers = ({ seed = 7, height = 560, city = true, motif = "city
                 <Quill id={`${uid}q0`} d={paths.band} seed={seed + 11} h={h} n={9} className="pl-q-band" />
             </>)}
             <SkyBody id={`${uid}moon`} r={Math.round(sun.r * (h < 420 ? 0.9 : 1))} />
-            {layer("cloud pl-cloud-a", 0.12, <path className="pl-f-cloud" d={paths.c1} />)}
-            {layer("cloud pl-cloud-b", 0.1, <path className="pl-f-cloud" d={paths.c2} />)}
+            {/* .pl-cloud-push: moved aside by the sun (useSkyDrag); the layer and the path have their own animations */}
+            {layer("cloud pl-cloud-a", 0.12, <g className="pl-cloud-push"><path className="pl-f-cloud" d={paths.c1} /></g>)}
+            {layer("cloud pl-cloud-b", 0.1, <g className="pl-cloud-push"><path className="pl-f-cloud" d={paths.c2} /></g>)}
             {layer("far", 0.16, <path className="pl-f-far" d={paths.far} />)}
             {layer("mid", 0.22, <>
                 <path className="pl-f-mid" d={paths.mid} />

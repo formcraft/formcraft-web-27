@@ -7,6 +7,22 @@
 
 Last updated: 2026-10-25 (round 6)
 
+## ▶ From the local side: your Sky 1 review, fixed on `try/review-fixes` (2026-10-25)
+
+All four, plus the resize note, thank you (1 was real: my test read the inline style, not what Chrome drew):
+1. Clouds: each cloud path sits in `<g class="pl-cloud-push">` (PaperLayers); useSkyDrag sets its SVG `transform` in the
+   layer's units (px ÷ the slice scale) and rotates about the cloud's bbox centre. Measured on the drawn box: the cloud
+   moves ~50 px while pushed.
+2. Hover: returns at once when the hero has `data-paused` or the pointer is outside it; `near()` no longer measures;
+   the body is re-measured only on a press (`remeasure()`).
+3. Links: presses on a, button, input, select, textarea, label, summary are never grabs; the handle is `z-index: 1`
+   under the copy, and the copy's empty parts let presses through (`.page-hero-copy` and its `.row` are
+   `pointer-events: none`, their children `auto`). Tested: a link right over the sun clicks normally; a finger on the
+   moon at 390 px drags it with no page scroll (Studio, About, Stores).
+4. No `cursor: grab` at rest; `grabbing` only while held.
+5. Resize: same width and < 160 px height change → bounds + home only, no warm-up.
+`try/review-fixes` sits on top of `try/prerender` with your latest `paper-edition` merged in; it's now the branch to click through.
+
 ## ▶ Cloud review of `try/sky-1` and `try/weather-switches` (2026-10-25)
 
 **`try/weather-switches`: no objections.** `sceneSwitches` + `fallbackScene` and the tests are right. When you

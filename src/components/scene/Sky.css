@@ -58,12 +58,12 @@
 /* Moving the sun or moon (useSkyDrag.js; Admin → Features "Move the sun and moon"). Never announced: the
    only clue is a soft glow when a mouse passes over it. */
 .sky-grab {
-  position: absolute; z-index: 3; border-radius: 50%; pointer-events: auto;
-  touch-action: none; -webkit-tap-highlight-color: transparent; cursor: grab;
+  position: absolute; z-index: 1; border-radius: 50%; pointer-events: auto;
+  touch-action: none; -webkit-tap-highlight-color: transparent;
 }
 .is-sky-dragging { -webkit-user-select: none; user-select: none; touch-action: none; cursor: grabbing; }
 .is-sky-dragging .sky-grab { cursor: grabbing; }
-.is-sky-moving .sky-body-move, .is-sky-moving .pl-cloud { will-change: transform; }
+.is-sky-moving .sky-body-move { will-change: transform; }
 .sky-body-svg { transition: scale .2s var(--fc-ease-out), filter .2s var(--fc-ease-out); }
 .is-sky-hover .sky-body-svg { filter: drop-shadow(0 2px 3px var(--sh-2)) drop-shadow(0 0 22px var(--sc-ring)); }
 .is-sky-dragging .sky-body-svg { scale: 1.08; }
