@@ -25,7 +25,22 @@ const tearPoints = (seed) => {
     return pts;
 };
 
-const f = (n) => n.toFixed(1);
+// Short numbers: one decimal, no trailing ".0", no leading zero (the edges are in every page's pre-built HTML,
+// twelve on a long page, so their size matters on slow connections)
+const f = (n) => (Math.round(n * 10) / 10).toString().replace(/^(-?)0./, "$1.");
+// The tear as relative steps ("l3,1.7 10.4,3.7 …"), each rounded from where the last one landed, so the drawn
+// points stay within 0.05 px of the original: the same shape in about 60 % of the text.
+const steps = (pts) => {
+    let ax = pts[0][0], ay = pts[0][1], out = "";
+    for (const [x, y] of pts.slice(1)) {
+        const dx = Math.round((x - ax) * 10) / 10, dy = Math.round((y - ay) * 10) / 10;
+        ax += dx;
+        ay += dy;
+        const sy = f(dy);
+        out += `${out ? " " : ""}${f(dx)}${sy.startsWith("-") ? "" : ","}${sy}`;
+    }
+    return out;
+};
 
 /**
  * The torn paper edge along the top of a section, cut from the same paper as the section, with loose fibres.
@@ -34,7 +49,8 @@ const f = (n) => n.toFixed(1);
 export const TornEdge = ({ seed = 1, className = "" }) => {
     const { clip, fibre, hairs } = useMemo(() => {
         const pts = tearPoints(seed);
-        const line = pts.map(([x, y]) => `${f(x)},${f(y)}`).join(" L");
+        const start = f(pts[0][1]);
+        const rel = steps(pts);
         const r = rand(seed + 5);
         // short loose fibres sticking out of the tear
         let h = "";
@@ -45,7 +61,7 @@ export const TornEdge = ({ seed = 1, className = "" }) => {
                 h += `M${f(x)},${f(y + 0.5)} q${f(Math.cos(a) * len * 0.5 + (r() - 0.5) * 2)},${f(Math.sin(a) * len * 0.5)} ${f(Math.cos(a) * len)},${f(Math.sin(a) * len)} `;
             }
         });
-        return { clip: `path("M0,${H} L${line} L${WIDTH},${H} Z")`, fibre: `M${line}`, hairs: h };
+        return { clip: `path("M0,${H}V${start}l${rel}V${H}Z")`, fibre: `M0,${start}l${rel}`, hairs: h };
     }, [seed]);
     return (
         <div className={`torn-edge ${className}`} aria-hidden="true">

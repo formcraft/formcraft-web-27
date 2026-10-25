@@ -216,7 +216,10 @@ export async function checkPage(context, url, { axe = false, screenshot = null, 
     };
     page.on("pageerror", (e) => add("error", "Script error", e.message.split("\n")[0]));
     page.on("console", (m) => {
-        if (m.type() === "error" && !isExpectedOfflineNoise(m.text())) add("error", "Console error", m.text().slice(0, 200));
+        if (m.type() !== "error" || isExpectedOfflineNoise(m.text())) return;
+        // pre-rendered pages: React couldn't adopt the HTML as built (src/main.jsx logs these)
+        if (m.text().startsWith("[hydration]")) add("error", "Hydration mismatch", m.text().slice(0, 200));
+        else add("error", "Console error", m.text().slice(0, 200));
     });
     try {
         const res = await page.goto(url, { waitUntil: "load", timeout: 45000 });
